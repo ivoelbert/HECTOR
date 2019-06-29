@@ -1,0 +1,10 @@
+[package]
+name = "tigerust"
+version = "0.1.0"
+authors = ["ielvert-menlo <ielvert@menlo-technologies.com>"]
+edition = "2018"
+
+[dependencies]
+lalrpop = "0.17.1"
+lalrpop-util = "0.17.1"
+regex = "0.2.0"
