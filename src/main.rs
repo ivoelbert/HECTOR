@@ -1,5 +1,8 @@
 mod ast;
 
+#[cfg(test)]
+mod test;
+
 use ast::tigerabs::*;
 use ast::tigerabs::_Exp::*;
 use ast::position::{Pos, WithPos};
