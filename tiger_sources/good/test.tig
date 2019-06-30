@@ -1,0 +1,6 @@
+let
+    function addone (n : int) : int =
+        n + 2
+in
+    addone(420)
+end 
