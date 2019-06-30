@@ -11,66 +11,6 @@ pub enum Var {
     SubscriptVar(Box<Var>, Box<Exp>),
 }
 
-#[derive(Debug)]
-pub struct _CallExp {
-    func: Symbol,
-    args: Vec<Box<Exp>>,
-}
-
-#[derive(Debug)]
-pub struct _OpExp {
-    left: Box<Exp>,
-    oper: Oper,
-    right: Box<Exp>,
-}
-
-#[derive(Debug)]
-pub struct _RecordExp {
-    fields: Vec<(Symbol, Box<Exp>)>,
-    typ: Symbol,
-}
-
-#[derive(Debug)]
-pub struct _AssignExp {
-    var: Var,
-    exp: Box<Exp>,
-}
-
-#[derive(Debug)]
-pub struct _IfExp {
-    test: Box<Exp>,
-    then_: Box<Exp>,
-    else_: Option<Box<Exp>>,
-}
-
-#[derive(Debug)]
-pub struct _WhileExp {
-    test: Box<Exp>,
-    body: Box<Exp>,
-}
-
-#[derive(Debug)]
-pub struct _ForExp {
-    var: Symbol,
-    escape: &'static mut bool,
-    lo: Box<Exp>,
-    hi: Box<Exp>,
-    body: Box<Exp>,
-}
-
-#[derive(Debug)]
-pub struct _LetExp {
-    decs: Vec<Dec>,
-    body: Box<Exp>,
-}
-
-#[derive(Debug)]
-pub struct _ArrayExp {
-    typ: Symbol,
-    size: Box<Exp>,
-    init: Box<Exp>,
-}
-
 #[allow(dead_code)]
 #[derive(Debug)]
 pub enum _Exp {

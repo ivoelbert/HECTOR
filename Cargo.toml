@@ -4,7 +4,9 @@ version = "0.1.0"
 authors = ["ielvert-menlo <ielvert@menlo-technologies.com>"]
 edition = "2018"
 
-[dependencies]
+[build-dependencies]
 lalrpop = "0.17.1"
+
+[dependencies]
 lalrpop-util = "0.17.1"
 regex = "0.2.0"
