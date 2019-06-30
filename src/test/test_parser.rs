@@ -21,6 +21,6 @@ fn test_syntax() {
     for direntry in source_files {
         let path = direntry.unwrap().path();
         let mut contents = read_to_string(&path).unwrap();
-        assert_eq!(parse(contents), Err(ParseError));
+        assert_eq!(parse(contents), Err);
     }
 }
