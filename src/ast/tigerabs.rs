@@ -6,7 +6,7 @@ pub type Symbol = String;
 
 #[derive(Debug)]
 pub enum Var {
-    PubSimpleVar(Symbol),
+    SimpleVar(Symbol),
     FieldVar(Box<Var>, Symbol),
     SubscriptVar(Box<Var>, Box<Exp>),
 }
