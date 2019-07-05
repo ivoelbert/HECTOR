@@ -22,7 +22,7 @@ pub enum R {
     RW
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub enum Tipo {
     TUnit,
     TNil,
@@ -33,16 +33,21 @@ pub enum Tipo {
     TTipo(String)
 }
 
-/*
-impl Eq for Tipo {
+impl PartialEq for Tipo {
     fn eq(&self, other: &Self) -> bool {
+        use Tipo::*;
         match (self, other) {
-            (TRecord(_), TNil) => true,
-
+            (TRecord(_, _), TNil) => true,
+            (TNil, TRecord(_, _)) => true,
+            (TRecord(_, u1), TRecord(_, u2 )) => u1 == u2,
+            (TArray(_, u1), TArray(_, u2)) => u1 == u2,
+            (TInt(_),TInt(_)) => true,
+            (TTipo(_), _) => panic!("Estamos comparando un TTipo"),
+            (_, TTipo(_)) => panic!("Estamos comparando un TTipo"),
+            (a,b) => a == b,
         }
     }
 }
-*/
 
 #[derive(Debug)]
 pub enum ExpInterm {
