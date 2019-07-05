@@ -143,27 +143,50 @@ pub enum EnvEntry {
 pub type TypeEnviroment = HashMap<Symbol, Tipo>;
 pub type ValueEnviroment = HashMap<Symbol, EnvEntry>;
 
-
-pub fn trans_exp(exp : Exp, type_env : TypeEnviroment, value_env: ValueEnviroment) -> (Tipo, ExpInterm) {
+pub fn tipar_exp(exp : Exp, type_env : TypeEnviroment, value_env: ValueEnviroment) -> Tipo {
     use _Exp::*;
     match exp {
         Exp {node: _exp, pos: _} => match _exp {
-            VarExp(_) => (varexp::tipar(exp, type_env, value_env), varexp::traducir(exp, type_env, value_env)),
-            UnitExp => (unitexp::tipar(exp, type_env, value_env), unitexp::traducir(exp, type_env, value_env)),
-            NilExp => (nilexp::tipar(exp, type_env, value_env), nilexp::traducir(exp, type_env, value_env)),
-            IntExp(_) => (intexp::tipar(exp, type_env, value_env), intexp::traducir(exp, type_env, value_env)),
-            StringExp(_) => (stringexp::tipar(exp, type_env, value_env), stringexp::traducir(exp, type_env, value_env)),
-            CallExp{func: _, args: _} => (callexp::tipar(exp, type_env, value_env), callexp::traducir(exp, type_env, value_env)),
-            OpExp{left: _, oper: _, right: _} => (opexp::tipar(exp, type_env, value_env), opexp::traducir(exp, type_env, value_env)),
-            AssignExp{var: _, exp: _} => (assignexp::tipar(exp, type_env, value_env), assignexp::traducir(exp, type_env, value_env)),
-            RecordExp{fields: _, typ: _} => (recordexp::tipar(exp, type_env, value_env), recordexp::traducir(exp, type_env, value_env)),
-            SeqExp(_) => (seqexp::tipar(exp, type_env, value_env), seqexp::traducir(exp, type_env, value_env)),
-            IfExp{test: _, then_: _, else_: _} => (ifexp::tipar(exp, type_env, value_env), ifexp::traducir(exp, type_env, value_env)),
-            WhileExp{test: _, body: _} => (whileexp::tipar(exp, type_env, value_env), whileexp::traducir(exp, type_env, value_env)),
-            ForExp{var: _, escape: _, lo: _, hi: _, body: _} => (forexp::tipar(exp, type_env, value_env), forexp::traducir(exp, type_env, value_env)),
-            LetExp{decs: _, body: _} => (letexp::tipar(exp, type_env, value_env), letexp::traducir(exp, type_env, value_env)),
-            BreakExp => (breakexp::tipar(exp, type_env, value_env), breakexp::traducir(exp, type_env, value_env)),
-            ArrayExp{typ: _, size: _, init: _} => (arrayexp::tipar(exp, type_env, value_env), arrayexp::traducir(exp, type_env, value_env)),
+            VarExp(_) => varexp::tipar(exp, type_env, value_env),
+            UnitExp => unitexp::tipar(exp, type_env, value_env),
+            NilExp => nilexp::tipar(exp, type_env, value_env),
+            IntExp(_) => intexp::tipar(exp, type_env, value_env),
+            StringExp(_) => stringexp::tipar(exp, type_env, value_env),
+            CallExp{func: _, args: _} => callexp::tipar(exp, type_env, value_env),
+            OpExp{left: _, oper: _, right: _} => opexp::tipar(exp, type_env, value_env),
+            AssignExp{var: _, exp: _} => assignexp::tipar(exp, type_env, value_env),
+            RecordExp{fields: _, typ: _} => recordexp::tipar(exp, type_env, value_env),
+            SeqExp(_) => seqexp::tipar(exp, type_env, value_env),
+            IfExp{test: _, then_: _, else_: _} => ifexp::tipar(exp, type_env, value_env),
+            WhileExp{test: _, body: _} => whileexp::tipar(exp, type_env, value_env),
+            ForExp{var: _, escape: _, lo: _, hi: _, body: _} => forexp::tipar(exp, type_env, value_env),
+            LetExp{decs: _, body: _} => letexp::tipar(exp, type_env, value_env),
+            BreakExp => breakexp::tipar(exp, type_env, value_env),
+            ArrayExp{typ: _, size: _, init: _} => arrayexp::tipar(exp, type_env, value_env),
+        }
+    }
+}
+
+pub fn trans_exp(exp : Exp) -> ExpInterm {
+    use _Exp::*;
+    match exp {
+        Exp {node: _exp, pos: _} => match _exp {
+            VarExp(_) => varexp::traducir(exp),
+            UnitExp => unitexp::traducir(exp),
+            NilExp => nilexp::traducir(exp),
+            IntExp(_) =>  intexp::traducir(exp),
+            StringExp(_) => stringexp::traducir(exp),
+            CallExp{func: _, args: _} => callexp::traducir(exp),
+            OpExp{left: _, oper: _, right: _} => opexp::traducir(exp),
+            AssignExp{var: _, exp: _} => assignexp::traducir(exp),
+            RecordExp{fields: _, typ: _} => recordexp::traducir(exp),
+            SeqExp(_) => seqexp::traducir(exp),
+            IfExp{test: _, then_: _, else_: _} => ifexp::traducir(exp),
+            WhileExp{test: _, body: _} => whileexp::traducir(exp),
+            ForExp{var: _, escape: _, lo: _, hi: _, body: _} => forexp::traducir(exp),
+            LetExp{decs: _, body: _} => letexp::traducir(exp),
+            BreakExp => breakexp::traducir(exp),
+            ArrayExp{typ: _, size: _, init: _} => arrayexp::traducir(exp),
         }
     }
 }

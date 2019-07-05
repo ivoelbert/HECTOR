@@ -5,6 +5,6 @@ pub fn tipar(_exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) ->
     return Tipo::TNil;
 }
 
-pub fn traducir(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> ExpInterm {
+pub fn traducir(exp: Exp) -> ExpInterm {
     return ExpInterm::CONST(0);
 }
