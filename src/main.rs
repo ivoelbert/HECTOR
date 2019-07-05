@@ -1,12 +1,15 @@
 mod ast;
 mod seman;
 
-#[cfg(test)]
+// #[cfg(test)]
 mod test;
 
 use ast::tigerabs::*;
 use ast::tigerabs::_Exp::*;
 use ast::position::{Pos, WithPos};
+
+use seman::tigerseman::*;
+
 
 fn main() {
     let exp: Exp = WithPos {
@@ -26,7 +29,8 @@ fn main() {
             column: 0,
         }
     };
-
-    println!("Expresion {:?}", exp);
-    
+    let type_env = TypeEnviroment::new();
+    let value_env = ValueEnviroment::new();
+    let res = tipar_exp(exp, type_env, value_env);
+    println!("Expresion {:?}", res);
 }

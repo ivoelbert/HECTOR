@@ -1,7 +1,7 @@
 [package]
 name = "tigerust"
 version = "0.1.0"
-authors = ["ielvert-menlo <ielvert@menlo-technologies.com>"]
+authors = ["ielvert-menlo <ielvert@menlo-technologies.com>", "QPotato <federicobadaloni@hotmail.com>"]
 edition = "2018"
 
 [build-dependencies]
