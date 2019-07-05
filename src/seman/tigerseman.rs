@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::result::Result;
 
 use super::super::ast::tigerabs::*;
 use super::intexp;
@@ -143,7 +144,11 @@ pub enum EnvEntry {
 pub type TypeEnviroment = HashMap<Symbol, Tipo>;
 pub type ValueEnviroment = HashMap<Symbol, EnvEntry>;
 
-pub fn tipar_exp(exp : Exp, type_env : TypeEnviroment, value_env: ValueEnviroment) -> Tipo {
+pub enum TypeError {
+    ConditionIsNotInt(Pos),
+}
+
+pub fn tipar_exp(exp : Exp, type_env : TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
     use _Exp::*;
     match exp {
         Exp {node: _exp, pos: _} => match _exp {
