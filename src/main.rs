@@ -8,10 +8,8 @@ use ast::tigerabs::*;
 use ast::tigerabs::_Exp::*;
 use ast::position::{Pos, WithPos};
 
-use seman::types::{Tipo, R};
-
 fn main() {
-    /*let exp: Exp = WithPos {
+    let exp: Exp = WithPos {
         node: OpExp {
             left: Box::new(WithPos {
                 node: IntExp(2),
@@ -30,9 +28,5 @@ fn main() {
     };
 
     println!("Expresion {:?}", exp);
-    */
-    let t1 : seman::types::Tipo = Tipo::TUnit;
-    let t2 = Tipo::TInt(R::RO);
-    let t3 = Tipo::TInt(R::RW);
-    println!("{:?}", t2 == t3)
+    
 }
