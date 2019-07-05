@@ -33,7 +33,7 @@ pub enum Tipo {
     TInt(R),
     TString,
     TArray(Box<Tipo>, Box<()>),
-    TRecord(Vec<Tipo>, Box<()>),
+    TRecord(Vec<(String, Tipo, i32)>, Box<()>),
     TTipo(String)
 }
 
@@ -153,6 +153,7 @@ pub type ValueEnviroment = HashMap<Symbol, EnvEntry>;
 #[derive(Debug)]
 pub enum TypeError {
     ConditionIsNotInt(Pos),
+    UndeclaredVar(Pos),
 }
 
 pub fn tipar_exp(exp : Exp, type_env : TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
