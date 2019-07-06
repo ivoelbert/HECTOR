@@ -107,7 +107,7 @@ fn test_tipado_varexp_simplevar_ok() {
     };
     let type_env = TypeEnviroment::new();
     let mut value_env = ValueEnviroment::new();
-    value_env.insert(Symbol::from("foo"), EnvEntry::Var{ty: TInt(R::RW), access: Access::InFrame(1), level: 1});
+    value_env.insert(Symbol::from("foo"), EnvEntry::Var{ty: &TInt(R::RW), access: Access::InFrame(1), level: 1});
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Ok(TInt(R::RW)) => assert!(true),
@@ -147,25 +147,20 @@ fn test_tipado_varexp_fieldvar_ok() {
     };
     let mut type_env = TypeEnviroment::new();
     let mut value_env = ValueEnviroment::new();
-    let u = Box::new(());
-    type_env.insert(Symbol::from("FooType"), TRecord(
+    let foo_type = TRecord(
             vec![(String::from("baz"),
                 TInt(R::RW),
-                0)],
-            u));
+                0)], Box::new(()));
+    type_env.insert(Symbol::from("FooType"), &foo_type);
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         access: Access::InFrame(0),
         level: 0,
-        ty: TRecord(
-            vec![(String::from("baz"),
-                TInt(R::RW),
-                0)],
-            u),
+        ty: &foo_type,
     });
     let res = tipar_exp(exp, type_env, value_env);
     match res {
-        Err(UndeclaredVar(_)) => assert!(true),
-        _ => panic!("Puedo tipar una variable no declarada")
+        Ok(TInt(R::RW)) => assert!(true),
+        _ => panic!("fieldvar esta tipando mal")
     }
 }
 

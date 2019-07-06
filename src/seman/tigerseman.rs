@@ -32,8 +32,8 @@ pub enum Tipo {
     TNil,
     TInt(R),
     TString,
-    TArray(Box<Tipo>, Box<()>),
-    TRecord(Vec<(String, Tipo, i32)>, Box<()>),
+    TArray(Box<Tipo>, Box<()>), // Estos Bo<()> no funcionan porque el box mueve valores. Necesitariamos una referencia a un unit o una UID. 
+    TRecord(Vec<(String, Tipo, i32)>, Box<()>), 
     TTipo(String)
 }
 
@@ -132,9 +132,9 @@ pub enum Access {
 }
 
 #[derive(Clone)]
-pub enum EnvEntry {
+pub enum EnvEntry<'a> {
     Var {
-        ty: Tipo,
+        ty: &'a Tipo,
         access: Access,
         level: i32,
     },
@@ -147,8 +147,8 @@ pub enum EnvEntry {
     }
 }
 
-pub type TypeEnviroment = HashMap<Symbol, Tipo>;
-pub type ValueEnviroment = HashMap<Symbol, EnvEntry>;
+pub type TypeEnviroment<'a> = HashMap<Symbol, &'a Tipo>;
+pub type ValueEnviroment<'a> = HashMap<Symbol, EnvEntry<'a>>;
 
 #[derive(Debug)]
 pub enum TypeError {
