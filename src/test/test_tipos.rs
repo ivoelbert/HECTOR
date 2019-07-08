@@ -61,6 +61,18 @@ fn test_tipado_nilexp() {
 }
 
 #[test]
+fn test_tipado_breakexp() {
+    let exp = Exp {node: BreakExp, pos: Pos {line: 0, column: 0}};
+    let type_env = TypeEnviroment::new();
+    let value_env = ValueEnviroment::new();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Ok(TUnit) => assert!(true),
+        _ => panic!("breakexp tipa mal")
+    }
+}
+
+#[test]
 fn test_tipado_intexp() {
     let exp = Exp {
         node: IntExp(1),
@@ -482,7 +494,7 @@ fn test_tipado_recordexp_ok() {
     type_env.insert(Symbol::from("FooType"), &foo_type);
     let res = tipar_exp(exp, type_env, value_env);
     match res {
-        Ok(TUnit) => assert!(true),
+        Ok(return_type) => assert!(return_type == foo_type),
         _ => panic!("recordexp tipa mal")
     }
 }
@@ -525,6 +537,106 @@ fn test_tipado_recordexp_con_tipo_no_record() {
 }
 
 #[test]
+fn test_tipado_arrayexp_ok() {
+    let exp = Exp {node: ArrayExp {
+        typ: Symbol::from("FooType"),
+        size: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
+        init: Box::new(Exp {node: IntExp(2), pos: Pos {line: 0, column: 0}}),
+    }, pos: Pos {line: 0, column: 0}};
+    let mut type_env = TypeEnviroment::new();
+    let value_env = ValueEnviroment::new();
+    let unit = ();
+    let foo_type = TArray(
+        Box::new(TInt(R::RW)),
+        &unit
+    );
+    type_env.insert(Symbol::from("FooType"), &foo_type);
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Ok(return_type) => assert!(return_type == foo_type),
+        _ => panic!("array")
+    }
+}
+
+#[test]
+fn test_tipado_arrayexp_size_no_int() {
+    let exp = Exp {node: ArrayExp {
+        typ: Symbol::from("FooType"),
+        size: Box::new(Exp {node: StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
+        init: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
+    }, pos: Pos {line: 0, column: 0}};
+    let mut type_env = TypeEnviroment::new();
+    let value_env = ValueEnviroment::new();
+    let unit = ();
+    let foo_type = TArray(
+        Box::new(TInt(R::RW)),
+        &unit
+    );
+    type_env.insert(Symbol::from("FooType"), &foo_type);
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(NonIntegerSize(_)) => assert!(true),
+        _ => panic!("podemos tipar array de tamaño perro")
+    }
+}
+
+#[test]
+fn test_tipado_arrayexp_tipos_distintos() {
+    let exp = Exp {node: ArrayExp {
+        typ: Symbol::from("FooType"),
+        size: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
+        init: Box::new(Exp {node: StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
+    }, pos: Pos {line: 0, column: 0}};
+    let mut type_env = TypeEnviroment::new();
+    let value_env = ValueEnviroment::new();
+    let unit = ();
+    let foo_type = TArray(
+        Box::new(TInt(R::RW)),
+        &unit
+    );
+    type_env.insert(Symbol::from("FooType"), &foo_type);
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(TypeMismatch(_)) => assert!(true),
+        _ => panic!("un array inicializado con algo de un tipo distinto tipa")
+    }
+}
+
+#[test]
+fn test_tipado_arrayexp_tipo_no_array() {
+    let exp = Exp {node: ArrayExp {
+        typ: Symbol::from("FooType"),
+        size: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
+        init: Box::new(Exp {node: StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
+    }, pos: Pos {line: 0, column: 0}};
+    let mut type_env = TypeEnviroment::new();
+    let value_env = ValueEnviroment::new();
+    let foo_type = TInt(R::RW);
+    type_env.insert(Symbol::from("FooType"), &foo_type);
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(NotArrayType(_)) => assert!(true),
+        _ => panic!("un array inicializado con algo de un tipo distinto tipa")
+    }
+}
+
+#[test]
+fn test_tipado_arrayexp_tipo_no_existe() {
+    let exp = Exp {node: ArrayExp {
+        typ: Symbol::from("FooType"),
+        size: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
+        init: Box::new(Exp {node: StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
+    }, pos: Pos {line: 0, column: 0}};
+    let type_env = TypeEnviroment::new();
+    let value_env = ValueEnviroment::new();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(UndeclaredType(_)) => assert!(true),
+        _ => panic!("un array de tipo que no existe tipa")
+    }
+}
+
+#[test]
 fn test_tipado_seqexp_ok() {
     let exp = Exp {
         node: SeqExp(vec![
@@ -543,8 +655,203 @@ fn test_tipado_seqexp_ok() {
 }
 // Se puede testear algo mas de SeqExp? Hay alguna condicion del ultimo tipo?
 
+#[test]
+fn test_tipado_assignexp_ok() {
+    let exp = Exp {node: AssignExp{
+        var: SimpleVar(Symbol::from("foo")),
+        exp: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
+    }, pos: Pos {line: 0, column: 0}};
+    let type_env = TypeEnviroment::new();
+    let mut value_env = ValueEnviroment::new();
+    let env_entry = EnvEntry::Var{
+        ty: &TInt(R::RW),
+        access: Access::InFrame(1),
+        level: 1,
+    };
+    value_env.insert(Symbol::from("foo"), env_entry);
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Ok(TUnit) => assert!(true),
+        _ => panic!("assignexp tipa mal")
+    }
+}
+
+#[test]
+fn test_tipado_assignexp_variable_no_existe() {
+    let exp = Exp {node: AssignExp{
+        var: SimpleVar(Symbol::from("foo")),
+        exp: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
+    }, pos: Pos {line: 0, column: 0}};
+    let type_env = TypeEnviroment::new();
+    let value_env = ValueEnviroment::new();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(UndeclaredSimpleVar(_)) => assert!(true),
+        _ => panic!("Podes asginar a una variable no declarada")
+    }
+}
+
+#[test]
+fn test_tipado_assignexp_tipos_distintos() {
+    let exp = Exp {node: AssignExp{
+        var: SimpleVar(Symbol::from("foo")),
+        exp: Box::new(Exp {node: StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
+    }, pos: Pos {line: 0, column: 0}};
+    let type_env = TypeEnviroment::new();
+    let mut value_env = ValueEnviroment::new();
+    let env_entry = EnvEntry::Var{
+        ty: &TInt(R::RW),
+        access: Access::InFrame(1),
+        level: 1,
+    };
+    value_env.insert(Symbol::from("foo"), env_entry);
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(TypeMismatch(_)) => assert!(true),
+        _ => panic!("Podes asginar a una variable un valor de otro tipo")
+    }
+}
+
+#[test]
+fn test_tipado_assignexp_variable_read_only() {
+    let exp = Exp {node: AssignExp{
+        var: SimpleVar(Symbol::from("i")),
+        exp: Box::new(Exp {node: IntExp(2), pos: Pos {line: 0, column: 0}}),
+    }, pos: Pos {line: 0, column: 0}};
+    let type_env = TypeEnviroment::new();
+    let mut value_env = ValueEnviroment::new();
+    let env_entry = EnvEntry::Var{
+        ty: &TInt(R::RO),
+        access: Access::InFrame(1),
+        level: 1,
+    };
+    value_env.insert(Symbol::from("foo"), env_entry);
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(ReadOnlyAssignment(_)) => assert!(true),
+        _ => panic!("Podes asginar a una variable read only")
+    }
+}
+
+#[test]
+fn test_tipado_ifexp_ok() {
+    let exp = Exp {node: IfExp {
+        test: Box::new(Exp {node: IntExp(0), pos: Pos {line: 0, column: 0}}),
+        then_: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
+        else_: Some(Box::new(Exp {node: IntExp(2), pos: Pos {line: 0, column: 0}}))
+    }
+    , pos: Pos {line: 0, column: 0}};
+    let type_env = TypeEnviroment::new();
+    let value_env = ValueEnviroment::new();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Ok(TUnit) => assert!(true),
+        _ => panic!("ifexp esta tipando mal")
+    }
+}
+
+#[test]
+fn test_tipado_ifexp_test_no_entero() {
+    let exp = Exp {node: IfExp {
+        test: Box::new(Exp {node: StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
+        then_: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
+        else_: Some(Box::new(Exp {node: IntExp(2), pos: Pos {line: 0, column: 0}}))
+    }
+    , pos: Pos {line: 0, column: 0}};
+    let type_env = TypeEnviroment::new();
+    let value_env = ValueEnviroment::new();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(NonIntegerCondition(_)) => assert!(true),
+        _ => panic!("puede tener un if con condicion no entera"),
+    }
+}
+
+#[test]
+fn test_tipado_ifexp_tipos_then_else_distintos() {
+    let exp = Exp {node: IfExp {
+        test: Box::new(Exp {node: IntExp(0), pos: Pos {line: 0, column: 0}}),
+        then_: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
+        else_: Some(Box::new(Exp {node: StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}})),
+    }
+    , pos: Pos {line: 0, column: 0}};
+    let type_env = TypeEnviroment::new();
+    let value_env = ValueEnviroment::new();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(ThenElseTypeMismatch(_)) => assert!(true),
+        _ => panic!("puedo tener un if con tipos distintos en then y else"),
+    }
+}
+
+#[test]
+fn test_tipado_ifexp_sin_else_no_unit() {
+    let exp = Exp {node: IfExp {
+        test: Box::new(Exp {node: IntExp(0), pos: Pos {line: 0, column: 0}}),
+        then_: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
+        else_: None
+    }
+    , pos: Pos {line: 0, column: 0}};
+    let type_env = TypeEnviroment::new();
+    let value_env = ValueEnviroment::new();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(NonUnitBody(_)) => assert!(true),
+        _ => panic!("puedo tener un if sin else y con then no TUnit"),
+    }
+}
+
+#[test]
+fn test_tipado_whileexp_ok() {
+    let exp = Exp {node: WhileExp {
+        test: Box::new(Exp {node: IntExp(0), pos: Pos {line: 0, column: 0}}),
+        body: Box::new(Exp {node: UnitExp, pos: Pos {line: 0, column: 0}}),
+    }, pos: Pos {line: 0, column: 0}};
+    let type_env = TypeEnviroment::new();
+    let value_env = ValueEnviroment::new();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Ok(TUnit) => assert!(true),
+        _ => panic!("whileexp tipa mal")
+    }
+}
+
+#[test]
+fn test_tipado_whileexp_condicion_no_entera() {
+    let exp = Exp {node: WhileExp {
+        test: Box::new(Exp {node: IntExp(0), pos: Pos {line: 0, column: 0}}),
+        body: Box::new(Exp {node: UnitExp, pos: Pos {line: 0, column: 0}}),
+    }, pos: Pos {line: 0, column: 0}};
+    let type_env = TypeEnviroment::new();
+    let value_env = ValueEnviroment::new();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(NonIntegerCondition(_)) => assert!(true),
+        _ => panic!("podes tener un while con condicion no entera")
+    }
+}
+
+#[test]
+fn test_tipado_whileexp_body_no_unit() {
+    let exp = Exp {node: WhileExp {
+        test: Box::new(Exp {node: IntExp(0), pos: Pos {line: 0, column: 0}}),
+        body: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
+    }, pos: Pos {line: 0, column: 0}};
+    let type_env = TypeEnviroment::new();
+    let value_env = ValueEnviroment::new();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(NonUnitBody(_)) => assert!(true),
+        _ => panic!("podes tener un while con condicion no entera")
+    }
+}
+
+
+// Estos tests los dejo comentado porque se que es lo que hay que testear, pero todavia no entiendo muy bien esas
+// structs y no se bien como testearlo.
+
 // #[test]
-// fn test_tipado_unitexp() {
+// fn test_tipado_forexp_ok() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
 //     let type_env = TypeEnviroment::new();
 //     let value_env = ValueEnviroment::new();
@@ -554,3 +861,187 @@ fn test_tipado_seqexp_ok() {
 //         _ => panic!("")
 //     }
 // }
+
+// #[test]
+// fn test_tipado_forexp_body_no_es_unit() {
+//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
+//     let type_env = TypeEnviroment::new();
+//     let value_env = ValueEnviroment::new();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Ok(TUnit) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+// #[test]
+// fn test_tipado_forexp_lo_no_es_int() {
+//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
+//     let type_env = TypeEnviroment::new();
+//     let value_env = ValueEnviroment::new();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Ok(TUnit) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+// #[test]
+// fn test_tipado_forexp_hi_no_es_int() {
+//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
+//     let type_env = TypeEnviroment::new();
+//     let value_env = ValueEnviroment::new();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Ok(TUnit) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+// #[test]
+// fn test_tipado_letexp_vardec_ok() {
+//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
+//     let type_env = TypeEnviroment::new();
+//     let value_env = ValueEnviroment::new();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Ok(TUnit) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+// #[test]
+// fn test_tipado_letexp_vardec_tipo_en_esta_dec() {
+//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
+//     let type_env = TypeEnviroment::new();
+//     let value_env = ValueEnviroment::new();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Ok(TUnit) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+// #[test]
+// fn test_tipado_letexp_vardec_tipos_distintos() {
+//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
+//     let type_env = TypeEnviroment::new();
+//     let value_env = ValueEnviroment::new();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Ok(TUnit) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+// #[test]
+// fn test_tipado_letexp_vardec_tipo_inexistente() {
+//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
+//     let type_env = TypeEnviroment::new();
+//     let value_env = ValueEnviroment::new();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Ok(TUnit) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+// #[test]
+// fn test_tipado_letexp_vardec_variables_repetidas() {
+//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
+//     let type_env = TypeEnviroment::new();
+//     let value_env = ValueEnviroment::new();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Ok(TUnit) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+// #[test]
+// fn test_tipado_letexp_typedec_ok() {
+//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
+//     let type_env = TypeEnviroment::new();
+//     let value_env = ValueEnviroment::new();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Ok(TUnit) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+// #[test]
+// fn test_tipado_letexp_typedec_recursion_infinita() {
+//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
+//     let type_env = TypeEnviroment::new();
+//     let value_env = ValueEnviroment::new();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Ok(TUnit) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+// #[test]
+// fn test_tipado_letexp_typedec_referencia_tipo_inexistente() {
+//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
+//     let type_env = TypeEnviroment::new();
+//     let value_env = ValueEnviroment::new();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Ok(TUnit) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+// #[test]
+// fn test_tipado_letexp_typedec_referencia_tipos_repetidos() {
+//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
+//     let type_env = TypeEnviroment::new();
+//     let value_env = ValueEnviroment::new();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Ok(TUnit) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+// #[test]
+// fn test_tipado_functiondec_ok() {
+//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
+//     let type_env = TypeEnviroment::new();
+//     let value_env = ValueEnviroment::new();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Ok(TUnit) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+// #[test]
+// fn test_tipado_functiondec_nombres_tipo_param_en_esta_dec() {
+//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
+//     let type_env = TypeEnviroment::new();
+//     let value_env = ValueEnviroment::new();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Ok(TUnit) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+// #[test]
+// fn test_tipado_functiondec_nombres_repetidos() {
+//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
+//     let type_env = TypeEnviroment::new();
+//     let value_env = ValueEnviroment::new();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Ok(TUnit) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+// no se me ocurre pero se deben poder hacer muchos mas tests con las declaraciones de funciones
+
+

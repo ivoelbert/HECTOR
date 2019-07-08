@@ -163,7 +163,12 @@ pub enum TypeError {
     TooManyArguments(Pos),
     TooFewArguments(Pos),
     WrongOperatorTypes(Pos),
-
+    TypeMismatch(Pos),
+    NonIntegerCondition(Pos),
+    ThenElseTypeMismatch(Pos),
+    ReadOnlyAssignment(Pos),
+    NonUnitBody(Pos),
+    NonIntegerSize(Pos),
 }
 
 pub fn tipar_exp<'a>(exp : Exp, type_env : TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo<'a>, TypeError> {
