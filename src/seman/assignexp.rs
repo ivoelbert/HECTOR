@@ -3,7 +3,7 @@ use std::result::Result;
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn tipar<'a>(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo<'a>, TypeError> {
     // match exp {
     //     Exp {node: _exp, pos: _} =>
     //         match _exp {

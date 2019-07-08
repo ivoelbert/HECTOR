@@ -1,7 +1,7 @@
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn tipar(_exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn tipar<'a>(_exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo<'a>, TypeError> {
     return Ok(Tipo::TUnit);
 }
 

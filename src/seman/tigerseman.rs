@@ -27,17 +27,17 @@ pub enum R {
 }
 
 #[derive(Debug, Clone)]
-pub enum Tipo {
+pub enum Tipo<'a> {
     TUnit,
     TNil,
     TInt(R),
     TString,
-    TArray(Box<Tipo>, Box<()>), // Estos Bo<()> no funcionan porque el box mueve valores. Necesitariamos una referencia a un unit o una UID. 
-    TRecord(Vec<(String, Tipo, i32)>, Box<()>), 
+    TArray(Box<Tipo<'a>>, &'a ()), 
+    TRecord(Vec<(String, Box<Tipo<'a>>, i32)>, &'a ()), 
     TTipo(String)
 }
 
-impl PartialEq for Tipo {
+impl PartialEq for Tipo<'_> {
     fn eq(&self, other: &Self) -> bool {
         use Tipo::*;
         match (self, other) {
@@ -134,29 +134,39 @@ pub enum Access {
 #[derive(Clone)]
 pub enum EnvEntry<'a> {
     Var {
-        ty: &'a Tipo,
+        ty: &'a Tipo<'a>,
         access: Access,
         level: i32,
     },
     Func {
-        level: Level,
+        // level: Level,
         label: Label,
-        formals: Vec<Tipo>,
-        result: Tipo,
+        formals: Vec<Tipo<'a>>,
+        result: Tipo<'a>,
         external: bool
     }
 }
 
-pub type TypeEnviroment<'a> = HashMap<Symbol, &'a Tipo>;
+pub type TypeEnviroment<'a> = HashMap<Symbol, &'a Tipo<'a>>;
 pub type ValueEnviroment<'a> = HashMap<Symbol, EnvEntry<'a>>;
 
 #[derive(Debug)]
 pub enum TypeError {
     ConditionIsNotInt(Pos),
-    UndeclaredVar(Pos),
+    UndeclaredSimpleVar(Pos),
+    UndeclaredFunction(Pos),
+    UndeclaredType(Pos),
+    FieldDoesNotExist(Pos),
+    NotRecordType(Pos),
+    NotArrayType(Pos),
+    SunscriptNotInteger(Pos),
+    TooManyArguments(Pos),
+    TooFewArguments(Pos),
+    WrongOperatorTypes(Pos),
+
 }
 
-pub fn tipar_exp(exp : Exp, type_env : TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn tipar_exp<'a>(exp : Exp, type_env : TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo<'a>, TypeError> {
     use _Exp::*;
     match exp {
         Exp {node: _exp, pos: _pos} => match _exp {
