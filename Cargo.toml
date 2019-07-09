@@ -10,3 +10,4 @@ lalrpop = "0.17.1"
 [dependencies]
 lalrpop-util = "0.17.1"
 regex = "0.2.0"
+uid = "0.1.4"

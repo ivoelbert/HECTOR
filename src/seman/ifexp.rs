@@ -3,7 +3,7 @@ use std::result::Result;
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn tipar<'a>(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo<'a>, TypeError> {
+pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
     // Tipar las 3 subexpresiones
     // Si alguna falla, propagar error.
     // Si el test no es Int, fallar.

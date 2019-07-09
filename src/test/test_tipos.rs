@@ -159,11 +159,10 @@ fn test_tipado_varexp_fieldvar_ok() {
     };
     let mut type_env = TypeEnviroment::new();
     let mut value_env = ValueEnviroment::new();
-    let nil = ();
     let foo_type = TRecord(
             vec![(String::from("bar"),
                 Box::new(TInt(R::RW)),
-                0)], &nil);
+                0)], TypeId::new());
     type_env.insert(Symbol::from("FooType"), &foo_type);
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         access: Access::InFrame(0),
@@ -195,7 +194,9 @@ fn test_tipado_varexp_fieldvar_fields_inexistente() {
     let foo_type = TRecord(
             vec![(String::from("bar"),
                 Box::new(TInt(R::RW)),
-                0)], &unit);
+                0)], 
+                TypeId::new(),
+            );
     type_env.insert(Symbol::from("FooType"), &foo_type);
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         access: Access::InFrame(0),
@@ -256,7 +257,10 @@ fn test_tipado_varexp_subscriptvar_ok() {
     let mut type_env = TypeEnviroment::new();
     let mut value_env = ValueEnviroment::new();
     let unit = ();
-    let foo_type = Box::new(TArray(Box::new(TInt(R::RW)), &unit));
+    let foo_type = Box::new(TArray(
+        Box::new(TInt(R::RW)), 
+        TypeId::new(),
+    ));
     type_env.insert(Symbol::from("FooType"), &foo_type);
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         access: Access::InFrame(0),
@@ -289,7 +293,10 @@ fn test_tipado_varexp_subscriptvar_indice_no_entero() {
     let mut type_env = TypeEnviroment::new();
     let mut value_env = ValueEnviroment::new();
     let unit = ();
-    let foo_type = Box::new(TArray(Box::new(TInt(R::RW)), &unit));
+    let foo_type = Box::new(TArray(
+        Box::new(TInt(R::RW)),
+        TypeId::new(),
+    ));
     type_env.insert(Symbol::from("FooType"), &foo_type);
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         access: Access::InFrame(0),
@@ -486,11 +493,10 @@ fn test_tipado_recordexp_ok() {
     };
     let mut type_env = TypeEnviroment::new();
     let value_env = ValueEnviroment::new();
-    let nil = ();
     let foo_type = TRecord(
             vec![(String::from("bar"),
                 Box::new(TInt(R::RW)),
-                0)], &nil);
+                0)], TypeId::new());
     type_env.insert(Symbol::from("FooType"), &foo_type);
     let res = tipar_exp(exp, type_env, value_env);
     match res {
@@ -545,10 +551,9 @@ fn test_tipado_arrayexp_ok() {
     }, pos: Pos {line: 0, column: 0}};
     let mut type_env = TypeEnviroment::new();
     let value_env = ValueEnviroment::new();
-    let unit = ();
     let foo_type = TArray(
-        Box::new(TInt(R::RW)),
-        &unit
+        Box::new(TInt(R::RW)), 
+        TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), &foo_type);
     let res = tipar_exp(exp, type_env, value_env);
@@ -567,10 +572,9 @@ fn test_tipado_arrayexp_size_no_int() {
     }, pos: Pos {line: 0, column: 0}};
     let mut type_env = TypeEnviroment::new();
     let value_env = ValueEnviroment::new();
-    let unit = ();
     let foo_type = TArray(
-        Box::new(TInt(R::RW)),
-        &unit
+        Box::new(TInt(R::RW)), 
+        TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), &foo_type);
     let res = tipar_exp(exp, type_env, value_env);
@@ -589,10 +593,9 @@ fn test_tipado_arrayexp_tipos_distintos() {
     }, pos: Pos {line: 0, column: 0}};
     let mut type_env = TypeEnviroment::new();
     let value_env = ValueEnviroment::new();
-    let unit = ();
     let foo_type = TArray(
-        Box::new(TInt(R::RW)),
-        &unit
+        Box::new(TInt(R::RW)), 
+        TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), &foo_type);
     let res = tipar_exp(exp, type_env, value_env);

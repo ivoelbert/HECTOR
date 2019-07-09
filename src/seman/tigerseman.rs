@@ -1,3 +1,4 @@
+extern crate uid;
 use std::collections::HashMap;
 use std::result::Result;
 
@@ -26,29 +27,33 @@ pub enum R {
     RW
 }
 
+pub type TypeId = uid::Id<u16>;
 #[derive(Debug, Clone)]
-pub enum Tipo<'a> {
+pub enum Tipo {
     TUnit,
     TNil,
     TInt(R),
     TString,
-    TArray(Box<Tipo<'a>>, &'a ()), 
-    TRecord(Vec<(String, Box<Tipo<'a>>, i32)>, &'a ()), 
+    TArray(Box<Tipo>, TypeId), 
+    TRecord(Vec<(String, Box<Tipo>, u8)>, TypeId), 
     TTipo(String)
 }
 
-impl PartialEq for Tipo<'_> {
+impl PartialEq for Tipo {
     fn eq(&self, other: &Self) -> bool {
         use Tipo::*;
         match (self, other) {
+            (TUnit, TUnit) => true,
+            (TString, TString) => true,
             (TRecord(_, _), TNil) => true,
             (TNil, TRecord(_, _)) => true,
-            (TRecord(_, u1), TRecord(_, u2 )) => u1 == u2,
-            (TArray(_, u1), TArray(_, u2)) => u1 == u2,
+            (TRecord(_, uid1), TRecord(_, uid2 )) => uid1 == uid2,
+            (TArray(_, uid1), TArray(_, uid2)) => uid1 == uid2,
             (TInt(_),TInt(_)) => true,
+            (TTipo(s), TTipo(t)) => s == t,
             (TTipo(_), _) => panic!("Estamos comparando un TTipo"),
             (_, TTipo(_)) => panic!("Estamos comparando un TTipo"),
-            (a,b) => a == b,
+            (_, _) => false,
         }
     }
 }
@@ -134,20 +139,20 @@ pub enum Access {
 #[derive(Clone)]
 pub enum EnvEntry<'a> {
     Var {
-        ty: &'a Tipo<'a>,
+        ty: &'a Tipo,
         access: Access,
         level: i32,
     },
     Func {
         // level: Level,
         label: Label,
-        formals: Vec<Tipo<'a>>,
-        result: Tipo<'a>,
+        formals: Vec<Tipo>,
+        result: Tipo,
         external: bool
     }
 }
 
-pub type TypeEnviroment<'a> = HashMap<Symbol, &'a Tipo<'a>>;
+pub type TypeEnviroment<'a> = HashMap<Symbol, &'a Tipo>;
 pub type ValueEnviroment<'a> = HashMap<Symbol, EnvEntry<'a>>;
 
 #[derive(Debug)]
@@ -171,7 +176,7 @@ pub enum TypeError {
     NonIntegerSize(Pos),
 }
 
-pub fn tipar_exp<'a>(exp : Exp, type_env : TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo<'a>, TypeError> {
+pub fn tipar_exp(exp : Exp, type_env : TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
     use _Exp::*;
     match exp {
         Exp {node: _exp, pos: _pos} => match _exp {
