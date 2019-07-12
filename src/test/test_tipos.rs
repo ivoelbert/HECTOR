@@ -2,6 +2,7 @@ use std::fs::{read_dir, read_to_string};
 
 use super::super::ast::tigerabs::*;
 use super::super::ast::position::*;
+use super::super::ast::parser::parse;
 use _Exp::*;
 use Dec::*;
 use Ty::*;
@@ -12,17 +13,51 @@ use Tipo::*;
 use TypeError::*;
 
 
-// #[test]
-// fn test_good() {
-//     let good_path = "./tiger_sources/good/";
-//     let source_files = read_dir(good_path).unwrap();
-//     for direntry in source_files {
-//         let path = direntry.unwrap().path();
-//         let mut contents = read_to_string(&path).unwrap();
-//         parse(contents).expect("Compilation failed");
-//     }
-// }
+#[test]
+fn test_good() {
+    let good_path = "./tiger_sources/good/";
+    let source_files = read_dir(good_path).unwrap();
+    for direntry in source_files {
+        let path = direntry.unwrap().path();
+        let contents = read_to_string(&path).unwrap();
+        let parsed = parse(contents);
+        let type_env = TypeEnviroment::new();
+        let value_env = ValueEnviroment::new();
+        match parsed {
+            Ok(exp) => {
+                let typed = tipar_exp(exp , type_env, value_env);
+                match typed {
+                    Ok(_) => assert!(true),
+                    Err(_) => panic!("{:?} deberia tipar bien pero falla", path),
+                }
+            },
+            Err(_) => panic!("falla el parser"),
+         }
+    }
+}
 
+#[test]
+fn test_type() {
+    let syntax_path = "./tiger_sources/type/";
+    let source_files = read_dir(syntax_path).unwrap();
+    for direntry in source_files {
+        let path = direntry.unwrap().path();
+        let contents = read_to_string(&path).unwrap();
+        let parsed = parse(contents);
+        let type_env = TypeEnviroment::new();
+        let value_env = ValueEnviroment::new();
+        match parsed {
+            Ok(exp) => {
+                let typed = tipar_exp(exp , type_env, value_env);
+                match typed {
+                    Err(_) => assert!(true),
+                    Ok(_) => panic!("{:?} debería fallar pero tipa bien", path),
+                }
+            },
+            Err(_) => panic!("falla el parser"),
+         }
+    }
+}
 
 #[test]
 fn test_tipado_unitexp() {
