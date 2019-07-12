@@ -1,118 +1,118 @@
 use std::fmt::{self, Debug, Formatter};
 
-use super::position::WithPos;
+use super::position::{WithPos, Pos};
 
 pub type Symbol = String;
 
 #[derive(Debug)]
-pub enum Var<'a> {
+pub enum Var {
     SimpleVar(Symbol),
-    FieldVar(Box<Var<'a>>, Symbol),
-    SubscriptVar(Box<Var<'a>>, Box<Exp<'a>>),
+    FieldVar(Box<Var>, Symbol),
+    SubscriptVar(Box<Var>, Box<Exp>),
 }
 
 #[allow(dead_code)]
 #[derive(Debug)]
-pub enum _Exp<'a> {
-    VarExp(Var<'a>),
+pub enum _Exp {
+    VarExp(Var),
     UnitExp,
     NilExp,
     IntExp(i32),
     StringExp(String),
     CallExp {
         func: Symbol,
-        args: Vec<Box<Exp<'a>>>,
+        args: Vec<Box<Exp>>,
     },
     OpExp {
-        left: Box<Exp<'a>>,
+        left: Box<Exp>,
         oper: Oper,
-        right: Box<Exp<'a>>,
+        right: Box<Exp>,
     },
     RecordExp {
-        fields: Vec<(Symbol, Box<Exp<'a>>)>,
+        fields: Vec<(Symbol, Box<Exp>)>,
         typ: Symbol,
     },
-    SeqExp(Vec<Box<Exp<'a>>>),
+    SeqExp(Vec<Box<Exp>>),
     AssignExp {
-        var: Var<'a>,
-        exp: Box<Exp<'a>>,
+        var: Var,
+        exp: Box<Exp>,
     },
     IfExp {
-        test: Box<Exp<'a>>,
-        then_: Box<Exp<'a>>,
-        else_: Option<Box<Exp<'a>>>,
+        test: Box<Exp>,
+        then_: Box<Exp>,
+        else_: Option<Box<Exp>>,
     },
     WhileExp {
-        test: Box<Exp<'a>>,
-        body: Box<Exp<'a>>,
+        test: Box<Exp>,
+        body: Box<Exp>,
     },
     ForExp {
         var: Symbol,
-        escape: &'a mut bool,
-        lo: Box<Exp<'a>>,
-        hi: Box<Exp<'a>>,
-        body: Box<Exp<'a>>,
+        escape: bool,
+        lo: Box<Exp>,
+        hi: Box<Exp>,
+        body: Box<Exp>,
     },
     LetExp {
-        decs: Vec<Dec<'a>>,
-        body: Box<Exp<'a>>,
+        decs: Vec<Dec>,
+        body: Box<Exp>,
     },
     BreakExp,
     ArrayExp {
         typ: Symbol,
-        size: Box<Exp<'a>>,
-        init: Box<Exp<'a>>,
+        size: Box<Exp>,
+        init: Box<Exp>,
     },
 }
 
-pub type Exp<'a> = WithPos<_Exp<'a>>;
-impl<'a> Debug for Exp<'a> {
+pub type Exp = WithPos<_Exp>;
+impl Debug for Exp {
     fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
         write!(formatter, "{:?}", self.node)
     }
 }
 
 #[derive(Debug)]
-pub struct _FunctionDec<'a> {
+pub struct _FunctionDec {
     name: Symbol,
-    params: Vec<Field<'a>>,
+    params: Vec<Field>,
     result: Option<Symbol>,
-    body: Box<Exp<'a>>,
+    body: Box<Exp>,
 }
 
 #[derive(Debug)]
-pub struct _VarDec<'a> {
+pub struct _VarDec {
     name: Symbol,
-    escape: &'a mut bool,
+    escape: bool,
     typ: Option<Symbol>,
-    init: Box<Exp<'a>>,
+    init: Box<Exp>,
 }
 
 #[derive(Debug)]
-pub struct _TypeDec<'a> {
+pub struct _TypeDec {
     name: Symbol,
-    ty: Ty<'a>,
+    ty: Ty,
 }
 
 #[derive(Debug)]
-pub enum Dec<'a> {
-    FunctionDec(Vec<_FunctionDec<'a>>),
-    VarDec(_VarDec<'a>),
-    TypeDec(Vec<_TypeDec<'a>>),
+pub enum Dec {
+    FunctionDec(Vec<_FunctionDec>),
+    VarDec(_VarDec),
+    TypeDec(Vec<_TypeDec>),
 }
 
 #[derive(Debug)]
-pub enum Ty<'a> {
+pub enum Ty {
     NameTy(Symbol),
-    RecordTy(Vec<Box<Field<'a>>>),
+    RecordTy(Vec<Box<Field>>),
     ArrayTy(Symbol),
 }
 
 #[derive(Debug)]
-pub struct Field<'a> {
+pub struct Field {
     name: Symbol,
-    escape: &'a mut bool,
-    typ: Ty<'a>,
+    escape: bool,
+    typ: Ty,
 }
 
 #[derive(Debug)]
@@ -127,4 +127,11 @@ pub enum Oper {
     LeOp,
     GtOp,
     GeOp,
+}
+
+pub fn posedExp(exp: _Exp, line: u32, column: u32) -> Box<Exp> {
+    let pos = Pos::new(line, column);
+    let pos_exp = WithPos::new(exp, pos);
+
+    return Box::new(pos_exp)
 }
