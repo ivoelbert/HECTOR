@@ -6,7 +6,7 @@ pub enum ParseError {
 }
 
 
-pub fn parse<'a>(source : String) -> Result<Exp<'a>, ParseError> {
+pub fn parse(source : String) -> Result<Exp, ParseError> {
     return Ok(WithPos {
         node: _Exp::UnitExp,
         pos: Pos {
