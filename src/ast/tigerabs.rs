@@ -1,6 +1,6 @@
 use std::fmt::{self, Debug, Formatter};
 
-use super::position::{WithPos, Pos};
+use super::position::{Pos, WithPos};
 
 pub type Symbol = String;
 
@@ -12,7 +12,6 @@ pub enum Var {
 }
 
 #[allow(dead_code)]
-#[derive(Debug)]
 pub enum _Exp {
     VarExp(Var),
     UnitExp,
@@ -65,6 +64,30 @@ pub enum _Exp {
     },
 }
 
+impl Debug for _Exp {
+    fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
+        match self {
+            _Exp::VarExp(var) => write!(formatter, "Var({:?})", var),
+            _Exp::UnitExp => write!(formatter, "UNIT"),
+            _Exp::NilExp => write!(formatter, "NIL"),
+            _Exp::IntExp(num) => write!(formatter, "Num({:?})", num),
+            _Exp::StringExp(string) => write!(formatter, "Str({:?})", string),
+            _Exp::CallExp {func, args} => write!(formatter, "{:?}({:?})", func, args),
+            _Exp::OpExp {left, oper, right} => write!(formatter, "({:?} {:?} {:?})", left, oper, right),
+            _Exp::RecordExp {fields, typ} => write!(formatter, "(Record({:?}) {{ {:?} }})", typ, fields),
+            _Exp::SeqExp(seq) => write!(formatter, "{:?}", seq),
+            _Exp::AssignExp {var, exp} => write!(formatter, "({:?} := {:?})", var, exp),
+            _Exp::IfExp {test, then_, else_: Some(e)} => write!(formatter, "(if {:?} then {:?} else {:?})", test, then_, e),
+            _Exp::IfExp {test, then_, else_: None} => write!(formatter, "(if {:?} then {:?})", test, then_),
+            _Exp::WhileExp {test, body} => write!(formatter, "(while({:?}) {{ {:?} }})", test, body),
+            _Exp::ForExp {var, escape: _, lo, hi, body} => write!(formatter, "(for {:?} := {:?} to {:?} {{ {:?} }} )", var, lo, hi, body),
+            _Exp::LetExp {decs, body} => write!(formatter, "(Let {{ {:?} }} in {{ {:?} }})", decs, body),
+            _Exp::BreakExp => write!(formatter, "BREAK"),
+            _Exp::ArrayExp {typ, size, init} => write!(formatter, "(Array({:?}) [{:?} x {:?}])", typ, size, init),
+        }
+    }
+}
+
 pub type Exp = WithPos<_Exp>;
 impl Debug for Exp {
     fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
@@ -115,7 +138,6 @@ pub struct Field {
     typ: Ty,
 }
 
-#[derive(Debug)]
 pub enum Oper {
     PlusOp,
     MinusOp,
@@ -129,9 +151,26 @@ pub enum Oper {
     GeOp,
 }
 
-pub fn posedExp(exp: _Exp, line: u32, column: u32) -> Box<Exp> {
+impl Debug for Oper {
+    fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
+        match self {
+            Oper::PlusOp => write!(formatter, "+"),
+            Oper::MinusOp => write!(formatter, "-"),
+            Oper::TimesOp => write!(formatter, "*"),
+            Oper::DivideOp => write!(formatter, "/"),
+            Oper::EqOp => write!(formatter, "="),
+            Oper::NeqOp => write!(formatter, "<>"),
+            Oper::LtOp => write!(formatter, "<"),
+            Oper::LeOp => write!(formatter, "<="),
+            Oper::GtOp => write!(formatter, ">"),
+            Oper::GeOp => write!(formatter, ">="),
+        }
+    }
+}
+
+pub fn posed_exp(exp: _Exp, line: u32, column: u32) -> Box<Exp> {
     let pos = Pos::new(line, column);
     let pos_exp = WithPos::new(exp, pos);
 
-    return Box::new(pos_exp)
+    return Box::new(pos_exp);
 }

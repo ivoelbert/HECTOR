@@ -152,7 +152,18 @@ fn test_parse_callexp() {
 }
 
 #[test]
-fn test_parse_opexp() {
+fn test_parse_custom() {
+    let input = String::from("(2 * 2 = 2 + 2) & 2 - 2 <> 2 + 2");
+    let parsed = parse(input);
+
+    match parsed {
+        Ok(exp) => println!("Parsed expresion:\n\n{:?}\n\n", exp),
+        Err(_) => panic!("el parser falla en una expresion bien formada"),
+    }
+}
+
+#[test]
+fn test_parse_simple_sum() {
     let input = String::from("2 + 2");
     let parsed = parse(input);
     match parsed {
@@ -161,6 +172,44 @@ fn test_parse_opexp() {
                 OpExp {
                     left: _,
                     oper: Oper::PlusOp,
+                    right: _,
+                },
+            pos: Pos { line: 0, column: 0 },
+        }) => assert!(true),
+        Ok(_) => panic!("mal parseado"),
+        Err(_) => panic!("el parser falla en una expresion bien formada"),
+    }
+}
+
+#[test]
+fn test_parse_simple_mult() {
+    let input = String::from("2 * 2");
+    let parsed = parse(input);
+    match parsed {
+        Ok(Exp {
+            node:
+                OpExp {
+                    left: _,
+                    oper: Oper::TimesOp,
+                    right: _,
+                },
+            pos: Pos { line: 0, column: 0 },
+        }) => assert!(true),
+        Ok(_) => panic!("mal parseado"),
+        Err(_) => panic!("el parser falla en una expresion bien formada"),
+    }
+}
+
+#[test]
+fn test_parse_simple_comp() {
+    let input = String::from("2 >= 2");
+    let parsed = parse(input);
+    match parsed {
+        Ok(Exp {
+            node:
+                OpExp {
+                    left: _,
+                    oper: Oper::GeOp,
                     right: _,
                 },
             pos: Pos { line: 0, column: 0 },

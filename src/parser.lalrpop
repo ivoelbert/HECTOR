@@ -5,27 +5,64 @@ use crate::ast::position::*;
 grammar;
 
 pub Expr: Box<Exp> = {
-    <l:Expr> <o:ExprOp> <r:Factor> => {
-        let no_pos_exp = _Exp::OpExp {left: l, oper: o, right: r};
-        return posedExp(no_pos_exp, 0, 0)
+    <l: Expr> "|" <r: CompExp> => {
+        let no_pos_exp = _Exp::IfExp {
+            test: l,
+            then_: posed_exp(_Exp::IntExp(1), 0, 0),
+            else_: Some(r),
+        };
+        return posed_exp(no_pos_exp, 0, 0)
     },
-    Factor,
+    <l: Expr> "&" <r: CompExp> => {
+        let no_pos_exp = _Exp::IfExp {
+            test: l,
+            then_: r,
+            else_: Some(posed_exp(_Exp::IntExp(0), 0, 0)),
+        };
+        return posed_exp(no_pos_exp, 0, 0)
+    },
+    CompExp,
 }
 
-ExprOp: Oper = {
+pub CompExp: Box<Exp> = {
+    <l:AddExp> <o:CompOp> <r:AddExp> => {
+        let no_pos_exp = _Exp::OpExp {left: l, oper: o, right: r};
+        return posed_exp(no_pos_exp, 0, 0)
+    },
+    AddExp,
+}
+
+CompOp: Oper = {
+    "=" => Oper::EqOp,
+    "<" => Oper::LtOp,
+    ">" => Oper::GtOp,
+    ">=" => Oper::GeOp,
+    "<=" => Oper::LeOp,
+    "<>" => Oper::NeqOp,
+}
+
+AddExp: Box<Exp> = {
+    <l:AddExp> <o:AddOp> <r:MultExp> => {
+        let no_pos_exp = _Exp::OpExp {left: l, oper: o, right: r};
+        return posed_exp(no_pos_exp, 0, 0)
+    },
+    MultExp,
+}
+
+AddOp: Oper = {
     "+" => Oper::PlusOp,
     "-" => Oper::MinusOp,
 };
 
-Factor: Box<Exp> = {
-    <l:Factor> <o:FactorOp> <r:Term> => {
+MultExp: Box<Exp> = {
+    <l:MultExp> <o:MultOp> <r:Term> => {
         let no_pos_exp = _Exp::OpExp {left: l, oper: o, right: r};
-        return posedExp(no_pos_exp, 0, 0)
+        return posed_exp(no_pos_exp, 0, 0)
     },
     Term,
 };
 
-FactorOp: Oper = {
+MultOp: Oper = {
     "*" => Oper::TimesOp,
     "/" => Oper::DivideOp,
 };
@@ -33,7 +70,7 @@ FactorOp: Oper = {
 Term: Box<Exp> = {
     Num => {
         let no_pos_exp = _Exp::IntExp(<>);
-        return posedExp(no_pos_exp, 0, 0)
+        return posed_exp(no_pos_exp, 0, 0)
     },
     "(" <Expr> ")",
 };
