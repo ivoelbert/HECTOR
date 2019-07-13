@@ -28,6 +28,7 @@ pub enum R {
 }
 
 pub type TypeId = uid::Id<u16>;
+
 #[derive(Debug, Clone)]
 pub enum Tipo {
     TUnit,
@@ -35,8 +36,49 @@ pub enum Tipo {
     TInt(R),
     TString,
     TArray(Box<Tipo>, TypeId), 
-    TRecord(Vec<(String, Box<Tipo>, u8)>, TypeId), 
+    TRecord(Vec<(Box<String>, Box<Tipo>, u8)>, TypeId), 
     TTipo(String)
+}
+
+#[derive(Clone)]
+pub enum EnvEntry {
+    Var {
+        ty: Tipo,
+        access: Access,
+        level: i32,
+    },
+    Func {
+        // level: Level,
+        label: Label,
+        formals: Vec<Tipo>,
+        result: Tipo,
+        external: bool
+    }
+}
+
+pub type TypeEnviroment = HashMap<Symbol, Tipo>;
+pub type ValueEnviroment = HashMap<Symbol, EnvEntry>;
+
+#[derive(Debug)]
+pub enum TypeError {
+    ConditionIsNotInt(Pos),
+    UndeclaredSimpleVar(Pos),
+    UndeclaredFunction(Pos),
+    UndeclaredType(Pos),
+    FieldDoesNotExist(Pos),
+    NotSimpleVar(Pos),
+    NotRecordType(Pos),
+    NotArrayType(Pos),
+    SunscriptNotInteger(Pos),
+    TooManyArguments(Pos),
+    TooFewArguments(Pos),
+    WrongOperatorTypes(Pos),
+    TypeMismatch(Pos),
+    NonIntegerCondition(Pos),
+    ThenElseTypeMismatch(Pos),
+    ReadOnlyAssignment(Pos),
+    NonUnitBody(Pos),
+    NonIntegerSize(Pos),
 }
 
 impl PartialEq for Tipo {
@@ -134,46 +176,6 @@ pub struct Level {
 pub enum Access {
     InFrame(i32),
     InReg(Label)
-}
-
-#[derive(Clone)]
-pub enum EnvEntry<'a> {
-    Var {
-        ty: &'a Tipo,
-        access: Access,
-        level: i32,
-    },
-    Func {
-        // level: Level,
-        label: Label,
-        formals: Vec<Tipo>,
-        result: Tipo,
-        external: bool
-    }
-}
-
-pub type TypeEnviroment<'a> = HashMap<Symbol, &'a Tipo>;
-pub type ValueEnviroment<'a> = HashMap<Symbol, EnvEntry<'a>>;
-
-#[derive(Debug)]
-pub enum TypeError {
-    ConditionIsNotInt(Pos),
-    UndeclaredSimpleVar(Pos),
-    UndeclaredFunction(Pos),
-    UndeclaredType(Pos),
-    FieldDoesNotExist(Pos),
-    NotRecordType(Pos),
-    NotArrayType(Pos),
-    SunscriptNotInteger(Pos),
-    TooManyArguments(Pos),
-    TooFewArguments(Pos),
-    WrongOperatorTypes(Pos),
-    TypeMismatch(Pos),
-    NonIntegerCondition(Pos),
-    ThenElseTypeMismatch(Pos),
-    ReadOnlyAssignment(Pos),
-    NonUnitBody(Pos),
-    NonIntegerSize(Pos),
 }
 
 pub fn tipar_exp(exp : Exp, type_env : TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {

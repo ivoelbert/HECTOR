@@ -154,7 +154,7 @@ fn test_tipado_varexp_simplevar_ok() {
     };
     let type_env = TypeEnviroment::new();
     let mut value_env = ValueEnviroment::new();
-    value_env.insert(Symbol::from("foo"), EnvEntry::Var{ty: &TInt(R::RW), access: Access::InFrame(1), level: 1});
+    value_env.insert(Symbol::from("foo"), EnvEntry::Var{ty: TInt(R::RW), access: Access::InFrame(1), level: 1});
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Ok(TInt(R::RW)) => assert!(true),
@@ -181,6 +181,31 @@ fn test_tipado_varexp_simplevar_no_declarada() {
 }
 
 #[test]
+fn test_tipado_varexp_simplevar_no_es_simple() {
+    let exp = Exp {
+        node: VarExp(SimpleVar(Symbol::from("f"))),
+        pos: Pos {
+            line: 0,
+            column: 0,
+        }
+    };
+    let type_env = TypeEnviroment::new();
+    let mut value_env = ValueEnviroment::new();
+    value_env.insert(Symbol::from("f"), EnvEntry::Func {
+        label: String::from("f"),
+        formals: vec![],
+        result: TUnit,
+        // level: 0,
+        external: false,
+    });
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(NotSimpleVar(_)) => assert!(true),
+        _ => panic!("Puedo tipar una simplevar no declarada")
+    }
+}
+
+#[test]
 fn test_tipado_varexp_fieldvar_ok() {
     // Este test no compila por algo que no entiendo de que no se pueden mover las variables.
     // Tipo no puede derivar Copy porque String no puede derivar Copy.
@@ -195,14 +220,14 @@ fn test_tipado_varexp_fieldvar_ok() {
     let mut type_env = TypeEnviroment::new();
     let mut value_env = ValueEnviroment::new();
     let foo_type = TRecord(
-            vec![(String::from("bar"),
+            vec![(Box::new(String::from("bar")),
                 Box::new(TInt(R::RW)),
                 0)], TypeId::new());
-    type_env.insert(Symbol::from("FooType"), &foo_type);
+    type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         access: Access::InFrame(0),
         level: 0,
-        ty: &foo_type,
+        ty: foo_type,
     });
     let res = tipar_exp(exp, type_env, value_env);
     match res {
@@ -212,7 +237,7 @@ fn test_tipado_varexp_fieldvar_ok() {
 }
 
 #[test]
-fn test_tipado_varexp_fieldvar_fields_inexistente() {
+fn test_tipado_varexp_fieldvar_field_inexistente() {
     // Este test no compila por algo que no entiendo de que no se pueden mover las variables.
     // Tipo no puede derivar Copy porque String no puede derivar Copy.
     // Tiene algo que ver con quien se hace cargo de liberar la memoria.
@@ -227,16 +252,16 @@ fn test_tipado_varexp_fieldvar_fields_inexistente() {
     let mut value_env = ValueEnviroment::new();
     let unit = ();
     let foo_type = TRecord(
-            vec![(String::from("bar"),
+            vec![(Box::new(String::from("bar")),
                 Box::new(TInt(R::RW)),
                 0)], 
                 TypeId::new(),
             );
-    type_env.insert(Symbol::from("FooType"), &foo_type);
+    type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         access: Access::InFrame(0),
         level: 0,
-        ty: &foo_type,
+        ty: foo_type,
     });
     let res = tipar_exp(exp, type_env, value_env);
     match res {
@@ -260,11 +285,11 @@ fn test_tipado_varexp_fieldvar_sobre_tipo_no_record() {
     let mut type_env = TypeEnviroment::new();
     let mut value_env = ValueEnviroment::new();
     let foo_type = TInt(R::RW);
-    type_env.insert(Symbol::from("FooType"), &foo_type);
+    type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         access: Access::InFrame(0),
         level: 0,
-        ty: &foo_type,
+        ty: foo_type,
     });
     let res = tipar_exp(exp, type_env, value_env);
     match res {
@@ -292,15 +317,15 @@ fn test_tipado_varexp_subscriptvar_ok() {
     let mut type_env = TypeEnviroment::new();
     let mut value_env = ValueEnviroment::new();
     let unit = ();
-    let foo_type = Box::new(TArray(
+    let foo_type = TArray(
         Box::new(TInt(R::RW)), 
         TypeId::new(),
-    ));
-    type_env.insert(Symbol::from("FooType"), &foo_type);
+    );
+    type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         access: Access::InFrame(0),
         level: 0,
-        ty: &foo_type,
+        ty: foo_type,
     });
     let res = tipar_exp(exp, type_env, value_env);
     match res {
@@ -328,15 +353,15 @@ fn test_tipado_varexp_subscriptvar_indice_no_entero() {
     let mut type_env = TypeEnviroment::new();
     let mut value_env = ValueEnviroment::new();
     let unit = ();
-    let foo_type = Box::new(TArray(
+    let foo_type = TArray(
         Box::new(TInt(R::RW)),
         TypeId::new(),
-    ));
-    type_env.insert(Symbol::from("FooType"), &foo_type);
+    );
+    type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         access: Access::InFrame(0),
         level: 0,
-        ty: &foo_type,
+        ty: foo_type,
     });
     let res = tipar_exp(exp, type_env, value_env);
     match res {
@@ -364,15 +389,15 @@ fn test_tipado_varexp_subscriptvar_no_array() {
     let mut type_env = TypeEnviroment::new();
     let mut value_env = ValueEnviroment::new();
     let foo_type = TInt(R::RW);
-    type_env.insert(Symbol::from("FooType"), &foo_type);
+    type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         access: Access::InFrame(0),
         level: 0,
-        ty: &foo_type,
+        ty: foo_type,
     });
     let res = tipar_exp(exp, type_env, value_env);
     match res {
-        Err(NotRecordType(_)) => assert!(true),
+        Err(NotArrayType(_)) => assert!(true),
         _ => panic!("subscriptvar sobre algo que no es array esta tipando mal")
     }
 }
@@ -529,10 +554,10 @@ fn test_tipado_recordexp_ok() {
     let mut type_env = TypeEnviroment::new();
     let value_env = ValueEnviroment::new();
     let foo_type = TRecord(
-            vec![(String::from("bar"),
+            vec![(Box::new(String::from("bar")),
                 Box::new(TInt(R::RW)),
                 0)], TypeId::new());
-    type_env.insert(Symbol::from("FooType"), &foo_type);
+    type_env.insert(Symbol::from("FooType"), foo_type.clone());
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Ok(return_type) => assert!(return_type == foo_type),
@@ -569,7 +594,7 @@ fn test_tipado_recordexp_con_tipo_no_record() {
     };
     let mut type_env = TypeEnviroment::new();
     let value_env = ValueEnviroment::new();
-    type_env.insert(Symbol::from("FooType"), &TInt(R::RW));
+    type_env.insert(Symbol::from("FooType"), TInt(R::RW));
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(NotRecordType(_)) => assert!(true),
@@ -590,7 +615,7 @@ fn test_tipado_arrayexp_ok() {
         Box::new(TInt(R::RW)), 
         TypeId::new(),
     );
-    type_env.insert(Symbol::from("FooType"), &foo_type);
+    type_env.insert(Symbol::from("FooType"), foo_type.clone());
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Ok(return_type) => assert!(return_type == foo_type),
@@ -611,7 +636,7 @@ fn test_tipado_arrayexp_size_no_int() {
         Box::new(TInt(R::RW)), 
         TypeId::new(),
     );
-    type_env.insert(Symbol::from("FooType"), &foo_type);
+    type_env.insert(Symbol::from("FooType"), foo_type);
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(NonIntegerSize(_)) => assert!(true),
@@ -632,7 +657,7 @@ fn test_tipado_arrayexp_tipos_distintos() {
         Box::new(TInt(R::RW)), 
         TypeId::new(),
     );
-    type_env.insert(Symbol::from("FooType"), &foo_type);
+    type_env.insert(Symbol::from("FooType"), foo_type);
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(TypeMismatch(_)) => assert!(true),
@@ -650,7 +675,7 @@ fn test_tipado_arrayexp_tipo_no_array() {
     let mut type_env = TypeEnviroment::new();
     let value_env = ValueEnviroment::new();
     let foo_type = TInt(R::RW);
-    type_env.insert(Symbol::from("FooType"), &foo_type);
+    type_env.insert(Symbol::from("FooType"), foo_type);
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(NotArrayType(_)) => assert!(true),
@@ -702,7 +727,7 @@ fn test_tipado_assignexp_ok() {
     let type_env = TypeEnviroment::new();
     let mut value_env = ValueEnviroment::new();
     let env_entry = EnvEntry::Var{
-        ty: &TInt(R::RW),
+        ty: TInt(R::RW),
         access: Access::InFrame(1),
         level: 1,
     };
@@ -738,7 +763,7 @@ fn test_tipado_assignexp_tipos_distintos() {
     let type_env = TypeEnviroment::new();
     let mut value_env = ValueEnviroment::new();
     let env_entry = EnvEntry::Var{
-        ty: &TInt(R::RW),
+        ty: TInt(R::RW),
         access: Access::InFrame(1),
         level: 1,
     };
@@ -759,7 +784,7 @@ fn test_tipado_assignexp_variable_read_only() {
     let type_env = TypeEnviroment::new();
     let mut value_env = ValueEnviroment::new();
     let env_entry = EnvEntry::Var{
-        ty: &TInt(R::RO),
+        ty: TInt(R::RO),
         access: Access::InFrame(1),
         level: 1,
     };
