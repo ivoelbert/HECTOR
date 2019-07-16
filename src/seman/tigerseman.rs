@@ -21,6 +21,11 @@ use super::stringexp;
 use super::callexp;
 use super::breakexp;
 
+
+// Detalles faltantes:
+//      Envs "vacios"
+//      tipoReal
+
 #[derive(Debug, PartialEq, Clone)]
 pub enum R {
     RO,
@@ -67,6 +72,7 @@ pub enum TypeError {
     UndeclaredType(Pos),
     FieldDoesNotExist(Pos),
     NotSimpleVar(Pos),
+    NotFunctionVar(Pos),
     NotRecordType(Pos),
     NotArrayType(Pos),
     SunscriptNotInteger(Pos),
@@ -79,6 +85,7 @@ pub enum TypeError {
     ReadOnlyAssignment(Pos),
     NonUnitBody(Pos),
     NonIntegerSize(Pos),
+    InvalidCallArgument(Pos)
 }
 
 impl PartialEq for Tipo {
