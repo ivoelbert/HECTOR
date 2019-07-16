@@ -153,7 +153,7 @@ fn test_parse_callexp() {
 
 #[test]
 fn test_parse_custom() {
-    let input = String::from("(2 * 2 = 2 + 2) & 2 - 2 <> 2 + 2");
+    let input = String::from("if a = 1 then 1 else if a = 2 then 2 else 3");
     let parsed = parse(input);
 
     match parsed {

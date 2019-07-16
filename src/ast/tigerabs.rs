@@ -4,11 +4,22 @@ use super::position::{Pos, WithPos};
 
 pub type Symbol = String;
 
-#[derive(Debug)]
+#[allow(dead_code)]
 pub enum Var {
     SimpleVar(Symbol),
     FieldVar(Box<Var>, Symbol),
     SubscriptVar(Box<Var>, Box<Exp>),
+}
+
+impl Debug for Var {
+    fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
+        match self {
+            //_Exp::VarExp(var) => write!(formatter, "Var({:?})", var),
+            Var::SimpleVar(sym) => write!(formatter, "{}", sym),
+            Var::SubscriptVar(var, exp) => write!(formatter, "({:?}[{:?}])", *var, *exp),
+            Var::FieldVar(var, sym) => write!(formatter, "({:?}.{})", *var, sym),
+        }
+    }
 }
 
 #[allow(dead_code)]
@@ -72,7 +83,7 @@ impl Debug for _Exp {
             _Exp::NilExp => write!(formatter, "NIL"),
             _Exp::IntExp(num) => write!(formatter, "Num({:?})", num),
             _Exp::StringExp(string) => write!(formatter, "Str({:?})", string),
-            _Exp::CallExp {func, args} => write!(formatter, "{:?}({:?})", func, args),
+            _Exp::CallExp {func, args} => write!(formatter, "({}({:?}))", func, args),
             _Exp::OpExp {left, oper, right} => write!(formatter, "({:?} {:?} {:?})", left, oper, right),
             _Exp::RecordExp {fields, typ} => write!(formatter, "(Record({:?}) {{ {:?} }})", typ, fields),
             _Exp::SeqExp(seq) => write!(formatter, "{:?}", seq),
@@ -117,6 +128,7 @@ pub struct _TypeDec {
     ty: Ty,
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum Dec {
     FunctionDec(Vec<_FunctionDec>),
@@ -124,6 +136,7 @@ pub enum Dec {
     TypeDec(Vec<_TypeDec>),
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum Ty {
     NameTy(Symbol),
