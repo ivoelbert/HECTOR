@@ -5,21 +5,46 @@ use crate::ast::position::*;
 grammar;
 
 pub Expr: Box<Exp> = {
-    <l: Expr> "|" <r: CompExp> => {
+    "if" <test:Expr> "then" <then_:IfThenElseExp> => {
+        let no_pos_exp = _Exp::IfExp {
+            test,
+            then_,
+            else_: None,
+        };
+        return posed_exp(no_pos_exp, 0, 0);
+    },
+
+    IfThenElseExp,
+}
+
+IfThenElseExp: Box<Exp> = {
+    "if" <test:Expr> "then" <then_:IfThenElseExp> "else" <else_:IfThenElseExp> => {
+        let no_pos_exp = _Exp::IfExp {
+            test,
+            then_,
+            else_: Some(else_),
+        };
+        return posed_exp(no_pos_exp, 0, 0);
+    },
+    BoolExp,
+}
+
+BoolExp: Box<Exp> = {
+    <l: BoolExp> "|" <r: CompExp> => {
         let no_pos_exp = _Exp::IfExp {
             test: l,
             then_: posed_exp(_Exp::IntExp(1), 0, 0),
             else_: Some(r),
         };
-        return posed_exp(no_pos_exp, 0, 0)
+        return posed_exp(no_pos_exp, 0, 0);
     },
-    <l: Expr> "&" <r: CompExp> => {
+    <l: BoolExp> "&" <r: CompExp> => {
         let no_pos_exp = _Exp::IfExp {
             test: l,
             then_: r,
             else_: Some(posed_exp(_Exp::IntExp(0), 0, 0)),
         };
-        return posed_exp(no_pos_exp, 0, 0)
+        return posed_exp(no_pos_exp, 0, 0);
     },
     CompExp,
 }
@@ -27,7 +52,7 @@ pub Expr: Box<Exp> = {
 pub CompExp: Box<Exp> = {
     <l:AddExp> <o:CompOp> <r:AddExp> => {
         let no_pos_exp = _Exp::OpExp {left: l, oper: o, right: r};
-        return posed_exp(no_pos_exp, 0, 0)
+        return posed_exp(no_pos_exp, 0, 0);
     },
     AddExp,
 }
@@ -44,7 +69,7 @@ CompOp: Oper = {
 AddExp: Box<Exp> = {
     <l:AddExp> <o:AddOp> <r:MultExp> => {
         let no_pos_exp = _Exp::OpExp {left: l, oper: o, right: r};
-        return posed_exp(no_pos_exp, 0, 0)
+        return posed_exp(no_pos_exp, 0, 0);
     },
     MultExp,
 }
@@ -57,7 +82,7 @@ AddOp: Oper = {
 MultExp: Box<Exp> = {
     <l:MultExp> <o:MultOp> <r:Term> => {
         let no_pos_exp = _Exp::OpExp {left: l, oper: o, right: r};
-        return posed_exp(no_pos_exp, 0, 0)
+        return posed_exp(no_pos_exp, 0, 0);
     },
     Term,
 };
@@ -68,13 +93,79 @@ MultOp: Oper = {
 };
 
 Term: Box<Exp> = {
+    "()" => {
+        let no_pos_exp = _Exp::UnitExp;
+        return posed_exp(no_pos_exp, 0, 0);
+    },
+    "nil" => {
+        let no_pos_exp = _Exp::NilExp;
+        return posed_exp(no_pos_exp, 0, 0);
+    },
+    "break" => {
+        let no_pos_exp = _Exp::NilExp;
+        return posed_exp(no_pos_exp, 0, 0);
+    },
     Num => {
         let no_pos_exp = _Exp::IntExp(<>);
-        return posed_exp(no_pos_exp, 0, 0)
+        return posed_exp(no_pos_exp, 0, 0);
+    },
+    VarEx => {
+        let no_pos_exp = _Exp::VarExp(<>);
+        return posed_exp(no_pos_exp, 0, 0);
+    },
+    <s:Sym> "()" => {
+        let no_pos_exp = _Exp::CallExp {
+            func: s,
+            args: Vec::new(),
+        };
+        return posed_exp(no_pos_exp, 0, 0);
+    },
+    <s:Sym> "(" <f:CallFields> ")" => {
+        let no_pos_exp = _Exp::CallExp {
+            func: s,
+            args: f,
+        };
+        return posed_exp(no_pos_exp, 0, 0);
     },
     "(" <Expr> ")",
 };
 
+CallFields: Vec<Box<Exp>> = {
+    <e: Expr> "," <f: CallFields> => {
+        let mut exps = Vec::new();
+
+        for ex in f {
+            exps.push(ex);
+        }
+        exps.push(e);
+
+        return exps;
+    },
+    Expr => {
+        let mut exps = Vec::new();
+        exps.push(<>);
+        return exps;
+    }
+}
+
+VarEx: Var = {
+    Sym => {
+        return Var::SimpleVar(<>);
+    },
+    <v:VarEx> "[" <e:Expr> "]" => {
+        let boxed_var = Box::new(v);
+        return Var::SubscriptVar(boxed_var, e);
+    },
+    <v:VarEx> "." <s:Sym> => {
+        let boxed_var = Box::new(v);
+        return Var::FieldVar(boxed_var, s);
+    },
+}
+
 Num: i32 = {
     r"[0-9]+" => i32::from_str(<>).unwrap()
 };
+
+Sym: String = {
+    r"[_a-zA-Z][_a-zA-Z0-9]*" => String::from_str(<>).unwrap()
+}
