@@ -788,7 +788,7 @@ fn test_tipado_assignexp_variable_read_only() {
         access: Access::InFrame(1),
         level: 1,
     };
-    value_env.insert(Symbol::from("foo"), env_entry);
+    value_env.insert(Symbol::from("i"), env_entry);
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(ReadOnlyAssignment(_)) => assert!(true),
