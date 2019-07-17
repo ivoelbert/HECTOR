@@ -882,7 +882,7 @@ fn test_tipado_whileexp_ok() {
 #[test]
 fn test_tipado_whileexp_condicion_no_entera() {
     let exp = Exp {node: WhileExp {
-        test: Box::new(Exp {node: IntExp(0), pos: Pos {line: 0, column: 0}}),
+        test: Box::new(Exp {node: UnitExp, pos: Pos {line: 0, column: 0}}),
         body: Box::new(Exp {node: UnitExp, pos: Pos {line: 0, column: 0}}),
     }, pos: Pos {line: 0, column: 0}};
     let type_env = TypeEnviroment::new();
@@ -890,21 +890,6 @@ fn test_tipado_whileexp_condicion_no_entera() {
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(NonIntegerCondition(_)) => assert!(true),
-        _ => panic!("podes tener un while con condicion no entera")
-    }
-}
-
-#[test]
-fn test_tipado_whileexp_body_no_unit() {
-    let exp = Exp {node: WhileExp {
-        test: Box::new(Exp {node: IntExp(0), pos: Pos {line: 0, column: 0}}),
-        body: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
-    }, pos: Pos {line: 0, column: 0}};
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
-    let res = tipar_exp(exp, type_env, value_env);
-    match res {
-        Err(NonUnitBody(_)) => assert!(true),
         _ => panic!("podes tener un while con condicion no entera")
     }
 }
