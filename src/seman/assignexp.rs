@@ -5,7 +5,6 @@ use super::tigerseman::*;
 
 pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
     use Tipo::*;
-    use Var::*;
     use super::varexp::tipar_var;
     match exp {
         Exp {node: _Exp::AssignExp{var , exp: value_exp}, pos} => {
