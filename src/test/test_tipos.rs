@@ -554,7 +554,7 @@ fn test_tipado_recordexp_ok() {
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
     let foo_type = TRecord(
-            vec![(Box::new(String::from("bar")),
+            vec![(Box::new(String::from("baz")),
                 Box::new(TInt(R::RW)),
                 0)], TypeId::new());
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
