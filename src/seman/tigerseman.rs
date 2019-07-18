@@ -139,7 +139,6 @@ pub fn initial_value_env() -> ValueEnviroment {
 
 #[derive(Debug, Clone)]
 pub enum TypeError {
-    ConditionIsNotInt(Pos),
     UndeclaredSimpleVar(Pos),
     UndeclaredFunction(Pos),
     UndeclaredType(Pos),
@@ -151,16 +150,16 @@ pub enum TypeError {
     SunscriptNotInteger(Pos),
     TooManyArguments(Pos),
     TooFewArguments(Pos),
-    WrongOperatorTypes(Pos),
     TypeMismatch(Pos),
     NonIntegerCondition(Pos),
     NonIntegerForRange(Pos),
     ThenElseTypeMismatch(Pos),
     ReadOnlyAssignment(Pos),
-    NonUnitBody(Pos),
+    //NonUnitBody(Pos),
     NonIntegerSize(Pos),
     InvalidCallArgument(Pos),
-    MissingRecordField(Pos)
+    MissingRecordField(Pos),
+    NonIntegerOperand(Pos)
 }
 
 impl PartialEq for Tipo {
