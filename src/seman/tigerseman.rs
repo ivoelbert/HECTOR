@@ -137,7 +137,7 @@ pub fn initial_value_env() -> ValueEnviroment {
     return value_env;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum TypeError {
     ConditionIsNotInt(Pos),
     UndeclaredSimpleVar(Pos),
@@ -159,7 +159,8 @@ pub enum TypeError {
     ReadOnlyAssignment(Pos),
     NonUnitBody(Pos),
     NonIntegerSize(Pos),
-    InvalidCallArgument(Pos)
+    InvalidCallArgument(Pos),
+    MissingRecordField(Pos)
 }
 
 impl PartialEq for Tipo {
