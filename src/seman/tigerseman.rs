@@ -23,7 +23,6 @@ use super::breakexp;
 
 
 // Detalles faltantes:
-//      Envs "vacios"
 //      tipoReal
 
 #[derive(Debug, PartialEq, Clone)]
@@ -201,6 +200,18 @@ impl PartialEq for Tipo {
             (_, TTipo(_)) => panic!("Estamos comparando un TTipo"),
             (_, _) => false,
         }
+    }
+}
+
+pub fn tipo_real(t: Tipo, type_env: TypeEnviroment) -> Option<Tipo> {
+    match t {
+        Tipo::TTipo(alias_type_symbol) => {
+            match type_env.get(&alias_type_symbol) {
+                Some(real_type) => Some(real_type.clone()),
+                None => None
+            }
+        },
+        tt => Some(tt)
     }
 }
 
