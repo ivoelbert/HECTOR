@@ -137,29 +137,6 @@ pub fn initial_value_env() -> ValueEnviroment {
     return value_env;
 }
 
-// val tab_vars : (string, EnvEntry) Tabla = tabInserList(
-// 	tabNueva(),
-// 	[("print", Func{level=topLevel(), label="print",
-// 		formals=[TString], result=TUnit, extern=true}),
-// 	("flush", Func{level=topLevel(), label="flush",
-// 		formals=[], result=TUnit, extern=true}),
-// 	("getchar", Func{level=topLevel(), label="getstr",
-// 		formals=[], result=TString, extern=true}),
-// 	("ord", Func{level=topLevel(), label="ord",
-// 		formals=[TString], result=TInt RW, extern=true}),
-// 	("chr", Func{level=topLevel(), label="chr",
-// 		formals=[TInt RW], result=TString, extern=true}),
-// 	("size", Func{level=topLevel(), label="size",
-// 		formals=[TString], result=TInt RW, extern=true}),
-// 	("substring", Func{level=topLevel(), label="substring",
-// 		formals=[TString, TInt RW, TInt RW], result=TString, extern=true}),
-// 	("concat", Func{level=topLevel(), label="concat",
-// 		formals=[TString, TString], result=TString, extern=true}),
-// 	("not", Func{level=topLevel(), label="not",
-// 		formals=[TInt RW], result=TInt RW, extern=true}),
-// 	("exit", Func{level=topLevel(), label="exit",
-// 		formals=[TInt RW], result=TUnit, extern=true})
-// 	])
 #[derive(Debug)]
 pub enum TypeError {
     ConditionIsNotInt(Pos),
@@ -177,6 +154,7 @@ pub enum TypeError {
     WrongOperatorTypes(Pos),
     TypeMismatch(Pos),
     NonIntegerCondition(Pos),
+    NonIntegerForRange(Pos),
     ThenElseTypeMismatch(Pos),
     ReadOnlyAssignment(Pos),
     NonUnitBody(Pos),
