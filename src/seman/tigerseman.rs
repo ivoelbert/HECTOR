@@ -64,6 +64,103 @@ pub enum EnvEntry {
 pub type TypeEnviroment = HashMap<Symbol, Tipo>;
 pub type ValueEnviroment = HashMap<Symbol, EnvEntry>;
 
+pub fn initial_type_env() -> TypeEnviroment {
+    let mut type_env = TypeEnviroment::new();
+    type_env.insert(Symbol::from("int"), Tipo::TInt(R::RW));
+    type_env.insert(Symbol::from("string"), Tipo::TString);
+    return type_env;
+}
+
+pub fn initial_value_env() -> ValueEnviroment {
+    use Tipo::*;
+    use EnvEntry::*;
+    let mut value_env = ValueEnviroment::new();
+    value_env.insert(Symbol::from("print"), Func {
+        label: Label::from("print"),
+        formals: vec![TString],
+        result: TUnit,
+        external: true
+    });
+    value_env.insert(Symbol::from("flush"), Func {
+        label: Label::from("flush"),
+        formals: vec![TString],
+        result: TUnit,
+        external: true
+    });
+    value_env.insert(Symbol::from("getchar"), Func {
+        label: Label::from("getchar"),
+        formals: vec![TString],
+        result: TUnit,
+        external: true
+    });
+    value_env.insert(Symbol::from("ord"), Func {
+        label: Label::from("ord"),
+        formals: vec![TString],
+        result: TUnit,
+        external: true
+    });
+    value_env.insert(Symbol::from("chr"), Func {
+        label: Label::from("chr"),
+        formals: vec![TString],
+        result: TUnit,
+        external: true
+    });
+    value_env.insert(Symbol::from("size"), Func {
+        label: Label::from("size"),
+        formals: vec![TString],
+        result: TUnit,
+        external: true
+    });
+    value_env.insert(Symbol::from("substring"), Func {
+        label: Label::from("substring"),
+        formals: vec![TString],
+        result: TUnit,
+        external: true
+    });
+    value_env.insert(Symbol::from("concat"), Func {
+        label: Label::from("concat"),
+        formals: vec![TString],
+        result: TUnit,
+        external: true
+    });
+    value_env.insert(Symbol::from("not"), Func {
+        label: Label::from("not"),
+        formals: vec![TString],
+        result: TUnit,
+        external: true
+    });
+    value_env.insert(Symbol::from("exit"), Func {
+        label: Label::from("exit"),
+        formals: vec![TString],
+        result: TUnit,
+        external: true
+    });
+    return value_env;
+}
+
+// val tab_vars : (string, EnvEntry) Tabla = tabInserList(
+// 	tabNueva(),
+// 	[("print", Func{level=topLevel(), label="print",
+// 		formals=[TString], result=TUnit, extern=true}),
+// 	("flush", Func{level=topLevel(), label="flush",
+// 		formals=[], result=TUnit, extern=true}),
+// 	("getchar", Func{level=topLevel(), label="getstr",
+// 		formals=[], result=TString, extern=true}),
+// 	("ord", Func{level=topLevel(), label="ord",
+// 		formals=[TString], result=TInt RW, extern=true}),
+// 	("chr", Func{level=topLevel(), label="chr",
+// 		formals=[TInt RW], result=TString, extern=true}),
+// 	("size", Func{level=topLevel(), label="size",
+// 		formals=[TString], result=TInt RW, extern=true}),
+// 	("substring", Func{level=topLevel(), label="substring",
+// 		formals=[TString, TInt RW, TInt RW], result=TString, extern=true}),
+// 	("concat", Func{level=topLevel(), label="concat",
+// 		formals=[TString, TString], result=TString, extern=true}),
+// 	("not", Func{level=topLevel(), label="not",
+// 		formals=[TInt RW], result=TInt RW, extern=true}),
+// 	("exit", Func{level=topLevel(), label="exit",
+// 		formals=[TInt RW], result=TUnit, extern=true})
+// 	])
 #[derive(Debug)]
 pub enum TypeError {
     ConditionIsNotInt(Pos),

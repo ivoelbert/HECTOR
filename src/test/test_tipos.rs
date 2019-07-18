@@ -68,8 +68,8 @@ fn test_tipado_unitexp() {
             column: 0,
         }
     };
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Ok(TUnit) => assert!(true),
@@ -86,8 +86,8 @@ fn test_tipado_nilexp() {
             column: 0,
         }
     };
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Ok(TNil) => assert!(true),
@@ -98,8 +98,8 @@ fn test_tipado_nilexp() {
 #[test]
 fn test_tipado_breakexp() {
     let exp = Exp {node: BreakExp, pos: Pos {line: 0, column: 0}};
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Ok(TUnit) => assert!(true),
@@ -116,8 +116,8 @@ fn test_tipado_intexp() {
             column: 0,
         }
     };
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Ok(TInt(R::RW)) => assert!(true),
@@ -134,8 +134,8 @@ fn test_tipado_stringexp() {
             column: 0,
         }
     };
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Ok(TString) => assert!(true),
@@ -152,8 +152,8 @@ fn test_tipado_varexp_simplevar_ok() {
             column: 0,
         }
     };
-    let type_env = TypeEnviroment::new();
-    let mut value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{ty: TInt(R::RW), access: Access::InFrame(1), level: 1});
     let res = tipar_exp(exp, type_env, value_env);
     match res {
@@ -171,8 +171,8 @@ fn test_tipado_varexp_simplevar_no_declarada() {
             column: 0,
         }
     };
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(UndeclaredSimpleVar(_)) => assert!(true),
@@ -189,8 +189,8 @@ fn test_tipado_varexp_simplevar_no_es_simple() {
             column: 0,
         }
     };
-    let type_env = TypeEnviroment::new();
-    let mut value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
         label: String::from("f"),
         formals: vec![],
@@ -217,8 +217,8 @@ fn test_tipado_varexp_fieldvar_ok() {
             column: 0,
         }
     };
-    let mut type_env = TypeEnviroment::new();
-    let mut value_env = ValueEnviroment::new();
+    let mut type_env = initial_type_env();
+    let mut value_env = initial_value_env();
     let foo_type = TRecord(
             vec![(Box::new(String::from("bar")),
                 Box::new(TInt(R::RW)),
@@ -248,8 +248,8 @@ fn test_tipado_varexp_fieldvar_field_inexistente() {
             column: 0,
         }
     };
-    let mut type_env = TypeEnviroment::new();
-    let mut value_env = ValueEnviroment::new();
+    let mut type_env = initial_type_env();
+    let mut value_env = initial_value_env();
     let unit = ();
     let foo_type = TRecord(
             vec![(Box::new(String::from("bar")),
@@ -282,8 +282,8 @@ fn test_tipado_varexp_fieldvar_sobre_tipo_no_record() {
             column: 0,
         }
     };
-    let mut type_env = TypeEnviroment::new();
-    let mut value_env = ValueEnviroment::new();
+    let mut type_env = initial_type_env();
+    let mut value_env = initial_value_env();
     let foo_type = TInt(R::RW);
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
@@ -314,8 +314,8 @@ fn test_tipado_varexp_subscriptvar_ok() {
             column: 0,
         }
     };
-    let mut type_env = TypeEnviroment::new();
-    let mut value_env = ValueEnviroment::new();
+    let mut type_env = initial_type_env();
+    let mut value_env = initial_value_env();
     let unit = ();
     let foo_type = TArray(
         Box::new(TInt(R::RW)), 
@@ -350,8 +350,8 @@ fn test_tipado_varexp_subscriptvar_indice_no_entero() {
             column: 0,
         }
     };
-    let mut type_env = TypeEnviroment::new();
-    let mut value_env = ValueEnviroment::new();
+    let mut type_env = initial_type_env();
+    let mut value_env = initial_value_env();
     let unit = ();
     let foo_type = TArray(
         Box::new(TInt(R::RW)),
@@ -386,8 +386,8 @@ fn test_tipado_varexp_subscriptvar_no_array() {
             column: 0,
         }
     };
-    let mut type_env = TypeEnviroment::new();
-    let mut value_env = ValueEnviroment::new();
+    let mut type_env = initial_type_env();
+    let mut value_env = initial_value_env();
     let foo_type = TInt(R::RW);
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
@@ -414,8 +414,8 @@ fn test_tipado_callexp_ok() {
             column: 0,
         }
     };
-    let type_env = TypeEnviroment::new();
-    let mut value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
         label: String::from("f"),
         formals: vec![],
@@ -442,8 +442,8 @@ fn test_tipado_callexp_args_de_mas() {
         },
         pos: Pos {line: 0, column: 0}
     };
-    let type_env = TypeEnviroment::new();
-    let mut value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
         label: String::from("f"),
         formals: vec![],
@@ -467,8 +467,8 @@ fn test_tipado_callexp_args_de_menos() {
         },
         pos: Pos {line: 0, column: 0}
     };
-    let type_env = TypeEnviroment::new();
-    let mut value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
         label: String::from("f"),
         formals: vec![TInt(R::RW)],
@@ -495,8 +495,8 @@ fn test_tipado_callexp_funcion_no_declarada() {
             column: 0,
         }
     };
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(UndeclaredFunction(_)) => assert!(true),
@@ -514,8 +514,8 @@ fn test_tipado_opexp_ok() {
         },
         pos: Pos {line: 0, column: 0}
     };
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Ok(TInt(R::RW)) => assert!(true),
@@ -533,8 +533,8 @@ fn test_tipado_opexp_tipos_distintos() {
         },
         pos: Pos {line: 0, column: 0}
     };
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(WrongOperatorTypes(_)) => assert!(true),
@@ -551,8 +551,8 @@ fn test_tipado_recordexp_ok() {
         },
         pos: Pos {line: 0, column: 0}
     };
-    let mut type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let mut type_env = initial_type_env();
+    let value_env = initial_value_env();
     let foo_type = TRecord(
             vec![(Box::new(String::from("bar")),
                 Box::new(TInt(R::RW)),
@@ -574,8 +574,8 @@ fn test_tipado_recordexp_tipo_inexistente() {
         },
         pos: Pos {line: 0, column: 0}
     };
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(UndeclaredType(_)) => assert!(true),
@@ -592,8 +592,8 @@ fn test_tipado_recordexp_con_tipo_no_record() {
         },
         pos: Pos {line: 0, column: 0}
     };
-    let mut type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let mut type_env = initial_type_env();
+    let value_env = initial_value_env();
     type_env.insert(Symbol::from("FooType"), TInt(R::RW));
     let res = tipar_exp(exp, type_env, value_env);
     match res {
@@ -609,8 +609,8 @@ fn test_tipado_arrayexp_ok() {
         size: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
         init: Box::new(Exp {node: IntExp(2), pos: Pos {line: 0, column: 0}}),
     }, pos: Pos {line: 0, column: 0}};
-    let mut type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let mut type_env = initial_type_env();
+    let value_env = initial_value_env();
     let foo_type = TArray(
         Box::new(TInt(R::RW)), 
         TypeId::new(),
@@ -630,8 +630,8 @@ fn test_tipado_arrayexp_size_no_int() {
         size: Box::new(Exp {node: StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
         init: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
     }, pos: Pos {line: 0, column: 0}};
-    let mut type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let mut type_env = initial_type_env();
+    let value_env = initial_value_env();
     let foo_type = TArray(
         Box::new(TInt(R::RW)), 
         TypeId::new(),
@@ -651,8 +651,8 @@ fn test_tipado_arrayexp_tipos_distintos() {
         size: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
         init: Box::new(Exp {node: StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
     }, pos: Pos {line: 0, column: 0}};
-    let mut type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let mut type_env = initial_type_env();
+    let value_env = initial_value_env();
     let foo_type = TArray(
         Box::new(TInt(R::RW)), 
         TypeId::new(),
@@ -672,8 +672,8 @@ fn test_tipado_arrayexp_tipo_no_array() {
         size: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
         init: Box::new(Exp {node: StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
     }, pos: Pos {line: 0, column: 0}};
-    let mut type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let mut type_env = initial_type_env();
+    let value_env = initial_value_env();
     let foo_type = TInt(R::RW);
     type_env.insert(Symbol::from("FooType"), foo_type);
     let res = tipar_exp(exp, type_env, value_env);
@@ -690,8 +690,8 @@ fn test_tipado_arrayexp_tipo_no_existe() {
         size: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
         init: Box::new(Exp {node: StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
     }, pos: Pos {line: 0, column: 0}};
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(UndeclaredType(_)) => assert!(true),
@@ -708,8 +708,8 @@ fn test_tipado_seqexp_ok() {
         ]),
         pos: Pos {line: 0, column: 0}
     };
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Ok(TInt(R::RW)) => assert!(true),
@@ -724,8 +724,8 @@ fn test_tipado_assignexp_ok() {
         var: SimpleVar(Symbol::from("foo")),
         exp: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
     }, pos: Pos {line: 0, column: 0}};
-    let type_env = TypeEnviroment::new();
-    let mut value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let mut value_env = initial_value_env();
     let env_entry = EnvEntry::Var{
         ty: TInt(R::RW),
         access: Access::InFrame(1),
@@ -745,8 +745,8 @@ fn test_tipado_assignexp_variable_no_existe() {
         var: SimpleVar(Symbol::from("foo")),
         exp: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
     }, pos: Pos {line: 0, column: 0}};
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(UndeclaredSimpleVar(_)) => assert!(true),
@@ -760,8 +760,8 @@ fn test_tipado_assignexp_tipos_distintos() {
         var: SimpleVar(Symbol::from("foo")),
         exp: Box::new(Exp {node: StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
     }, pos: Pos {line: 0, column: 0}};
-    let type_env = TypeEnviroment::new();
-    let mut value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let mut value_env = initial_value_env();
     let env_entry = EnvEntry::Var{
         ty: TInt(R::RW),
         access: Access::InFrame(1),
@@ -781,8 +781,8 @@ fn test_tipado_assignexp_variable_read_only() {
         var: SimpleVar(Symbol::from("i")),
         exp: Box::new(Exp {node: IntExp(2), pos: Pos {line: 0, column: 0}}),
     }, pos: Pos {line: 0, column: 0}};
-    let type_env = TypeEnviroment::new();
-    let mut value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let mut value_env = initial_value_env();
     let env_entry = EnvEntry::Var{
         ty: TInt(R::RO),
         access: Access::InFrame(1),
@@ -804,8 +804,8 @@ fn test_tipado_ifexp_ok() {
         else_: Some(Box::new(Exp {node: IntExp(2), pos: Pos {line: 0, column: 0}}))
     }
     , pos: Pos {line: 0, column: 0}};
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Ok(TUnit) => assert!(true),
@@ -821,8 +821,8 @@ fn test_tipado_ifexp_test_no_entero() {
         else_: Some(Box::new(Exp {node: IntExp(2), pos: Pos {line: 0, column: 0}}))
     }
     , pos: Pos {line: 0, column: 0}};
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(NonIntegerCondition(_)) => assert!(true),
@@ -838,8 +838,8 @@ fn test_tipado_ifexp_tipos_then_else_distintos() {
         else_: Some(Box::new(Exp {node: StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}})),
     }
     , pos: Pos {line: 0, column: 0}};
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(ThenElseTypeMismatch(_)) => assert!(true),
@@ -855,8 +855,8 @@ fn test_tipado_ifexp_sin_else_no_unit() {
         else_: None
     }
     , pos: Pos {line: 0, column: 0}};
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(NonUnitBody(_)) => assert!(true),
@@ -870,8 +870,8 @@ fn test_tipado_whileexp_ok() {
         test: Box::new(Exp {node: IntExp(0), pos: Pos {line: 0, column: 0}}),
         body: Box::new(Exp {node: UnitExp, pos: Pos {line: 0, column: 0}}),
     }, pos: Pos {line: 0, column: 0}};
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Ok(TUnit) => assert!(true),
@@ -885,8 +885,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
         test: Box::new(Exp {node: UnitExp, pos: Pos {line: 0, column: 0}}),
         body: Box::new(Exp {node: UnitExp, pos: Pos {line: 0, column: 0}}),
     }, pos: Pos {line: 0, column: 0}};
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = tipar_exp(exp, type_env, value_env);
     match res {
         Err(NonIntegerCondition(_)) => assert!(true),
@@ -901,8 +901,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_forexp_ok() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
@@ -913,8 +913,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_forexp_body_no_es_unit() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
@@ -925,8 +925,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_forexp_lo_no_es_int() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
@@ -937,8 +937,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_forexp_hi_no_es_int() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
@@ -949,8 +949,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_letexp_vardec_ok() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
@@ -961,8 +961,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_letexp_vardec_tipo_en_esta_dec() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
@@ -973,8 +973,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_letexp_vardec_tipos_distintos() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
@@ -985,8 +985,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_letexp_vardec_tipo_inexistente() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
@@ -997,8 +997,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_letexp_vardec_variables_repetidas() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
@@ -1009,8 +1009,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_letexp_typedec_ok() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
@@ -1021,8 +1021,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_letexp_typedec_recursion_infinita() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
@@ -1033,8 +1033,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_letexp_typedec_referencia_tipo_inexistente() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
@@ -1045,8 +1045,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_letexp_typedec_referencia_tipos_repetidos() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
@@ -1057,8 +1057,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_functiondec_ok() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
@@ -1069,8 +1069,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_functiondec_nombres_tipo_param_en_esta_dec() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
@@ -1081,8 +1081,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // #[test]
 // fn test_tipado_functiondec_nombres_repetidos() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = TypeEnviroment::new();
-//     let value_env = ValueEnviroment::new();
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
 //     let res = tipar_exp(exp, type_env, value_env);
 //     match res {
 //         Ok(TUnit) => assert!(true),
