@@ -151,9 +151,10 @@ fn test_parse_callexp() {
     }
 }
 
+
 #[test]
 fn test_parse_custom() {
-    let input = String::from("if a = 1 then 1 else if a = 2 then 2 else 3");
+    let input = String::from(r#" "alto perro" "#);
     let parsed = parse(input);
 
     match parsed {
@@ -161,6 +162,7 @@ fn test_parse_custom() {
         Err(_) => panic!("el parser falla en una expresion bien formada"),
     }
 }
+
 
 #[test]
 fn test_parse_simple_sum() {
@@ -249,7 +251,7 @@ fn test_parse_seqexp() {
 
 #[test]
 fn test_parse_assignexp() {
-    let input = String::from("foo = 42");
+    let input = String::from("foo := 42");
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
@@ -286,7 +288,7 @@ fn test_parse_ifexp() {
 
 #[test]
 fn test_parse_whileexp() {
-    let input = String::from("for i :=0 to 100 do 1");
+    let input = String::from("while 1 do ()");
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
