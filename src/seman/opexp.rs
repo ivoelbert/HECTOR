@@ -2,7 +2,7 @@ use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
 pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
-    match exp { Exp {node: _Exp::OpExp{left, oper, right}, pos} => {
+    match exp { Exp {node: _Exp::OpExp{left, oper: _, right}, pos} => {
         let _ = match tipar_exp(*left, type_env.clone(), value_env.clone()) {
             Ok(Tipo::TInt(_)) => (),
             Ok(_) => return Err(TypeError::NonIntegerOperand(pos)),
@@ -19,6 +19,6 @@ pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> 
     }
 }
 
-pub fn traducir(exp: Exp) -> ExpInterm {
+pub fn traducir(_exp: Exp) -> ExpInterm {
     return ExpInterm::CONST(0);
 }
