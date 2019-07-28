@@ -5,7 +5,7 @@ use super::tigerseman::*;
 
 pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
     use Tipo::*;
-    match exp { Exp {node: _Exp::ForExp {var, escape, lo, hi, body}, pos} => {
+    match exp { Exp {node: _Exp::ForExp {var, escape: _, lo, hi, body}, pos} => {
         let _ = match tipar_exp(*lo, type_env.clone(), value_env.clone()) {
             Ok(TInt(_)) => (),
             Ok(_) => return Err(TypeError::NonIntegerForRange(pos)),
@@ -23,7 +23,8 @@ pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> 
             level: 0
         });
         let _ = match tipar_exp(*body, type_env.clone(), new_value_env) {
-            Ok(_) => (),
+            Ok(TUnit) => (),
+            Ok(_) => return Err(TypeError::NonUnitBody(pos)),
             Err(type_error) => return Err(type_error)
         };
         return Ok(TUnit);
@@ -32,6 +33,6 @@ pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> 
     }
 }
 
-pub fn traducir(exp: Exp) -> ExpInterm {
+pub fn traducir(_exp: Exp) -> ExpInterm {
     return ExpInterm::CONST(0);
 }

@@ -4,7 +4,6 @@ use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
 pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
-    // El ML lo hace mal. Devuelve siempre TUnit. Eso debe traer problemas despues.
     match exp { Exp {node: _Exp::IfExp{test, then_, else_}, pos} => {
         use Tipo::*;
         let _ = match tipar_exp(*test, type_env.clone(), value_env.clone()) {
@@ -26,13 +25,17 @@ pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> 
                 }
                 Err(type_error) => Err(type_error)
             }
-            None => return Ok(TUnit)
+            None => if then_type == TUnit {
+                return Ok(TUnit);
+            } else {
+                return Err(TypeError::NonUnitBody(pos));
+            }
         }
     }
         _ => panic!("Delegation error on ifexp::tipar")
     }
 }
 
-pub fn traducir(exp: Exp) -> ExpInterm {
+pub fn traducir(_exp: Exp) -> ExpInterm {
     return ExpInterm::CONST(0);
 }

@@ -9,7 +9,7 @@ pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> 
         Exp {node: _Exp::CallExp {func: function_symbol, args}, pos} => {
             let (formals, return_type) = match value_env.get(&function_symbol) {
                 Some(EnvEntry::Func {label: _, formals, result, external: _}) => (formals, result),
-                Some(EnvEntry::Var {ty, access: _, level: _}) => return Err(TypeError::NotFunctionVar(pos)),
+                Some(EnvEntry::Var {ty: _, access: _, level: _}) => return Err(TypeError::NotFunctionVar(pos)),
                 None => return Err(TypeError::UndeclaredFunction(pos))
             };
             if formals.len() > args.len() {
@@ -33,6 +33,6 @@ pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> 
     }
 }
 
-pub fn traducir(exp: Exp) -> ExpInterm {
+pub fn traducir(_exp: Exp) -> ExpInterm {
     return ExpInterm::CONST(0);
 }

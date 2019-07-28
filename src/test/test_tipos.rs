@@ -32,7 +32,7 @@ fn test_good() {
                 }
             },
             Err(_) => panic!("falla el parser"),
-         }
+        }
     }
 }
 
@@ -57,6 +57,14 @@ fn test_type() {
             Err(_) => panic!("falla el parser"),
          }
     }
+}
+
+fn possed_exp(exp: _Exp) -> Exp {
+    return Exp {node: exp, pos: Pos {line: 0, column: 0}};
+}
+
+fn boxed_exp(exp: _Exp) -> Box<Exp> {
+    return Box::new(Exp {node: exp, pos: Pos {line: 0, column: 0}});
 }
 
 #[test]
@@ -250,7 +258,6 @@ fn test_tipado_varexp_fieldvar_field_inexistente() {
     };
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    let unit = ();
     let foo_type = TRecord(
             vec![(Box::new(String::from("bar")),
                 Box::new(TInt(R::RW)),
@@ -316,7 +323,6 @@ fn test_tipado_varexp_subscriptvar_ok() {
     };
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    let unit = ();
     let foo_type = TArray(
         Box::new(TInt(R::RW)), 
         TypeId::new(),
@@ -352,7 +358,6 @@ fn test_tipado_varexp_subscriptvar_indice_no_entero() {
     };
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    let unit = ();
     let foo_type = TArray(
         Box::new(TInt(R::RW)),
         TypeId::new(),
@@ -847,22 +852,22 @@ fn test_tipado_ifexp_tipos_then_else_distintos() {
     }
 }
 
-// #[test]
-// fn test_tipado_ifexp_sin_else_no_unit() {
-//     let exp = Exp {node: IfExp {
-//         test: Box::new(Exp {node: IntExp(0), pos: Pos {line: 0, column: 0}}),
-//         then_: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
-//         else_: None
-//     }
-//     , pos: Pos {line: 0, column: 0}};
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(exp, type_env, value_env);
-//     match res {
-//         Err(NonUnitBody(_)) => assert!(true),
-//         _ => panic!("puedo tener un if sin else y con then no TUnit"),
-//     }
-// }
+#[test]
+fn test_tipado_ifexp_sin_else_no_unit() {
+    let exp = Exp {node: IfExp {
+        test: Box::new(Exp {node: IntExp(0), pos: Pos {line: 0, column: 0}}),
+        then_: Box::new(Exp {node: IntExp(1), pos: Pos {line: 0, column: 0}}),
+        else_: None
+    }
+    , pos: Pos {line: 0, column: 0}};
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(NonUnitBody(_)) => assert!(true),
+        _ => panic!("puedo tener un if sin else y con then no TUnit"),
+    }
+}
 
 #[test]
 fn test_tipado_whileexp_ok() {
@@ -894,69 +899,110 @@ fn test_tipado_whileexp_condicion_no_entera() {
     }
 }
 
+#[test]
+fn test_tipado_forexp_ok() {
+    let exp = Exp {node: ForExp {
+        var: Symbol::from("i"),
+        escape: false,
+        lo: Box::new(Exp { node: IntExp(1), pos: Pos {line: 0, column: 0,}}),
+        hi: Box::new(Exp { node: IntExp(10), pos: Pos {line: 0, column: 0,}}),
+        body: Box::new(Exp { node: UnitExp, pos: Pos {line: 0, column: 0,}}),
+    }, pos: Pos {line: 0, column: 0}};
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Ok(TUnit) => assert!(true),
+        _ => panic!("forexp tipa mal")
+    }
+}
 
-// Estos tests los dejo comentado porque se que es lo que hay que testear, pero todavia no entiendo muy bien esas
-// structs y no se bien como testearlo.
+#[test]
+fn test_tipado_forexp_iterador_es_usable() {
+    let exp = Exp {node: ForExp {
+        var: Symbol::from("i"),
+        escape: false,
+        lo: Box::new(Exp { node: IntExp(1), pos: Pos {line: 0, column: 0,}}),
+        hi: Box::new(Exp { node: IntExp(10), pos: Pos {line: 0, column: 0,}}),
+        body: boxed_exp(SeqExp(vec![boxed_exp(VarExp(SimpleVar(Symbol::from("i")))), boxed_exp(UnitExp)])),
+    }, pos: Pos {line: 0, column: 0}};
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Ok(TUnit) => assert!(true),
+        _ => panic!("el iterador del for no es usable en el body")
+    }
+}
 
-// #[test]
-// fn test_tipado_forexp_ok() {
-//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(exp, type_env, value_env);
-//     match res {
-//         Ok(TUnit) => assert!(true),
-//         _ => panic!("")
-//     }
-// }
+#[test]
+fn test_tipado_forexp_body_no_es_unit() {
+    let exp = Exp {node: ForExp {
+        var: Symbol::from("i"),
+        escape: false,
+        lo: Box::new(Exp { node: IntExp(1), pos: Pos {line: 0, column: 0,}}),
+        hi: Box::new(Exp { node: IntExp(10), pos: Pos {line: 0, column: 0,}}),
+        body: Box::new(Exp { node: IntExp(2), pos: Pos {line: 0, column: 0,}}),
+    }, pos: Pos {line: 0, column: 0}};
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(NonUnitBody(_)) => assert!(true),
+        _ => panic!("podes tener un for con body no unit")
+    }
+}
 
-// #[test]
-// fn test_tipado_forexp_body_no_es_unit() {
-//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(exp, type_env, value_env);
-//     match res {
-//         Ok(TUnit) => assert!(true),
-//         _ => panic!("")
-//     }
-// }
+#[test]
+fn test_tipado_forexp_lo_no_es_int() {
+    let exp = Exp {node: ForExp {
+        var: Symbol::from("i"),
+        escape: false,
+        lo: Box::new(Exp { node: UnitExp, pos: Pos {line: 0, column: 0,}}),
+        hi: Box::new(Exp { node: IntExp(10), pos: Pos {line: 0, column: 0,}}),
+        body: Box::new(Exp { node: UnitExp, pos: Pos {line: 0, column: 0,}}),
+    }, pos: Pos {line: 0, column: 0}};
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(NonIntegerForRange(_)) => assert!(true),
+        _ => panic!("podes tener un for con body lo no int")
+    }
+}
 
-// #[test]
-// fn test_tipado_forexp_lo_no_es_int() {
-//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(exp, type_env, value_env);
-//     match res {
-//         Ok(TUnit) => assert!(true),
-//         _ => panic!("")
-//     }
-// }
+#[test]
+fn test_tipado_forexp_hi_no_es_int() {
+let exp = Exp {node: ForExp {
+        var: Symbol::from("i"),
+        escape: false,
+        lo: Box::new(Exp { node: IntExp(1), pos: Pos {line: 0, column: 0,}}),
+        hi: Box::new(Exp { node: UnitExp, pos: Pos {line: 0, column: 0,}}),
+        body: Box::new(Exp { node: UnitExp, pos: Pos {line: 0, column: 0,}}),
+    }, pos: Pos {line: 0, column: 0}};
+        let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(NonIntegerForRange(_)) => assert!(true),
+        _ => panic!("podes tener un for con hi no int")
+    }
+}
 
-// #[test]
-// fn test_tipado_forexp_hi_no_es_int() {
-//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(exp, type_env, value_env);
-//     match res {
-//         Ok(TUnit) => assert!(true),
-//         _ => panic!("")
-//     }
-// }
-
-// #[test]
-// fn test_tipado_letexp_vardec_ok() {
-//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(exp, type_env, value_env);
-//     match res {
-//         Ok(TUnit) => assert!(true),
-//         _ => panic!("")
-//     }
-// }
+#[test]
+fn test_tipado_letexp_vardec_sin_tipo_ok() {
+    let exp = possed_exp(LetExp {
+        decs: vec![VarDec(_VarDec::new(Symbol::from("foo"), None, boxed_exp(IntExp(4))))],
+        body: boxed_exp(UnitExp)
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Ok(TUnit) => assert!(true),
+        _ => panic!("")
+    }
+}
 
 // #[test]
 // fn test_tipado_letexp_vardec_tipo_en_esta_dec() {
@@ -1055,7 +1101,7 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // }
 
 // #[test]
-// fn test_tipado_functiondec_ok() {
+// fn test_tipado_letexp_functiondec_ok() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
 //     let type_env = initial_type_env();
 //     let value_env = initial_value_env();
@@ -1067,7 +1113,7 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // }
 
 // #[test]
-// fn test_tipado_functiondec_nombres_tipo_param_en_esta_dec() {
+// fn test_tipado_letexp_functiondec_nombres_tipo_param_en_esta_dec() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
 //     let type_env = initial_type_env();
 //     let value_env = initial_value_env();
@@ -1079,7 +1125,7 @@ fn test_tipado_whileexp_condicion_no_entera() {
 // }
 
 // #[test]
-// fn test_tipado_functiondec_nombres_repetidos() {
+// fn test_tipado_letexp_functiondec_nombres_repetidos() {
 //     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
 //     let type_env = initial_type_env();
 //     let value_env = initial_value_env();

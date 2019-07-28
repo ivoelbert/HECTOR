@@ -70,6 +70,7 @@ pub fn initial_type_env() -> TypeEnviroment {
     return type_env;
 }
 
+// revisar valores de retorno de estas
 pub fn initial_value_env() -> ValueEnviroment {
     use Tipo::*;
     use EnvEntry::*;
@@ -155,7 +156,7 @@ pub enum TypeError {
     NonIntegerForRange(Pos),
     ThenElseTypeMismatch(Pos),
     ReadOnlyAssignment(Pos),
-    //NonUnitBody(Pos),
+    NonUnitBody(Pos),
     NonIntegerSize(Pos),
     InvalidCallArgument(Pos),
     MissingRecordField(Pos),

@@ -1,11 +1,14 @@
+#[allow(dead_code)]
 mod ast;
+#[allow(dead_code)]
 mod seman;
-// #[cfg(test)]
+#[cfg(test)]
 mod test;
 
 use ast::tigerabs::*;
 use ast::tigerabs::_Exp::*;
 use ast::position::{Pos, WithPos};
+
 
 use seman::tigerseman::*;
 
