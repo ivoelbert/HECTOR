@@ -12,7 +12,7 @@ fn field_type(fields: &[(Box<String>, Box<Tipo>, u8)], symbol: &str) -> Option<T
     None
 }
 
-pub fn tipar_var(var: Var, pos: Pos, type_env: TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn tipar_var(var: Var, pos: Pos, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     use Var::*;
     use Tipo::*;
     match var {
@@ -32,7 +32,7 @@ pub fn tipar_var(var: Var, pos: Pos, type_env: TypeEnviroment, value_env: &Value
                         EnvEntry::Var {
                             ty: TArray(array_of, _),
                             ..
-                        } => match tipar_exp(*index, type_env, value_env.clone()){
+                        } => match tipar_exp(*index, type_env, value_env){
                                 Ok(TInt(_)) => Ok(*array_of.clone()),
                                 Ok(_) => Err(TypeError::SunscriptNotInteger(pos)),
                                 Err(e) => Err(e)
@@ -61,11 +61,11 @@ pub fn tipar_var(var: Var, pos: Pos, type_env: TypeEnviroment, value_env: &Value
 
 }
 
-pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn tipar(exp: Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     use _Exp::*;
 
     match exp {
-        Exp { node: VarExp(var), pos} => tipar_var(var, pos, type_env, &value_env), 
+        Exp { node: VarExp(var), pos} => tipar_var(var, pos, type_env, value_env), 
         _ => panic!("le llego algo nada que ver a varexp::tipar")
     }
 }

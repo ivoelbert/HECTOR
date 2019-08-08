@@ -186,7 +186,7 @@ impl PartialEq for Tipo {
 }
 
 impl Tipo {
-    pub fn real(&self, type_env: TypeEnviroment) -> Option<Tipo> {
+    pub fn real(&self, type_env: &TypeEnviroment) -> Option<Tipo> {
         match self.clone() {
             Tipo::TTipo(alias_type_symbol) => {
                 match type_env.get(&alias_type_symbol) {
@@ -277,26 +277,26 @@ pub enum Access {
     InReg(Label)
 }
 
-pub fn tipar_exp(exp : Exp, type_env : TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn tipar_exp(exp : Exp, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     use _Exp::*;
     match exp {
         Exp {node: __exp, pos} => match __exp {
             VarExp(_) => varexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
-            UnitExp => unitexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
-            NilExp => nilexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
-            IntExp(_) => intexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
-            StringExp(_) => stringexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
+            UnitExp => unitexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
+            NilExp => nilexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
+            IntExp(_) => intexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
+            StringExp(_) => stringexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
             CallExp{..} => callexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
             OpExp{..} => opexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
-            AssignExp{..} => assignexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
+            AssignExp{..} => assignexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
             RecordExp{..} => recordexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
             SeqExp(_) => seqexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
             IfExp{..} => ifexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
             WhileExp{..} => whileexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
             ForExp{..} => forexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
             LetExp{..} => letexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
-            BreakExp => breakexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
-            ArrayExp{..} => arrayexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
+            BreakExp => breakexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
+            ArrayExp{..} => arrayexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
         }
     }
 }

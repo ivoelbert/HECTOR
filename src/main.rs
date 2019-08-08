@@ -44,6 +44,6 @@ fn main() {
     };
     let type_env = TypeEnviroment::new();
     let value_env = ValueEnviroment::new();
-    let res = tipar_exp(exp, type_env, value_env);
+    let res = tipar_exp(exp, &type_env, &value_env);
     println!("Expresion {:?}", res);
 }
