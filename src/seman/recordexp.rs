@@ -5,7 +5,7 @@ pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> 
     use Tipo::*;
     use std::collections::HashMap;
     let tipar_fields = |args: Vec<(Symbol, Box<Exp>)>| -> HashMap<Symbol, Result<Tipo, TypeError>> {
-        return args.into_iter().map(|arg| (arg.0, tipar_exp(*arg.1, type_env.clone(), value_env.clone()))).rev().collect();
+        args.into_iter().map(|arg| (arg.0, tipar_exp(*arg.1, type_env.clone(), value_env.clone()))).rev().collect()
     };
     match exp { Exp {node: _Exp::RecordExp{fields, typ: record_type}, pos} => {
         let mut field_types = tipar_fields(fields);
@@ -23,14 +23,14 @@ pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> 
                         None =>  return Err(TypeError::MissingRecordField(pos)),
                     }
                 }
-                if !field_types.is_empty() {
-                    return Err(TypeError::TooManyArguments(pos));
+                if field_types.is_empty() {
+                    Ok(TRecord((*formals).clone(), *type_id))
                 } else {
-                    return Ok(TRecord((*formals).clone(), *type_id));
+                    Err(TypeError::TooManyArguments(pos))
                 }
             },
-            Some(_) => return Err(TypeError::NotRecordType(pos)),
-            None => return Err(TypeError::UndeclaredType(pos))
+            Some(_) => Err(TypeError::NotRecordType(pos)),
+            None => Err(TypeError::UndeclaredType(pos))
         }
     }
     _ => panic!("delegation panic on recordexp::tipar")
@@ -38,5 +38,5 @@ pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> 
 }
 
 pub fn traducir(_exp: Exp) -> ExpInterm {
-    return ExpInterm::CONST(0);
+    ExpInterm::CONST(0)
 }

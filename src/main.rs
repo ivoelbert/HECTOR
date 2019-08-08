@@ -1,18 +1,27 @@
+#![warn(
+     clippy::all,
+     clippy::restriction,
+     clippy::pedantic,
+ )]
+#![allow(
+    clippy::missing_docs_in_private_items,
+    clippy::implicit_return,
+)]
+
 #[allow(dead_code)]
 mod ast;
-#[allow(dead_code)]
+#[allow(dead_code)] // Estos dead_code hay que sacarlos cuando terminemos estos modulos
 mod seman;
 #[cfg(test)]
 mod test;
 
 use ast::tigerabs::*;
-use ast::tigerabs::_Exp::*;
+use ast::tigerabs::_Exp::{OpExp, IntExp};
 use ast::position::{Pos, WithPos};
 
 
 use seman::tigerseman::*;
 
-#[macro_use]
 extern crate lalrpop_util;
 
 fn main() {

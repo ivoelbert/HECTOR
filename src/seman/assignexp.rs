@@ -8,7 +8,7 @@ pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> 
     use super::varexp::tipar_var;
     match exp {
         Exp {node: _Exp::AssignExp{var , exp: value_exp}, pos} => {
-            let var_type = match tipar_var(var, pos, type_env.clone(), value_env.clone()) {
+            let var_type = match tipar_var(var, pos, type_env.clone(), &value_env) {
                 Ok(TInt(R::RO)) => return Err(TypeError::ReadOnlyAssignment(pos)),
                 Ok(tipo) => tipo,
                 Err(type_error) => return Err(type_error)
@@ -18,10 +18,10 @@ pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> 
                 Err(type_error) => return Err(type_error)
             };
             if var_type == value_type {
-                return Ok(TUnit);
+                Ok(TUnit)
             }
             else {
-                return Err(TypeError::TypeMismatch(pos));
+                Err(TypeError::TypeMismatch(pos))
             }
         },
         _ => panic!("Mala delegacion en seman")
@@ -29,5 +29,5 @@ pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> 
 }
 
 pub fn traducir(_exp: Exp) -> ExpInterm {
-    return ExpInterm::CONST(0);
+    ExpInterm::CONST(0)
 }

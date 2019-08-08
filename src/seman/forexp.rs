@@ -5,7 +5,7 @@ use super::tigerseman::*;
 
 pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
     use Tipo::*;
-    match exp { Exp {node: _Exp::ForExp {var, escape: _, lo, hi, body}, pos} => {
+    match exp { Exp {node: _Exp::ForExp {var, lo, hi, body, ..}, pos} => {
         let _ = match tipar_exp(*lo, type_env.clone(), value_env.clone()) {
             Ok(TInt(_)) => (),
             Ok(_) => return Err(TypeError::NonIntegerForRange(pos)),
@@ -27,12 +27,12 @@ pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> 
             Ok(_) => return Err(TypeError::NonUnitBody(pos)),
             Err(type_error) => return Err(type_error)
         };
-        return Ok(TUnit);
+        Ok(TUnit)
     }
     _ => panic!("delegation panic in forexp::tipar")
     }
 }
 
 pub fn traducir(_exp: Exp) -> ExpInterm {
-    return ExpInterm::CONST(0);
+    ExpInterm::CONST(0)
 }

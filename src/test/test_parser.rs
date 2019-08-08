@@ -60,7 +60,7 @@ fn test_parse_number() {
     match parsed {
         Ok(Exp {
             node: IntExp(0),
-            pos: _,
+            ..
         }) => assert!(true),
         Ok(_) => panic!("mal parseado"),
         Err(_) => panic!("el parser falla en una expresion bien formada"),
@@ -74,7 +74,7 @@ fn test_parse_string() {
     match parsed {
         Ok(Exp {
             node: StringExp(_),
-            pos: _,
+            ..
         }) => assert!(true),
         Ok(_) => panic!("mal parseado"),
         Err(_) => panic!("el parser falla en una expresion bien formada"),
@@ -88,7 +88,7 @@ fn test_parse_breakexp() {
     match parsed {
         Ok(Exp {
             node: BreakExp,
-            pos: _,
+            ..
         }) => assert!(true),
         Ok(_) => panic!("mal parseado"),
         Err(_) => panic!("el parser falla en una expresion bien formada"),
@@ -102,7 +102,7 @@ fn test_parse_simplevar() {
     match parsed {
         Ok(Exp {
             node: VarExp(Var::SimpleVar(_)),
-            pos: _,
+            ..
         }) => assert!(true),
         Ok(_) => panic!("mal parseado"),
         Err(_) => panic!("el parser falla en una expresion bien formada"),
@@ -116,7 +116,7 @@ fn test_parse_subscriptvar() {
     match parsed {
         Ok(Exp {
             node: VarExp(Var::SubscriptVar(_, _)),
-            pos: _,
+            ..
         }) => assert!(true),
         Ok(_) => panic!("mal parseado"),
         Err(_) => panic!("el parser falla en una expresion bien formada"),
@@ -130,7 +130,7 @@ fn test_parse_fieldvar() {
     match parsed {
         Ok(Exp {
             node: VarExp(Var::FieldVar(_, _)),
-            pos: _,
+            ..
         }) => assert!(true),
         Ok(_) => panic!("mal parseado"),
         Err(_) => panic!("el parser falla en una expresion bien formada"),
@@ -143,8 +143,8 @@ fn test_parse_callexp() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: CallExp { func: _, args: _ },
-            pos: _,
+            node: CallExp {..},
+            ..
         }) => assert!(true),
         Ok(_) => panic!("mal parseado"),
         Err(_) => panic!("el parser falla en una expresion bien formada"),
@@ -170,9 +170,8 @@ fn test_parse_simple_sum() {
         Ok(Exp {
             node:
                 OpExp {
-                    left: _,
                     oper: Oper::PlusOp,
-                    right: _,
+                    ..
                 },
             pos: Pos { line: 0, column: 0 },
         }) => assert!(true),
@@ -189,9 +188,8 @@ fn test_parse_simple_mult() {
         Ok(Exp {
             node:
                 OpExp {
-                    left: _,
                     oper: Oper::TimesOp,
-                    right: _,
+                    ..
                 },
             pos: Pos { line: 0, column: 0 },
         }) => assert!(true),

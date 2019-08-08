@@ -27,7 +27,7 @@ fn test_good() {
             Ok(exp) => {
                 let typed = tipar_exp(exp , type_env, value_env);
                 match typed {
-                    Ok(_) => assert!(true),
+                    Ok(_) => (),
                     Err(_) => panic!("{:?} deberia tipar bien pero falla", path),
                 }
             },
@@ -39,10 +39,10 @@ fn test_good() {
 #[test]
 fn test_type() {
     let syntax_path = "./tiger_sources/type/";
-    let source_files = read_dir(syntax_path).unwrap();
+    let source_files = read_dir(syntax_path).expect("read_dir");
     for direntry in source_files {
-        let path = direntry.unwrap().path();
-        let contents = read_to_string(&path).unwrap();
+        let path = direntry.expect("direntry").path();
+        let contents = read_to_string(&path).expect("read_to_string");
         let parsed = parse(contents);
         let type_env = TypeEnviroment::new();
         let value_env = ValueEnviroment::new();
@@ -50,8 +50,8 @@ fn test_type() {
             Ok(exp) => {
                 let typed = tipar_exp(exp , type_env, value_env);
                 match typed {
-                    Err(_) => assert!(true),
-                    Ok(_) => panic!("{:?} debería fallar pero tipa bien", path),
+                    Err(_) => (),
+                    Ok(_) => panic!("{:?} deberia fallar pero tipa bien", path),
                 }
             },
             Err(_) => panic!("falla el parser"),
@@ -60,11 +60,11 @@ fn test_type() {
 }
 
 fn possed_exp(exp: _Exp) -> Exp {
-    return Exp {node: exp, pos: Pos {line: 0, column: 0}};
+    Exp {node: exp, pos: Pos {line: 0, column: 0}}
 }
 
 fn boxed_exp(exp: _Exp) -> Box<Exp> {
-    return Box::new(Exp {node: exp, pos: Pos {line: 0, column: 0}});
+    Box::new(Exp {node: exp, pos: Pos {line: 0, column: 0}})
 }
 
 #[test]
@@ -992,7 +992,155 @@ let exp = Exp {node: ForExp {
 #[test]
 fn test_tipado_letexp_vardec_sin_tipo_ok() {
     let exp = possed_exp(LetExp {
-        decs: vec![VarDec(_VarDec::new(Symbol::from("foo"), None, boxed_exp(IntExp(4))))],
+        decs: vec![VarDec(_VarDec::new(
+            Symbol::from("foo"),
+            None,
+            boxed_exp(IntExp(4))
+        ))],
+        body: boxed_exp(VarExp(SimpleVar(Symbol::from("foo"))))
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Ok(TInt(R::RW)) => assert!(true),
+        _ => panic!("no puedo tipar un vardec de tipo inferido")
+    }
+}
+
+#[test]
+fn test_tipado_letexp_vardec_con_tipo_ok() {
+    let exp = possed_exp(LetExp {
+        decs: vec![VarDec(_VarDec::new(
+            Symbol::from("foo"),
+            Some(Symbol::from("int")),
+            boxed_exp(IntExp(4)))
+        )],
+        body: boxed_exp(VarExp(SimpleVar(Symbol::from("foo"))))
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Ok(TInt(R::RW)) => assert!(true),
+        _ => panic!("no puedo tipar un vardec de tipo explicito")
+    }
+}
+
+#[test]
+fn test_tipado_letexp_vardec_tipo_no_esta_declarado() {
+    let exp = possed_exp(LetExp {
+        decs: vec![VarDec(_VarDec::new(
+            Symbol::from("foo"),
+            Some(Symbol::from("un_tipo_no_declarado")),
+            boxed_exp(IntExp(4))
+        ))],
+        body: boxed_exp(UnitExp)
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(UndeclaredType(_)) => assert!(true),
+        _ => panic!("puedo tipar una declaracion de variable con un tipo que no existe")
+    }
+}
+
+#[test]
+fn test_tipado_letexp_vardec_tipos_distintos() {
+    let exp = possed_exp(LetExp {
+        decs: vec![VarDec(_VarDec::new(
+            Symbol::from("foo"),
+            Some(Symbol::from("string")),
+            boxed_exp(IntExp(4)))
+        )],
+        body: boxed_exp(UnitExp)
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(TypeMismatch(_)) => assert!(true),
+        _ => panic!("puedo tipar una declaracion de variable con un tipo distinto al init")
+    }
+}
+
+
+#[test]
+fn test_tipado_letexp_typedec_ok() {
+    let exp = possed_exp(LetExp {
+        decs: vec![
+            TypeDec(vec![_TypeDec::new(
+                Symbol::from("FooType"),
+                NameTy(Symbol::from("int"))
+            )]),
+            VarDec(_VarDec::new(
+                Symbol::from("foo"),
+                Some(Symbol::from("FooType")),
+                boxed_exp(IntExp(4)))
+            ),
+        ],
+        body: boxed_exp(VarExp(SimpleVar(Symbol::from("foo"))))
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Ok(TTipo(_)) => assert!(true),
+        _ => panic!("las typedecs tipan mal")
+    }
+}
+
+// #[test]
+// fn test_tipado_letexp_typedec_recursion_infinita() {
+//    let exp = possed_exp(LetExp {
+//         decs: vec![TypeDec(vec![
+//             _TypeDec::new(Symbol::from("FooType"), NameTy(Symbol::from("BaazType"))),
+//             _TypeDec::new(Symbol::from("BaazType"), NameTy(Symbol::from("FooType"))),
+//         ])],
+//         body: boxed_exp(UnitExp)
+//     });
+//     let type_env = initial_type_env();
+//     let value_env = initial_value_env();
+//     let res = tipar_exp(exp, type_env, value_env);
+//     match res {
+//         Err(TypeDecSortingError(_)) => assert!(true),
+//         _ => panic!("")
+//     }
+// }
+
+#[test]
+fn test_tipado_letexp_typedec_referencia_tipo_inexistente() {
+    let exp = possed_exp(LetExp {
+        decs: vec![TypeDec(vec![_TypeDec::new(
+            Symbol::from("FooType"),
+            NameTy(Symbol::from("BaazType"))
+        )])],
+        body: boxed_exp(UnitExp)
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(UndeclaredType(_)) => assert!(true),
+        _ => panic!("puedo declarar un sinonimo a un tipo inexistente")
+    }
+}
+
+#[test]
+fn test_tipado_letexp_functiondec_ok() {
+    let exp = possed_exp(LetExp {
+        decs: vec![FunctionDec(vec![_FunctionDec::new(
+            Symbol::from("foo"),
+            vec![Field {
+                name: Symbol::from("arg"),
+                typ: NameTy(Symbol::from("int")),
+                escape: false
+            }],
+            None,
+            boxed_exp(UnitExp)
+        )])],
         body: boxed_exp(UnitExp)
     });
     let type_env = initial_type_env();
@@ -1004,113 +1152,133 @@ fn test_tipado_letexp_vardec_sin_tipo_ok() {
     }
 }
 
-// #[test]
-// fn test_tipado_letexp_vardec_tipo_en_esta_dec() {
-//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(exp, type_env, value_env);
-//     match res {
-//         Ok(TUnit) => assert!(true),
-//         _ => panic!("")
-//     }
-// }
+#[test]
+fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
+    let exp = possed_exp(LetExp {
+        decs: vec![
+            FunctionDec(vec![_FunctionDec::new(
+                Symbol::from("foo"),
+                vec![Field {
+                    name: Symbol::from("arg1"),
+                    typ: NameTy(Symbol::from("int")),
+                    escape: false
+                }],
+                Some(Symbol::from("int")),
+                boxed_exp(VarExp(SimpleVar(Symbol::from("arg1"))))
+            )]),
+            FunctionDec(vec![_FunctionDec::new(
+                Symbol::from("baaz"),
+                vec![Field {
+                    name: Symbol::from("arg2"),
+                    typ: NameTy(Symbol::from("int")),
+                    escape: false
+                }],
+                Some(Symbol::from("int")),
+                boxed_exp(CallExp {
+                    func: Symbol::from("foo"),
+                    args: vec![boxed_exp(VarExp(SimpleVar(Symbol::from("arg2"))))]
+                })
+            )]),
+        ],
+        body: boxed_exp(CallExp {
+            func: Symbol::from("baaz"),
+            args: vec![boxed_exp(IntExp(2))]
+        })
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Ok(TInt(R::RW)) => assert!(true),
+        _ => panic!("no puedo tipar una funcion que llama a otra de su bloque")
+    }
+}
 
-// #[test]
-// fn test_tipado_letexp_vardec_tipos_distintos() {
-//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(exp, type_env, value_env);
-//     match res {
-//         Ok(TUnit) => assert!(true),
-//         _ => panic!("")
-//     }
-// }
+#[test]
+fn test_tipado_letexp_functiondec_body_no_tipa() {
+    let exp = possed_exp(LetExp {
+        decs: vec![FunctionDec(vec![_FunctionDec::new(
+            Symbol::from("foo"),
+            vec![Field {
+                name: Symbol::from("arg"),
+                typ: NameTy(Symbol::from("int")),
+                escape: false
+            }],
+            None,
+            boxed_exp(VarExp(SimpleVar(Symbol::from("baaz")))) // no declarada
+        )])],
+        body: boxed_exp(UnitExp)
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(UndeclaredSimpleVar(_)) => assert!(true),
+        _ => panic!("puedo tipar una funcion con un body que no tipa")
+    }
+}
 
-// #[test]
-// fn test_tipado_letexp_vardec_tipo_inexistente() {
-//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(exp, type_env, value_env);
-//     match res {
-//         Ok(TUnit) => assert!(true),
-//         _ => panic!("")
-//     }
-// }
+#[test]
+fn test_tipado_letexp_functiondec_body_distinto_result() {
+    let exp = possed_exp(LetExp {
+        decs: vec![FunctionDec(vec![_FunctionDec::new(
+            Symbol::from("foo"),
+            vec![Field {
+                name: Symbol::from("arg"),
+                typ: NameTy(Symbol::from("int")),
+                escape: false
+            }],
+            None,
+            boxed_exp(VarExp(SimpleVar(Symbol::from("baaz")))) // no declarada
+        )])],
+        body: boxed_exp(UnitExp)
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Err(TypeMismatch(_)) => assert!(true),
+        _ => panic!("puedo tipar una funcion con un body que tipa distinto a result")
+    }
+}
 
-// #[test]
-// fn test_tipado_letexp_vardec_variables_repetidas() {
-//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(exp, type_env, value_env);
-//     match res {
-//         Ok(TUnit) => assert!(true),
-//         _ => panic!("")
-//     }
-// }
-
-// #[test]
-// fn test_tipado_letexp_typedec_ok() {
-//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(exp, type_env, value_env);
-//     match res {
-//         Ok(TUnit) => assert!(true),
-//         _ => panic!("")
-//     }
-// }
-
-// #[test]
-// fn test_tipado_letexp_typedec_recursion_infinita() {
-//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(exp, type_env, value_env);
-//     match res {
-//         Ok(TUnit) => assert!(true),
-//         _ => panic!("")
-//     }
-// }
-
-// #[test]
-// fn test_tipado_letexp_typedec_referencia_tipo_inexistente() {
-//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(exp, type_env, value_env);
-//     match res {
-//         Ok(TUnit) => assert!(true),
-//         _ => panic!("")
-//     }
-// }
-
-// #[test]
-// fn test_tipado_letexp_typedec_referencia_tipos_repetidos() {
-//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(exp, type_env, value_env);
-//     match res {
-//         Ok(TUnit) => assert!(true),
-//         _ => panic!("")
-//     }
-// }
-
-// #[test]
-// fn test_tipado_letexp_functiondec_ok() {
-//     let exp = Exp {node: UnitExp, pos: Pos {line: 0, column: 0}};
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(exp, type_env, value_env);
-//     match res {
-//         Ok(TUnit) => assert!(true),
-//         _ => panic!("")
-//     }
-// }
+#[test]
+fn test_tipado_letexp_todas_las_decs_ok() {
+    let exp = possed_exp(LetExp {
+        decs: vec![
+            TypeDec(vec![_TypeDec::new(
+                Symbol::from("FooType"),
+                NameTy(Symbol::from("int"))
+            )]),
+            VarDec(_VarDec::new(
+                Symbol::from("foo"),
+                Some(Symbol::from("FooType")),
+                boxed_exp(IntExp(4))
+            )),
+            FunctionDec(vec![_FunctionDec::new(
+                Symbol::from("baaz"),
+                vec![Field {
+                    name: Symbol::from("bar"),
+                    typ: NameTy(Symbol::from("FooType")),
+                    escape: false
+                }],
+                Some(Symbol::from("FooType")),
+                boxed_exp(VarExp(SimpleVar(Symbol::from("bar")))),
+            )]),
+        ],
+        body: boxed_exp(CallExp {
+            func: Symbol::from("baaz"),
+            args: vec![boxed_exp(VarExp(SimpleVar(Symbol::from("foo"))))]
+        })
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = tipar_exp(exp, type_env, value_env);
+    match res {
+        Ok(TTipo(_)) => assert!(true),
+        _ => panic!("no puedo tipar un let que usa las declaraciones")
+    }
+}
 
 // #[test]
 // fn test_tipado_letexp_functiondec_nombres_tipo_param_en_esta_dec() {
@@ -1135,7 +1303,5 @@ fn test_tipado_letexp_vardec_sin_tipo_ok() {
 //         _ => panic!("")
 //     }
 // }
-
-// no se me ocurre pero se deben poder hacer muchos mas tests con las declaraciones de funciones
 
 

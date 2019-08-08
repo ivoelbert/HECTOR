@@ -12,7 +12,7 @@ pub enum ParseError {
 
 pub fn parse(source : String) -> Result<Exp, ParseError> {
     let str_src: &str = &*source;
-    let box_exp = parser::ExprParser::new().parse(str_src).unwrap();
+    let box_exp = parser::ExprParser::new().parse(str_src).unwrap(); // esto hace un panic, que no es lo que queremos
 
-     return Ok(*box_exp)
+     Ok(*box_exp)
 }
