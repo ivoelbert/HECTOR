@@ -13,7 +13,7 @@ pub fn tipar(exp: Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -
                 None => return Err(TypeError::UndeclaredFunction(pos))
             };
             if formals.len() > args.len() {
-                return Err(TypeError::TooFewArguments(pos));
+                return Err(TypeError::TooFewArguments(pos))
             }
             if formals.len() < args.len() {
                 return Err(TypeError::TooManyArguments(pos))

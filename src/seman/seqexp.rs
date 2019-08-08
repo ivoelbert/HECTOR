@@ -5,8 +5,8 @@ pub fn tipar(exp: Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -
     use Tipo::*;
     match exp { Exp {node: _Exp::SeqExp(exps), ..} => {
         let mut seq_type : Tipo = TUnit;
-        if exps.len() == 0 {
-            panic!("0 length SeqExp");
+        if exps.is_empty() {
+            panic!("empty seqexp");
         }
         for exp in exps {
             seq_type = tipar_exp(*exp, &type_env, value_env)?

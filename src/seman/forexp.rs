@@ -6,12 +6,12 @@ use super::tigerseman::*;
 pub fn tipar(exp: Exp, type_env: &TypeEnviroment, value_env:& ValueEnviroment) -> Result<Tipo, TypeError> {
     use Tipo::*;
     match exp { Exp {node: _Exp::ForExp {var, lo, hi, body, ..}, pos} => {
-        let _ = match tipar_exp(*lo, type_env, value_env) {
+        match tipar_exp(*lo, type_env, value_env) {
             Ok(TInt(_)) => (),
             Ok(_) => return Err(TypeError::NonIntegerForRange(pos)),
             Err(type_error) => return Err(type_error)
         };
-        let _ = match tipar_exp(*hi, type_env, value_env) {
+        match tipar_exp(*hi, type_env, value_env) {
             Ok(TInt(_)) => (),
             Ok(_) => return Err(TypeError::NonIntegerForRange(pos)),
             Err(type_error) => return Err(type_error)
@@ -22,7 +22,7 @@ pub fn tipar(exp: Exp, type_env: &TypeEnviroment, value_env:& ValueEnviroment) -
             access: Access::InFrame(0),
             level: 0
         });
-        let _ = match tipar_exp(*body, type_env, &new_value_env) {
+        match tipar_exp(*body, type_env, &new_value_env) {
             Ok(TUnit) => (),
             Ok(_) => return Err(TypeError::NonUnitBody(pos)),
             Err(type_error) => return Err(type_error)

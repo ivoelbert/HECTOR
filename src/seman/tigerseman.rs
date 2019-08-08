@@ -24,7 +24,7 @@ use super::breakexp;
 
 
 // Detalles faltantes:
-//      tipoReal
+//      tipoReal y TTipo
 
 
 #[derive(Debug, PartialEq, Clone)]
@@ -170,15 +170,15 @@ impl PartialEq for Tipo {
     fn eq(&self, other: &Self) -> bool {
         use Tipo::*;
         match (self, other) {
-            (TUnit, TUnit) => true,
-            (TString, TString) => true,
-            (TRecord(_, _), TNil) => true,
-            (TNil, TRecord(_, _)) => true,
-            (TRecord(_, uid1), TRecord(_, uid2 )) => uid1 == uid2,
-            (TArray(_, uid1), TArray(_, uid2)) => uid1 == uid2,
-            (TInt(_),TInt(_)) => true,
+            (TUnit, TUnit)
+            | (TString, TString)
+            | (TRecord(_, _), TNil)
+            | (TNil, TRecord(_, _))
+            | (TInt(_),TInt(_)) => true,
+            (TRecord(_, uid1), TRecord(_, uid2 ))
+            | (TArray(_, uid1), TArray(_, uid2)) => uid1 == uid2,
             (TTipo(s), TTipo(t)) => s == t,
-            (TTipo(_), _) => panic!("Estamos comparando un TTipo"),
+            (TTipo(_), _) => panic!("Estamos comparando un TTipo"), 
             (_, TTipo(_)) => panic!("Estamos comparando un TTipo"),
             (_, _) => false,
         }
@@ -186,7 +186,7 @@ impl PartialEq for Tipo {
 }
 
 impl Tipo {
-    pub fn real(&self, type_env: &TypeEnviroment) -> Option<Tipo> {
+    pub fn real(&self, type_env: &TypeEnviroment) -> Option<Self> {
         match self.clone() {
             Tipo::TTipo(alias_type_symbol) => {
                 match type_env.get(&alias_type_symbol) {
@@ -194,7 +194,12 @@ impl Tipo {
                     None => None
                 }
             },
-            tt => Some(tt)
+            tt @ Tipo::TUnit
+            | tt @ Tipo::TNil
+            | tt @ Tipo::TInt(..)
+            | tt @ Tipo::TString
+            | tt @ Tipo::TArray(..)
+            | tt @ Tipo::TRecord(..) => Some(tt)
         }
     }
 }
@@ -247,7 +252,7 @@ pub enum RelOp {
     UGE
 }
 
-pub fn not_rel(ro : RelOp) -> RelOp {
+pub fn not_rel(ro : &RelOp) -> RelOp {
     use RelOp::*;
     match ro {
         EQ => NE,
