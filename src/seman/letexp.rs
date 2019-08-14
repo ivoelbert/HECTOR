@@ -4,13 +4,6 @@ use super::tigerseman::*;
 
 
 fn tipar_decs(decs: Vec<Dec>, type_env: &TypeEnviroment, value_env: &ValueEnviroment, pos: Pos) -> Result<(TypeEnviroment, ValueEnviroment), TypeError> {
-    use Dec::*;
-    fn sort_decs(decs: Vec<Dec>) -> Vec<Dec> {
-        // Esto eventualmente debería hacer un sort topologico.
-        // Encuentra ciclos.
-        decs
-    }
-
     fn tipar_dec_variable(_VarDec {name, typ, init, ..}: _VarDec, type_env: &TypeEnviroment, value_env: &ValueEnviroment, pos: Pos) -> Result<ValueEnviroment, TypeError> {
         let mut new_value_env = value_env.clone();
         let init_type = tipar_exp(*init, type_env, value_env)?;
@@ -35,6 +28,67 @@ fn tipar_decs(decs: Vec<Dec>, type_env: &TypeEnviroment, value_env: &ValueEnviro
     }
 
     fn tipar_decs_bloque_funciones(decs: Vec<_FunctionDec>, type_env: &TypeEnviroment, value_env: &ValueEnviroment, pos: Pos) -> Result<ValueEnviroment, TypeError> {
+        fn sort_funcs(decs: Vec<_FunctionDec>) -> Vec<_FunctionDec> {
+            // Esto eventualmente debería hacer un sort topologico.
+            // Encuentra ciclos.
+            decs
+        }
+
+        let tipar_ty = |ty: &Ty| -> Result<Tipo, TypeError> {
+                match ty {
+                    Ty::Name(symbol) => match type_env.get(symbol) {
+                        Some(tipo) => Ok(tipo.clone()),
+                        None => Err(TypeError::UndeclaredType(pos))
+                    },
+                    _ => panic!("Solo pueden llegar NameTys a a parametros de funciones")
+                }
+        };
+
+        let tipar_dec_funcion = |mut value_env: ValueEnviroment, _FunctionDec {name, params, result, body, pos}: _FunctionDec| -> Result<ValueEnviroment, TypeError> {
+            // Tipar el resultado
+            let result_type = match result {
+                None => Tipo::TUnit,
+                Some(result_name) => match type_env.get(&result_name) {
+                    Some(result_table_type) => result_table_type.clone(),
+                    None => return Err(TypeError::UndeclaredType(pos.clone()))
+                }
+            };
+            // Ver que los parametros no se repitan
+
+            // Tipar los parametros
+            let params_value_env = params
+                .iter()
+                .try_fold(value_env.clone(), |mut prev : ValueEnviroment, Field {name, typ, ..}: &Field| -> Result<ValueEnviroment, TypeError> {
+                    prev.insert(name.clone(), EnvEntry::Var{
+                        ty: tipar_ty(typ)?,
+                        access: Access::InReg(name.clone()),
+                        level: 0
+                    });
+                    Ok(prev)
+                })?;
+            let formals: Vec<Tipo> = params
+                .iter()
+                .map(|Field {typ, ..}: &Field| -> Result<Tipo, TypeError> {tipar_ty(typ)})
+                .collect::<Result<Vec<Tipo>, TypeError>>()?;
+
+            // Tipar el body
+            let body_type = tipar(*body, type_env, &params_value_env)?;
+            if body_type == result_type {
+                // Insertar en el env
+                value_env.insert(name.clone(), EnvEntry::Func {
+                    label: name.clone(),
+                    formals,
+                    result: result_type,
+                    external: false
+                });
+                Ok(value_env)
+            }
+            else {
+                Err(TypeError::TypeMismatch(pos.clone()))
+            }
+        };
+
+        let sorted_decs = sort_funcs(decs);
         // Checkear que no haya funciones repetidas.
 
         // Checkear que ninguna funcion tenga parametros repetidos.
@@ -66,12 +120,12 @@ fn tipar_decs(decs: Vec<Dec>, type_env: &TypeEnviroment, value_env: &ValueEnviro
         // }
 
         // // Tipar los bodies.
-        // for fun in decs {
-            
-        // }
+        for dec in sorted_decs {
+            new_value_env = tipar_dec_funcion(new_value_env, dec)?;
+        }
+        Ok(new_value_env)
         // // Si hay results, fijarse que coincidan los tipos.
         // // Devolver los envs con los prototipos.
-        Ok(new_value_env)
     }
 
     fn tipar_decs_bloque_tipos(decs: Vec<_TypeDec>, type_env: &TypeEnviroment, value_env: &ValueEnviroment, pos: Pos) -> Result<TypeEnviroment, TypeError> {
@@ -79,26 +133,25 @@ fn tipar_decs(decs: Vec<Dec>, type_env: &TypeEnviroment, value_env: &ValueEnviro
         Ok(new_type_env)
     }
 
-    let sorted_decs = sort_decs(decs);
     let mut new_type_env = type_env.clone();
     let mut new_value_env = value_env.clone();
-    // for dec in sorted_decs {
-    //     let (new_type_env, new_value_env) = match dec {
-    //         VarDec(vd) => match tipar_dec_variable(vd, &new_type_env, &new_value_env, pos) {
-    //             Ok(venv) => (new_type_env, venv),
-    //             Err(type_error) => return Err(type_error),
-    //         },
-    //         FunctionDec(fd) => match tipar_decs_bloque_funciones(fd, &new_type_env, &new_value_env, pos) {
-    //             Ok(venv) => (new_type_env, venv),
-    //             Err(type_error) => return Err(type_error),
-    //         },
-    //         TypeDec(td) => match tipar_decs_bloque_tipos(td, &new_type_env, &new_value_env, pos) {
-    //             Ok(tenv) => (tenv, new_value_env),
-    //             Err(type_error) => return Err(type_error),
-    //         },
-    //     };
-        
-    // }
+    for dec in decs {
+        match dec {
+            Dec::VarDec(vd) => match tipar_dec_variable(vd, &new_type_env, &new_value_env, pos) {
+                Ok(venv) => new_value_env = venv,
+                Err(type_error) => return Err(type_error),
+            },
+            Dec::FunctionDec(fd) => match tipar_decs_bloque_funciones(fd, &new_type_env, &new_value_env, pos) {
+                Ok(venv) => new_value_env = venv,
+                Err(type_error) => return Err(type_error),
+            },
+            Dec::TypeDec(td) => match tipar_decs_bloque_tipos(td, &new_type_env, &new_value_env, pos) {
+                Ok(tenv) => new_type_env = tenv,
+                Err(type_error) => return Err(type_error),
+            },
+        };
+
+    }
     Ok((new_type_env, new_value_env))
 }
 

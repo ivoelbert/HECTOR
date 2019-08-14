@@ -250,7 +250,7 @@ fn test_tipado_varexp_fieldvar_field_inexistente() {
     let foo_type = Tipo::TRecord(
             vec![(Box::new(String::from("bar")),
                 Box::new(Tipo::TInt(R::RW)),
-                0)], 
+                0)],
                 TypeId::new(),
             );
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
@@ -315,7 +315,7 @@ fn test_tipado_varexp_subscriptvar_ok() {
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let foo_type = Tipo::TArray(
-        Box::new(Tipo::TInt(R::RW)), 
+        Box::new(Tipo::TInt(R::RW)),
         TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
@@ -619,7 +619,7 @@ fn test_tipado_arrayexp_ok() {
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
     let foo_type = Tipo::TArray(
-        Box::new(Tipo::TInt(R::RW)), 
+        Box::new(Tipo::TInt(R::RW)),
         TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
@@ -640,7 +640,7 @@ fn test_tipado_arrayexp_size_no_int() {
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
     let foo_type = Tipo::TArray(
-        Box::new(Tipo::TInt(R::RW)), 
+        Box::new(Tipo::TInt(R::RW)),
         TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), foo_type);
@@ -662,7 +662,7 @@ fn test_tipado_arrayexp_tipos_distintos() {
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
     let foo_type = Tipo::TArray(
-        Box::new(Tipo::TInt(R::RW)), 
+        Box::new(Tipo::TInt(R::RW)),
         TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), foo_type);
@@ -1017,7 +1017,8 @@ fn test_tipado_letexp_vardec_sin_tipo_ok() {
         decs: vec![Dec::VarDec(_VarDec::new(
             Symbol::from("foo"),
             None,
-            boxed_exp(_Exp::IntExp(4))
+            boxed_exp(_Exp::IntExp(4)),
+            Pos{line: 0, column: 0}
         ))],
         body: boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("foo"))))
     });
@@ -1037,13 +1038,14 @@ fn test_tipado_letexp_vardec_con_tipo_ok() {
         decs: vec![Dec::VarDec(_VarDec::new(
             Symbol::from("foo"),
             Some(Symbol::from("int")),
-            boxed_exp(_Exp::IntExp(4)))
-        )],
+            boxed_exp(_Exp::IntExp(4)),
+            Pos{line: 0, column: 0}
+        ))],
         body: boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("foo"))))
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    
+
     let res = tipar_exp(exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
@@ -1058,7 +1060,8 @@ fn test_tipado_letexp_vardec_tipo_no_esta_declarado() {
         decs: vec![Dec::VarDec(_VarDec::new(
             Symbol::from("foo"),
             Some(Symbol::from("un_tipo_no_declarado")),
-            boxed_exp(_Exp::IntExp(4))
+            boxed_exp(_Exp::IntExp(4)),
+            Pos{line: 0, column: 0}
         ))],
         body: boxed_exp(_Exp::UnitExp)
     });
@@ -1078,8 +1081,9 @@ fn test_tipado_letexp_vardec_tipos_distintos() {
         decs: vec![Dec::VarDec(_VarDec::new(
             Symbol::from("foo"),
             Some(Symbol::from("string")),
-            boxed_exp(_Exp::IntExp(4)))
-        )],
+            boxed_exp(_Exp::IntExp(4)),
+            Pos{line: 0, column: 0}
+        ))],
         body: boxed_exp(_Exp::UnitExp)
     });
     let type_env = initial_type_env();
@@ -1099,13 +1103,15 @@ fn test_tipado_letexp_typedec_ok() {
         decs: vec![
             Dec::TypeDec(vec![_TypeDec::new(
                 Symbol::from("FooType"),
-                Ty::NameTy(Symbol::from("int"))
+                Ty::Name(Symbol::from("int")),
+                Pos{line: 0, column: 0}
             )]),
             Dec::VarDec(_VarDec::new(
                 Symbol::from("foo"),
                 Some(Symbol::from("FooType")),
-                boxed_exp(_Exp::IntExp(4)))
-            ),
+                boxed_exp(_Exp::IntExp(4)),
+                Pos{line: 0, column: 0}
+            )),
         ],
         body: boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("foo"))))
     });
@@ -1123,8 +1129,8 @@ fn test_tipado_letexp_typedec_ok() {
 // fn test_tipado_letexp_typedec_recursion_infinita() {
 //    let exp = possed_exp(_Exp::LetExp {
 //         decs: vec![Dec::TypeDec(vec![
-//             _TypeDec::new(Symbol::from("FooType"), Ty::NameTy(Symbol::from("BaazType"))),
-//             _TypeDec::new(Symbol::from("BaazType"), Ty::NameTy(Symbol::from("FooType"))),
+//             _TypeDec::new(Symbol::from("FooType"), Ty::Name(Symbol::from("BaazType"))),
+//             _TypeDec::new(Symbol::from("BaazType"), Ty::Name(Symbol::from("FooType"))),
 //         ])],
 //         body: boxed_exp(_Exp::UnitExp)
 //     });
@@ -1142,7 +1148,8 @@ fn test_tipado_letexp_typedec_referencia_tipo_inexistente() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::TypeDec(vec![_TypeDec::new(
             Symbol::from("FooType"),
-            Ty::NameTy(Symbol::from("BaazType"))
+            Ty::Name(Symbol::from("BaazType")),
+            Pos{line: 0, column: 0}
         )])],
         body: boxed_exp(_Exp::UnitExp)
     });
@@ -1163,11 +1170,12 @@ fn test_tipado_letexp_functiondec_ok() {
             Symbol::from("foo"),
             vec![Field {
                 name: Symbol::from("arg"),
-                typ: Ty::NameTy(Symbol::from("int")),
+                typ: Ty::Name(Symbol::from("int")),
                 escape: false
             }],
             None,
-            boxed_exp(_Exp::UnitExp)
+            boxed_exp(_Exp::UnitExp),
+            Pos{line: 0, column: 0}
         )])],
         body: boxed_exp(_Exp::UnitExp)
     });
@@ -1189,24 +1197,26 @@ fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
                 Symbol::from("foo"),
                 vec![Field {
                     name: Symbol::from("arg1"),
-                    typ: Ty::NameTy(Symbol::from("int")),
+                    typ: Ty::Name(Symbol::from("int")),
                     escape: false
                 }],
                 Some(Symbol::from("int")),
-                boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("arg1"))))
+                boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("arg1")))),
+                Pos{line: 0, column: 0}
             )]),
             Dec::FunctionDec(vec![_FunctionDec::new(
                 Symbol::from("baaz"),
                 vec![Field {
                     name: Symbol::from("arg2"),
-                    typ: Ty::NameTy(Symbol::from("int")),
+                    typ: Ty::Name(Symbol::from("int")),
                     escape: false
                 }],
                 Some(Symbol::from("int")),
                 boxed_exp(_Exp::CallExp {
                     func: Symbol::from("foo"),
-                    args: vec![boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("arg2"))))]
-                })
+                    args: vec![boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("arg2"))))],
+                }),
+                Pos{line: 0, column: 0}
             )]),
         ],
         body: boxed_exp(_Exp::CallExp {
@@ -1231,11 +1241,12 @@ fn test_tipado_letexp_functiondec_body_no_tipa() {
             Symbol::from("foo"),
             vec![Field {
                 name: Symbol::from("arg"),
-                typ: Ty::NameTy(Symbol::from("int")),
-                escape: false
+                typ: Ty::Name(Symbol::from("int")),
+                escape: false,
             }],
             None,
-            boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("baaz")))) // no declarada
+            boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("baaz")))), // no declarada,
+            Pos{line: 0, column: 0}
         )])],
         body: boxed_exp(_Exp::UnitExp)
     });
@@ -1256,11 +1267,12 @@ fn test_tipado_letexp_functiondec_body_distinto_result() {
             Symbol::from("foo"),
             vec![Field {
                 name: Symbol::from("arg"),
-                typ: Ty::NameTy(Symbol::from("int")),
+                typ: Ty::Name(Symbol::from("int")),
                 escape: false
             }],
             None,
-            boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("baaz")))) // no declarada
+            boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("baaz")))), // no declarada,
+            Pos{line: 0, column: 0}
         )])],
         body: boxed_exp(_Exp::UnitExp)
     });
@@ -1280,22 +1292,25 @@ fn test_tipado_letexp_todas_las_decs_ok() {
         decs: vec![
             Dec::TypeDec(vec![_TypeDec::new(
                 Symbol::from("FooType"),
-                Ty::NameTy(Symbol::from("int"))
+                Ty::Name(Symbol::from("int")),
+                Pos{line: 0, column: 0}
             )]),
             Dec::VarDec(_VarDec::new(
                 Symbol::from("foo"),
                 Some(Symbol::from("FooType")),
-                boxed_exp(_Exp::IntExp(4))
+                boxed_exp(_Exp::IntExp(4)),
+                Pos{line: 0, column: 0}
             )),
             Dec::FunctionDec(vec![_FunctionDec::new(
                 Symbol::from("baaz"),
                 vec![Field {
                     name: Symbol::from("bar"),
-                    typ: Ty::NameTy(Symbol::from("FooType")),
+                    typ: Ty::Name(Symbol::from("FooType")),
                     escape: false
                 }],
                 Some(Symbol::from("FooType")),
                 boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("bar")))),
+                Pos{line: 0, column: 0}
             )]),
         ],
         body: boxed_exp(_Exp::CallExp {
