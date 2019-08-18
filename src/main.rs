@@ -26,6 +26,7 @@ use ast::position::{Pos, WithPos};
 use seman::tigerseman::*;
 
 extern crate lalrpop_util;
+extern crate pathfinding;
 
 fn main() {
     let exp: Exp = WithPos {

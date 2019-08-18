@@ -2,6 +2,8 @@ use super::super::ast::tigerabs::*;
 use super::super::ast::position::Pos;
 use super::tigerseman::*;
 
+use pathfinding::directed::topological_sort;
+
 fn tipar_dec_variable(_VarDec {name, typ, init, ..}: &_VarDec, type_env: &TypeEnviroment, value_env: &ValueEnviroment, pos: Pos) -> Result<ValueEnviroment, TypeError> {
     let mut new_value_env = value_env.clone();
     let init_type = tipar_exp(init, type_env, value_env)?;
@@ -63,7 +65,7 @@ fn tipar_dec_funcion(_FunctionDec {name, params, result, body, pos}: &_FunctionD
         .collect::<Result<Vec<Tipo>, TypeError>>()?;
 
     // Tipar el body
-    let body_type = tipar(&*body, type_env, &params_value_env)?;
+    let body_type = tipar_exp(&*body, type_env, &params_value_env)?;
     if body_type == result_type {
         // Insertar en el env
         value_env.insert(name.clone(), EnvEntry::Func {
@@ -79,13 +81,20 @@ fn tipar_dec_funcion(_FunctionDec {name, params, result, body, pos}: &_FunctionD
     }
 }
 
-fn tipar_decs_bloque_funciones(decs: &Vec<_FunctionDec>, type_env: &TypeEnviroment, value_env: &ValueEnviroment, pos: Pos) -> Result<ValueEnviroment, TypeError> {
-    fn sort_funcs(decs: Vec<_FunctionDec>) -> Vec<_FunctionDec> {
-        // Esto eventualmente debería hacer un sort topologico.
-        // Encuentra ciclos.
-        decs
-    }
+fn sort_types(decs: Vec<_TypeDec>, type_env: &TypeEnviroment) -> Result<Vec<_TypeDec>, _TypeDec> {
+    // Esto eventualmente debería hacer un sort topologico.
+    // Encuentra ciclos.
+    // topological_sort::topological_sort(&decs, |_TypeDec {ty, ..}: _TypeDec| {
+    //     match ty {
+    //         Ty::Name(s) => vec![],
+    //         Ty::Record(fields) => vec![],
+    //         Ty::Array(s) => vec![],
+    //     }
+    // })
+    Ok(decs)
+}
 
+fn tipar_decs_bloque_funciones(decs: &Vec<_FunctionDec>, type_env: &TypeEnviroment, value_env: &ValueEnviroment, pos: Pos) -> Result<ValueEnviroment, TypeError> {
     let sorted_decs = decs;
     // Checkear que no haya funciones repetidas.
 

@@ -161,6 +161,12 @@ impl _TypeDec {
         }
     }
 }
+impl PartialEq for _TypeDec {
+    fn eq(&self, other: &Self) -> bool {
+        self.ty == other.ty
+    }
+}
+impl Eq for _TypeDec {}
 
 #[derive(Debug)]
 pub enum Ty {
@@ -168,6 +174,22 @@ pub enum Ty {
     Record(Vec<Field>),
     Array(Symbol),
 }
+
+fn compara_fields(f1: &Vec<Field>, f2: &Vec<Field>) -> bool {
+    true
+}
+
+impl PartialEq for Ty {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Ty::Name(s1), Ty::Name(s2)) => s1 == s2,
+            (Ty::Array(s1), Ty::Array(s2)) => s1 == s2,
+            (Ty::Record(fields1), Ty::Record(fields2)) => compara_fields(fields1, fields2),
+            _ => false
+        }
+    }
+}
+impl Eq for Ty {}
 
 #[derive(Debug)]
 pub struct Field {

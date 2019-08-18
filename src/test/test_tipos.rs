@@ -1271,7 +1271,7 @@ fn test_tipado_letexp_functiondec_body_distinto_result() {
                 escape: false
             }],
             None,
-            boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("baaz")))), // no declarada,
+            boxed_exp(_Exp::IntExp(2)), // no declarada,
             Pos{line: 0, column: 0}
         )])],
         body: boxed_exp(_Exp::UnitExp)

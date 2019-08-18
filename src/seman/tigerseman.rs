@@ -286,22 +286,22 @@ pub fn tipar_exp(exp : &Exp, type_env : &TypeEnviroment, value_env: &ValueEnviro
     use _Exp::*;
     match exp {
         Exp {node, ..} => match node {
-            VarExp(_) => varexp::tipar(exp, type_env, value_env),
-            UnitExp => unitexp::tipar(exp, &type_env, &value_env),
-            NilExp => nilexp::tipar(exp, &type_env, &value_env),
-            IntExp(_) => intexp::tipar(exp, &type_env, &value_env),
-            StringExp(_) => stringexp::tipar(exp, &type_env, &value_env),
+            VarExp(..) => varexp::tipar(exp, type_env, value_env),
+            UnitExp => unitexp::tipar(exp, type_env, value_env),
+            NilExp => nilexp::tipar(exp, type_env, value_env),
+            IntExp(..) => intexp::tipar(exp, type_env,&value_env),
+            StringExp(..) => stringexp::tipar(exp, type_env, value_env),
             CallExp{..} => callexp::tipar(exp, type_env, value_env),
-            OpExp{..} => opexp::tipar(exp, &type_env, &value_env),
-            AssignExp{..} => assignexp::tipar(exp, &type_env, &value_env),
+            OpExp{..} => opexp::tipar(exp,&type_env, value_env),
+            AssignExp{..} => assignexp::tipar(exp, type_env, value_env),
             RecordExp{..} => recordexp::tipar(exp, type_env, value_env),
-            SeqExp(_) => seqexp::tipar(exp, type_env, value_env),
+            SeqExp(..) => seqexp::tipar(exp, type_env, value_env),
             IfExp{..} => ifexp::tipar(exp, type_env, value_env),
-            WhileExp{..} => whileexp::tipar(exp, &type_env, &value_env),
+            WhileExp{..} => whileexp::tipar(exp, type_env, value_env),
             ForExp{..} => forexp::tipar(exp, type_env, value_env),
             LetExp{..} => letexp::tipar(exp, type_env, value_env),
-            BreakExp => breakexp::tipar(exp, &type_env, &value_env),
-            ArrayExp{..} => arrayexp::tipar(exp, &type_env, &value_env),
+            BreakExp => breakexp::tipar(exp, type_env, value_env),
+            ArrayExp{..} => arrayexp::tipar(exp, type_env, value_env),
         }
     }
 }
