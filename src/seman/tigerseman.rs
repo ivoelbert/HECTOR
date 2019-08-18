@@ -41,8 +41,8 @@ pub enum Tipo {
     TNil,
     TInt(R),
     TString,
-    TArray(Box<Tipo>, TypeId), 
-    TRecord(Vec<(Box<String>, Box<Tipo>, u8)>, TypeId), 
+    TArray(Box<Tipo>, TypeId),
+    TRecord(Vec<(Box<String>, Box<Tipo>, u8)>, TypeId),
     TTipo(String)
 }
 
@@ -282,26 +282,26 @@ pub enum Access {
     InReg(Label)
 }
 
-pub fn tipar_exp(exp : Exp, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn tipar_exp(exp : &Exp, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     use _Exp::*;
     match exp {
-        Exp {node: __exp, pos} => match __exp {
-            VarExp(_) => varexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
-            UnitExp => unitexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
-            NilExp => nilexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
-            IntExp(_) => intexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
-            StringExp(_) => stringexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
-            CallExp{..} => callexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
-            OpExp{..} => opexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
-            AssignExp{..} => assignexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
-            RecordExp{..} => recordexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
-            SeqExp(_) => seqexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
-            IfExp{..} => ifexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
-            WhileExp{..} => whileexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
-            ForExp{..} => forexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
-            LetExp{..} => letexp::tipar(Exp{node: __exp, pos}, type_env, value_env),
-            BreakExp => breakexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
-            ArrayExp{..} => arrayexp::tipar(Exp{node: __exp, pos}, &type_env, &value_env),
+        Exp {node, ..} => match node {
+            VarExp(_) => varexp::tipar(exp, type_env, value_env),
+            UnitExp => unitexp::tipar(exp, &type_env, &value_env),
+            NilExp => nilexp::tipar(exp, &type_env, &value_env),
+            IntExp(_) => intexp::tipar(exp, &type_env, &value_env),
+            StringExp(_) => stringexp::tipar(exp, &type_env, &value_env),
+            CallExp{..} => callexp::tipar(exp, type_env, value_env),
+            OpExp{..} => opexp::tipar(exp, &type_env, &value_env),
+            AssignExp{..} => assignexp::tipar(exp, &type_env, &value_env),
+            RecordExp{..} => recordexp::tipar(exp, type_env, value_env),
+            SeqExp(_) => seqexp::tipar(exp, type_env, value_env),
+            IfExp{..} => ifexp::tipar(exp, type_env, value_env),
+            WhileExp{..} => whileexp::tipar(exp, &type_env, &value_env),
+            ForExp{..} => forexp::tipar(exp, type_env, value_env),
+            LetExp{..} => letexp::tipar(exp, type_env, value_env),
+            BreakExp => breakexp::tipar(exp, &type_env, &value_env),
+            ArrayExp{..} => arrayexp::tipar(exp, &type_env, &value_env),
         }
     }
 }
@@ -309,23 +309,23 @@ pub fn tipar_exp(exp : Exp, type_env : &TypeEnviroment, value_env: &ValueEnvirom
 pub fn trans_exp(exp : Exp) -> ExpInterm {
     use _Exp::*;
     match exp {
-        Exp {node: __exp, pos} => match __exp {
-            VarExp(_) => varexp::traducir(Exp{node: __exp, pos}),
-            UnitExp => unitexp::traducir(Exp{node: __exp, pos}),
-            NilExp => nilexp::traducir(Exp{node: __exp, pos}),
-            IntExp(_) =>  intexp::traducir(Exp{node: __exp, pos}),
-            StringExp(_) => stringexp::traducir(Exp{node: __exp, pos}),
-            CallExp{..} => callexp::traducir(Exp{node: __exp, pos}),
-            OpExp{..} => opexp::traducir(Exp{node: __exp, pos}),
-            AssignExp{..} => assignexp::traducir(Exp{node: __exp, pos}),
-            RecordExp{..} => recordexp::traducir(Exp{node: __exp, pos}),
-            SeqExp(_) => seqexp::traducir(Exp{node: __exp, pos}),
-            IfExp{..} => ifexp::traducir(Exp{node: __exp, pos}),
-            WhileExp{..} => whileexp::traducir(Exp{node: __exp, pos}),
-            ForExp{..} => forexp::traducir(Exp{node: __exp, pos}),
-            LetExp{..} => letexp::traducir(Exp{node: __exp, pos}),
-            BreakExp => breakexp::traducir(Exp{node: __exp, pos}),
-            ArrayExp{..} => arrayexp::traducir(Exp{node: __exp, pos}),
+        Exp {node: exp, pos} => match exp {
+            VarExp(_) => varexp::traducir(Exp{node: exp, pos}),
+            UnitExp => unitexp::traducir(Exp{node: exp, pos}),
+            NilExp => nilexp::traducir(Exp{node: exp, pos}),
+            IntExp(_) =>  intexp::traducir(Exp{node: exp, pos}),
+            StringExp(_) => stringexp::traducir(Exp{node: exp, pos}),
+            CallExp{..} => callexp::traducir(Exp{node: exp, pos}),
+            OpExp{..} => opexp::traducir(Exp{node: exp, pos}),
+            AssignExp{..} => assignexp::traducir(Exp{node: exp, pos}),
+            RecordExp{..} => recordexp::traducir(Exp{node: exp, pos}),
+            SeqExp(_) => seqexp::traducir(Exp{node: exp, pos}),
+            IfExp{..} => ifexp::traducir(Exp{node: exp, pos}),
+            WhileExp{..} => whileexp::traducir(Exp{node: exp, pos}),
+            ForExp{..} => forexp::traducir(Exp{node: exp, pos}),
+            LetExp{..} => letexp::traducir(Exp{node: exp, pos}),
+            BreakExp => breakexp::traducir(Exp{node: exp, pos}),
+            ArrayExp{..} => arrayexp::traducir(Exp{node: exp, pos}),
         }
     }
 }

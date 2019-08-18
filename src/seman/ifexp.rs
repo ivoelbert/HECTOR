@@ -3,29 +3,29 @@ use std::result::Result;
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn tipar(exp: Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     match exp { Exp {node: _Exp::IfExp{test, then_, else_}, pos} => {
         use Tipo::*;
-        match tipar_exp(*test, type_env, value_env) {
+        match tipar_exp(&*test, type_env, value_env) {
             Ok(TInt(_)) => (),
-            Ok(_) => return Err(TypeError::NonIntegerCondition(pos)),
+            Ok(_) => return Err(TypeError::NonIntegerCondition(*pos)),
             Err(type_error) => return Err(type_error)
         };
-        let then_type = tipar_exp(*then_, type_env, value_env)?;
+        let then_type = tipar_exp(&*then_, type_env, value_env)?;
         match else_ {
-            Some(else_exp) => match tipar_exp(*else_exp, type_env, value_env) {
+            Some(else_exp) => match tipar_exp(&*else_exp, type_env, value_env) {
                 Ok(else_type) => if else_type == then_type {
                     Ok(else_type)
                 }
                 else {
-                    Err(TypeError::ThenElseTypeMismatch(pos))
+                    Err(TypeError::ThenElseTypeMismatch(*pos))
                 }
                 Err(type_error) => Err(type_error)
             }
             None => if then_type == TUnit {
                 Ok(TUnit)
             } else {
-                Err(TypeError::NonUnitBody(pos))
+                Err(TypeError::NonUnitBody(*pos))
             }
         }
     }
