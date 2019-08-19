@@ -40,9 +40,9 @@ fn tipar_ty(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<Tipo, TypeEr
         },
         Ty::Record(fields_vector) => {
             let mut record : Vec<(Box<String>, Box<Tipo>, u8)> = vec![];
-            for (i, Field {name, escape, typ : field_ty}) in fields_vector.iter().enumerate()  {
+            for (i, Field {name, typ : field_ty, ..}) in fields_vector.iter().enumerate()  {
                 let field_type = tipar_ty(field_ty, type_env, pos)?;
-                record.push((Box::new(name.clone()), Box::new(field_type), i.try_into().unwrap()));
+                record.push((Box::new(name.clone()), Box::new(field_type), i.try_into().expect("too many fields!")));
             }
             Ok(Tipo::TRecord(record, uid::Id::new()))
         }
