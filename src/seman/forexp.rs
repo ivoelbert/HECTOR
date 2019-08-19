@@ -6,16 +6,11 @@ use super::tigerseman::*;
 pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env:& ValueEnviroment) -> Result<Tipo, TypeError> {
     use Tipo::*;
     match exp { Exp {node: _Exp::ForExp {var, lo, hi, body, ..}, pos} => {
-        match tipar_exp(&*lo, type_env, value_env) {
-            Ok(TInt(_)) => (),
-            Ok(_) => return Err(TypeError::NonIntegerForRange(*pos)),
-            Err(type_error) => return Err(type_error)
-        };
-        match tipar_exp(&*hi, type_env, value_env) {
-            Ok(TInt(_)) => (),
-            Ok(_) => return Err(TypeError::NonIntegerForRange(*pos)),
-            Err(type_error) => return Err(type_error)
-        };
+        let lo_type = tipo_real(tipar_exp(&*lo, type_env, value_env)?, type_env);
+        let hi_type = tipo_real(tipar_exp(&*hi, type_env, value_env)?, type_env);
+        if !es_int(&lo_type) || !es_int(&hi_type) {
+            return Err(TypeError::NonIntegerForRange(*pos));
+        }
         let mut new_value_env = value_env.clone();
         new_value_env.insert(var.clone(), EnvEntry::Var {
             ty: TInt(R::RO),
