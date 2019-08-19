@@ -1119,7 +1119,7 @@ fn test_tipado_letexp_typedec_ok() {
     let value_env = initial_value_env();
     let res = tipar_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TTipo(_)) => (),
+        Ok(Tipo::TInt(R::RW)) => (),
         Ok(..) => panic!("resultado incorrecto"),
         Err(..) => panic!("las typedecs tipan mal")
     }
@@ -1322,7 +1322,7 @@ fn test_tipado_letexp_todas_las_decs_ok() {
     let value_env = initial_value_env();
     let res = tipar_exp(&exp, &type_env, &value_env)
         .expect("no puedo tipar un let que usa las declaraciones");
-    assert_eq!(res, Tipo::TTipo(Symbol::from("int")))
+    assert_eq!(res, Tipo::TipoInterno(Symbol::from("int")))
 }
 
 // #[test]

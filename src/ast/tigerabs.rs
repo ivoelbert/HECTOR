@@ -175,7 +175,7 @@ pub enum Ty {
     Array(Symbol),
 }
 
-fn compara_fields(f1: &Vec<Field>, f2: &Vec<Field>) -> bool {
+fn compara_fields(f1: &[Field], f2: &[Field]) -> bool {
     true
 }
 

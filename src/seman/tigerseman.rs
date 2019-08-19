@@ -24,7 +24,7 @@ use super::breakexp;
 
 
 // Detalles faltantes:
-//      tipoReal y TTipo
+//      tipoReal y TipoInterno
 
 
 #[derive(Debug, PartialEq, Clone)]
@@ -43,7 +43,17 @@ pub enum Tipo {
     TString,
     TArray(Box<Tipo>, TypeId),
     TRecord(Vec<(Box<String>, Box<Tipo>, u8)>, TypeId),
-    TTipo(String)
+    TipoInterno(String)
+}
+
+fn tipo_real(t: Tipo, tenv: &TypeEnviroment) -> Tipo {
+    match &t {
+        Tipo::TipoInterno(s) => match tenv.get(s) {
+            Some(tipo) => tipo.clone(),
+            None => panic!("at the tipo")
+        },
+        _ => t
+    }
 }
 
 #[derive(Clone)]
@@ -177,9 +187,9 @@ impl PartialEq for Tipo {
             | (TInt(_),TInt(_)) => true,
             (TRecord(_, uid1), TRecord(_, uid2 ))
             | (TArray(_, uid1), TArray(_, uid2)) => uid1 == uid2,
-            (TTipo(s), TTipo(t)) => s == t,
-            (TTipo(_), _) => panic!("Estamos comparando un TTipo"), 
-            (_, TTipo(_)) => panic!("Estamos comparando un TTipo"),
+            (TipoInterno(s), TipoInterno(t)) => s == t,
+            (TipoInterno(_), _) => panic!("Estamos comparando un TipoInterno"), 
+            (_, TipoInterno(_)) => panic!("Estamos comparando un TipoInterno"),
             (_, _) => false,
         }
     }
@@ -188,7 +198,7 @@ impl PartialEq for Tipo {
 impl Tipo {
     pub fn real(&self, type_env: &TypeEnviroment) -> Option<Self> {
         match self.clone() {
-            Tipo::TTipo(alias_type_symbol) => {
+            Tipo::TipoInterno(alias_type_symbol) => {
                 match type_env.get(&alias_type_symbol) {
                     Some(real_type) => Some(real_type.clone()),
                     None => None

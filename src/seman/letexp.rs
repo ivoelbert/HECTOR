@@ -1,12 +1,13 @@
+use std::convert::TryInto;
+
 use super::super::ast::tigerabs::*;
 use super::super::ast::position::Pos;
 use super::tigerseman::*;
 
 use pathfinding::directed::topological_sort;
 
-fn tipar_dec_variable(_VarDec {name, typ, init, ..}: &_VarDec, type_env: &TypeEnviroment, value_env: &ValueEnviroment, pos: Pos) -> Result<ValueEnviroment, TypeError> {
-    let mut new_value_env = value_env.clone();
-    let init_type = tipar_exp(init, type_env, value_env)?;
+fn tipar_dec_variable(_VarDec {name, typ, init, ..}: &_VarDec, type_env: &TypeEnviroment, mut value_env: ValueEnviroment, pos: Pos) -> Result<ValueEnviroment, TypeError> {
+    let init_type = tipar_exp(init, type_env, &value_env)?;
     let dec_type = match typ {
         None => init_type,
         Some(typ_string) => match type_env.get(typ_string) {
@@ -19,24 +20,37 @@ fn tipar_dec_variable(_VarDec {name, typ, init, ..}: &_VarDec, type_env: &TypeEn
             None => return Err(TypeError::UndeclaredType(pos))
         }
     };
-    new_value_env.insert(name.clone(), EnvEntry::Var {
+    value_env.insert(name.clone(), EnvEntry::Var {
         ty: dec_type,
         access: Access::InFrame(0),
         level: 0
     });
-    Ok(new_value_env)
+    Ok(value_env)
+}
+
+fn tipar_ty(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<Tipo, TypeError> {
+    match ty {
+        Ty::Name(symbol) => match type_env.get(symbol) {
+            Some(tipo) => Ok(tipo.clone()),
+            None => Err(TypeError::UndeclaredType(pos))
+        },
+        Ty::Array(symbol) => match type_env.get(symbol) {
+            Some(tipo) => Ok(Tipo::TArray(Box::new(tipo.clone()), uid::Id::new())),
+            None => Err(TypeError::UndeclaredType(pos))
+        },
+        Ty::Record(fields_vector) => {
+            let mut record : Vec<(Box<String>, Box<Tipo>, u8)> = vec![];
+            for (i, Field {name, escape, typ : field_ty}) in fields_vector.iter().enumerate()  {
+                let field_type = tipar_ty(field_ty, type_env, pos)?;
+                record.push((Box::new(name.clone()), Box::new(field_type), i.try_into().unwrap()));
+            }
+            Ok(Tipo::TRecord(record, uid::Id::new()))
+        }
+    }
 }
 
 fn tipar_dec_funcion(_FunctionDec {name, params, result, body, pos}: &_FunctionDec, mut value_env: ValueEnviroment, type_env: &TypeEnviroment) -> Result<ValueEnviroment, TypeError> {
-    let tipar_ty = |ty: &Ty| -> Result<Tipo, TypeError> {
-            match ty {
-                Ty::Name(symbol) => match type_env.get(symbol) {
-                    Some(tipo) => Ok(tipo.clone()),
-                    None => Err(TypeError::UndeclaredType(*pos))
-                },
-                _ => panic!("Solo pueden llegar NameTys a parametros de funciones")
-            }
-    };
+
     // Tipar el resultado
     let result_type = match result {
         None => Tipo::TUnit,
@@ -53,7 +67,7 @@ fn tipar_dec_funcion(_FunctionDec {name, params, result, body, pos}: &_FunctionD
         .iter()
         .try_fold(value_env.clone(), |mut prev : ValueEnviroment, Field {name, typ, ..}: &Field| -> Result<ValueEnviroment, TypeError> {
             prev.insert(name.clone(), EnvEntry::Var{
-                ty: tipar_ty(typ)?,
+                ty: tipar_ty(typ, type_env, *pos)?,
                 access: Access::InReg(name.clone()),
                 level: 0
             });
@@ -61,7 +75,7 @@ fn tipar_dec_funcion(_FunctionDec {name, params, result, body, pos}: &_FunctionD
         })?;
     let formals: Vec<Tipo> = params
         .iter()
-        .map(|Field {typ, ..}: &Field| -> Result<Tipo, TypeError> {tipar_ty(typ)})
+        .map(|Field {typ, ..}: &Field| -> Result<Tipo, TypeError> {tipar_ty(typ, type_env, *pos)})
         .collect::<Result<Vec<Tipo>, TypeError>>()?;
 
     // Tipar el body
@@ -94,14 +108,10 @@ fn sort_types(decs: Vec<_TypeDec>, type_env: &TypeEnviroment) -> Result<Vec<_Typ
     Ok(decs)
 }
 
-fn tipar_decs_bloque_funciones(decs: &Vec<_FunctionDec>, type_env: &TypeEnviroment, value_env: &ValueEnviroment, pos: Pos) -> Result<ValueEnviroment, TypeError> {
-    let sorted_decs = decs;
+fn tipar_decs_bloque_funciones(decs: &[_FunctionDec], type_env: &TypeEnviroment, mut value_env: ValueEnviroment, pos: Pos) -> Result<ValueEnviroment, TypeError> {
     // Checkear que no haya funciones repetidas.
 
-    // Checkear que ninguna funcion tenga parametros repetidos.
-
     // Armar envs con los prototipos.
-    let mut new_value_env = value_env.clone();
     // for _FunctionDec { name, params, result, body} in &decs {
     //     new_value_env.insert(name.clone(), EnvEntry::Func {
     //         label: name.clone(),
@@ -127,35 +137,36 @@ fn tipar_decs_bloque_funciones(decs: &Vec<_FunctionDec>, type_env: &TypeEnvirome
     // }
 
     // // Tipar los bodies.
-    for dec in sorted_decs {
-        new_value_env = tipar_dec_funcion(dec, new_value_env, type_env)?;
+    for dec in decs {
+        value_env = tipar_dec_funcion(dec, value_env, type_env)?;
     }
-    Ok(new_value_env)
+    Ok(value_env)
     // // Si hay results, fijarse que coincidan los tipos.
     // // Devolver los envs con los prototipos.
 }
 
-fn tipar_decs_bloque_tipos(decs: &Vec<_TypeDec>, type_env: &TypeEnviroment, value_env: &ValueEnviroment, pos: Pos) -> Result<TypeEnviroment, TypeError> {
-    let mut new_type_env = type_env.clone();
-    Ok(new_type_env)
+fn tipar_decs_bloque_tipos(decs: &[_TypeDec], mut  type_env: TypeEnviroment) -> Result<TypeEnviroment, TypeError> {
+    //let sorted_decs = sort_types(decs, &type_env);
+    for _TypeDec {name, ty, pos} in decs {
+        type_env.insert(name.clone(), tipar_ty(&ty, &type_env, *pos)?);
+    }
+    Ok(type_env)
 }
 
-fn tipar_decs(decs: &Vec<Dec>, type_env: &TypeEnviroment, value_env: &ValueEnviroment, pos: Pos) -> Result<(TypeEnviroment, ValueEnviroment), TypeError> {
-
-
+fn tipar_decs(decs: &[Dec], type_env: &TypeEnviroment, value_env: &ValueEnviroment, pos: Pos) -> Result<(TypeEnviroment, ValueEnviroment), TypeError> {
     let mut new_type_env = type_env.clone();
     let mut new_value_env = value_env.clone();
     for dec in decs {
         match dec {
-            Dec::VarDec(vd) => match tipar_dec_variable(vd, &new_type_env, &new_value_env, pos) {
+            Dec::VarDec(vd) => match tipar_dec_variable(vd, &new_type_env, new_value_env, pos) {
                 Ok(venv) => new_value_env = venv,
                 Err(type_error) => return Err(type_error),
             },
-            Dec::FunctionDec(fd) => match tipar_decs_bloque_funciones(fd, &new_type_env, &new_value_env, pos) {
+            Dec::FunctionDec(fd) => match tipar_decs_bloque_funciones(fd, &new_type_env, new_value_env, pos) {
                 Ok(venv) => new_value_env = venv,
                 Err(type_error) => return Err(type_error),
             },
-            Dec::TypeDec(td) => match tipar_decs_bloque_tipos(td, &new_type_env, &new_value_env, pos) {
+            Dec::TypeDec(td) => match tipar_decs_bloque_tipos(td, new_type_env) {
                 Ok(tenv) => new_type_env = tenv,
                 Err(type_error) => return Err(type_error),
             },

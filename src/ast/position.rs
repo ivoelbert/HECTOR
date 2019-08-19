@@ -15,7 +15,7 @@ impl Debug for Pos {
 
 impl Pos {
     pub fn new(line: u32, column: u32) -> Self {
-        Pos {
+        Self {
             column,
             line,
         }
@@ -45,7 +45,7 @@ impl<T> WithPos<T> {
     pub fn dummy(node: T) -> Self {
         Self {
             node,
-            pos: Pos::new(u32::MAX, u32::MAX),
+            pos: Pos::new(u32::max_value(), u32::max_value()),
         }
     }
 }
