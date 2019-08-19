@@ -23,10 +23,7 @@ pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) 
                     Ok(Tipo::TUnit) => return Err(TypeError::InvalidCallArgument(*pos)),
                     Err(type_error) => return Err(type_error),
                     // esto tedria que ser tipoReal(argtype)
-                    Ok(arg_type) => match arg_type.real(type_env) {
-                        None => panic!("Hay un tipo sinonimo sin real"),
-                        Some(real_arg_type) => if real_arg_type !=  *formal_type {return Err(TypeError::TypeMismatch(*pos))},
-                    },
+                    Ok(arg_type) => if tipo_real(arg_type, type_env) !=  *formal_type {return Err(TypeError::TypeMismatch(*pos))},
                 }
             }
 

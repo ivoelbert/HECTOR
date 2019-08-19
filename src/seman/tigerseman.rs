@@ -202,25 +202,6 @@ impl PartialEq for Tipo {
     }
 }
 
-impl Tipo {
-    pub fn real(&self, type_env: &TypeEnviroment) -> Option<Self> {
-        match self.clone() {
-            Tipo::TipoInterno(alias_type_symbol) => {
-                match type_env.get(&alias_type_symbol) {
-                    Some(real_type) => Some(real_type.clone()),
-                    None => None
-                }
-            },
-            tt @ Tipo::TUnit
-            | tt @ Tipo::TNil
-            | tt @ Tipo::TInt(..)
-            | tt @ Tipo::TString
-            | tt @ Tipo::TArray(..)
-            | tt @ Tipo::TRecord(..) => Some(tt)
-        }
-    }
-}
-
 #[derive(Debug)]
 pub enum ExpInterm {
     CONST(i32),
