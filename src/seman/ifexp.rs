@@ -5,12 +5,9 @@ use super::tigerseman::*;
 
 pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     match exp { Exp {node: _Exp::IfExp{test, then_, else_}, pos} => {
-        use Tipo::*;
-        match tipar_exp(&*test, type_env, value_env) {
-            Ok(TInt(_)) => (),
-            Ok(_) => return Err(TypeError::NonIntegerCondition(*pos)),
-            Err(type_error) => return Err(type_error)
-        };
+        if !es_int(&tipo_real(tipar_exp(&*test, type_env, value_env)?, type_env)) {
+            return Err(TypeError::NonIntegerCondition(*pos));
+        }
         let then_type = tipar_exp(&*then_, type_env, value_env)?;
         match else_ {
             Some(else_exp) => match tipar_exp(&*else_exp, type_env, value_env) {
@@ -22,8 +19,8 @@ pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) 
                 }
                 Err(type_error) => Err(type_error)
             }
-            None => if then_type == TUnit {
-                Ok(TUnit)
+            None => if then_type == Tipo::TUnit {
+                Ok(Tipo::TUnit)
             } else {
                 Err(TypeError::NonUnitBody(*pos))
             }
