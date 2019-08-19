@@ -46,13 +46,20 @@ pub enum Tipo {
     TipoInterno(String)
 }
 
-fn tipo_real(t: Tipo, tenv: &TypeEnviroment) -> Tipo {
+pub fn tipo_real(t: Tipo, tenv: &TypeEnviroment) -> Tipo {
     match &t {
         Tipo::TipoInterno(s) => match tenv.get(s) {
             Some(tipo) => tipo.clone(),
             None => panic!("at the tipo")
         },
         _ => t
+    }
+}
+
+pub fn es_int(t: &Tipo) -> bool {
+    match &t {
+        Tipo::TInt(_) => true,
+        _ => false
     }
 }
 

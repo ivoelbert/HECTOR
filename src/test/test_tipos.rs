@@ -541,7 +541,7 @@ fn test_tipado_opexp_tipos_distintos() {
     let value_env = initial_value_env();
     let res = tipar_exp(&exp, &type_env, &value_env);
     match res {
-        Err(TypeError::NonIntegerOperand(_)) => (),
+        Err(TypeError::TypeMismatch(_)) => (),
         Err(..) => panic!("error incorrecto"),
         Ok(..) => panic!("podes sumar 1 con perro"),
     }
