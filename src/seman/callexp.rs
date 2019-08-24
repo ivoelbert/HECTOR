@@ -1,3 +1,4 @@
+#![allow(clippy::vec_box)]
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 

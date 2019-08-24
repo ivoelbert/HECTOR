@@ -102,7 +102,6 @@ pub struct _FunctionDec {
     pub params: Vec<Field>,
     pub result: Option<Symbol>,
     pub body: Box<Exp>,
-    pub pos: Pos
 }
 
 #[derive(Debug)]
@@ -111,53 +110,48 @@ pub struct _VarDec {
     pub escape: bool,
     pub typ: Option<Symbol>,
     pub init: Box<Exp>,
-    pub pos: Pos
 }
 
 #[derive(Debug)]
 pub struct _TypeDec {
     pub name: Symbol,
     pub ty: Ty,
-    pub pos: Pos
 }
 
 #[derive(Debug)]
 pub enum Dec {
-    FunctionDec(Vec<_FunctionDec>),
-    VarDec(_VarDec),
-    TypeDec(Vec<_TypeDec>),
+    FunctionDec(Vec<(_FunctionDec, Pos)>),
+    VarDec(_VarDec, Pos),
+    TypeDec(Vec<(_TypeDec, Pos)>),
 }
 
 impl _FunctionDec {
-    pub fn new(name: Symbol, params: Vec<Field>, result: Option<Symbol>, body: Box<Exp>, pos: Pos) -> _FunctionDec {
+    pub fn new(name: Symbol, params: Vec<Field>, result: Option<Symbol>, body: Box<Exp>) -> _FunctionDec {
         _FunctionDec {
             name,
             params,
             result,
-            body,
-            pos
+            body
         }
     }
 }
 
 impl _VarDec {
-    pub fn new(name: Symbol, typ: Option<Symbol>, init: Box<Exp>, pos: Pos) -> _VarDec {
+    pub fn new(name: Symbol, typ: Option<Symbol>, init: Box<Exp>) -> _VarDec {
         _VarDec {
             name,
             escape: false,
             typ,
             init,
-            pos
         }
     }
 }
 
 impl _TypeDec {
-    pub fn new(name: Symbol, ty: Ty, pos: Pos) -> _TypeDec {
+    pub fn new(name: Symbol, ty: Ty) -> _TypeDec {
         _TypeDec {
             name,
             ty,
-            pos
         }
     }
 }
