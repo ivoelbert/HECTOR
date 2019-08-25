@@ -1,3 +1,4 @@
+#![allow(clippy::pub_enum_variant_names)]
 use std::fmt::{self, Debug, Formatter};
 
 use super::position::{Pos, WithPos};
@@ -80,7 +81,7 @@ impl Debug for _Exp {
             _Exp::IfExp {test, then_, else_: Some(e)} => write!(formatter, "(if {:?} then {:?} else {:?})", test, then_, e),
             _Exp::IfExp {test, then_, else_: None} => write!(formatter, "(if {:?} then {:?})", test, then_),
             _Exp::WhileExp {test, body} => write!(formatter, "(while({:?}) {{ {:?} }})", test, body),
-            _Exp::ForExp {var, escape: _, lo, hi, body} => write!(formatter, "(for {:?} := {:?} to {:?} {{ {:?} }} )", var, lo, hi, body),
+            _Exp::ForExp {var, lo, hi, body, ..} => write!(formatter, "(for {:?} := {:?} to {:?} {{ {:?} }} )", var, lo, hi, body),
             _Exp::LetExp {decs, body} => write!(formatter, "(Let {{ {:?} }} in {{ {:?} }})", decs, body),
             _Exp::BreakExp => write!(formatter, "BREAK"),
             _Exp::ArrayExp {typ, size, init} => write!(formatter, "(Array({:?}) [{:?} x {:?}])", typ, size, init),
@@ -97,40 +98,40 @@ impl Debug for Exp {
 
 #[derive(Debug)]
 pub struct _FunctionDec {
-    name: Symbol,
-    params: Vec<Field>,
-    result: Option<Symbol>,
-    body: Box<Exp>,
+    pub name: Symbol,
+    pub params: Vec<Field>,
+    pub result: Option<Symbol>,
+    pub body: Box<Exp>,
 }
 
 #[derive(Debug)]
 pub struct _VarDec {
-    name: Symbol,
+    pub name: Symbol,
     pub escape: bool,
-    typ: Option<Symbol>,
-    init: Box<Exp>,
+    pub typ: Option<Symbol>,
+    pub init: Box<Exp>,
 }
 
 #[derive(Debug)]
 pub struct _TypeDec {
-    name: Symbol,
-    ty: Ty,
+    pub name: Symbol,
+    pub ty: Ty,
 }
 
 #[derive(Debug)]
 pub enum Dec {
-    FunctionDec(Vec<_FunctionDec>),
-    VarDec(_VarDec),
-    TypeDec(Vec<_TypeDec>),
+    FunctionDec(Vec<(_FunctionDec, Pos)>),
+    VarDec(_VarDec, Pos),
+    TypeDec(Vec<(_TypeDec, Pos)>),
 }
 
 impl _FunctionDec {
     pub fn new(name: Symbol, params: Vec<Field>, result: Option<Symbol>, body: Box<Exp>) -> _FunctionDec {
         _FunctionDec {
-            name: name,
-            params: params,
-            result: result,
-            body: body
+            name,
+            params,
+            result,
+            body
         }
     }
 }
@@ -138,10 +139,10 @@ impl _FunctionDec {
 impl _VarDec {
     pub fn new(name: Symbol, typ: Option<Symbol>, init: Box<Exp>) -> _VarDec {
         _VarDec {
-            name: name,
+            name,
             escape: false,
-            typ: typ,
-            init: init
+            typ,
+            init,
         }
     }
 }
@@ -149,24 +150,46 @@ impl _VarDec {
 impl _TypeDec {
     pub fn new(name: Symbol, ty: Ty) -> _TypeDec {
         _TypeDec {
-            name: name,
-            ty: ty
+            name,
+            ty,
         }
     }
 }
+impl PartialEq for _TypeDec {
+    fn eq(&self, other: &Self) -> bool {
+        self.ty == other.ty
+    }
+}
+impl Eq for _TypeDec {}
 
 #[derive(Debug)]
 pub enum Ty {
-    NameTy(Symbol),
-    RecordTy(Vec<Box<Field>>),
-    ArrayTy(Symbol),
+    Name(Symbol),
+    Record(Vec<Field>),
+    Array(Symbol),
 }
+
+fn compara_fields(f1: &[Field], f2: &[Field]) -> bool {
+    true
+}
+
+impl PartialEq for Ty {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Ty::Name(s1), Ty::Name(s2)) => s1 == s2,
+            (Ty::Array(s1), Ty::Array(s2)) => s1 == s2,
+            (Ty::Record(fields1), Ty::Record(fields2)) => compara_fields(fields1, fields2),
+            _ => false
+        }
+    }
+}
+impl Eq for Ty {}
 
 #[derive(Debug)]
 pub struct Field {
-    name: Symbol,
-    escape: bool,
-    typ: Ty,
+    pub name: Symbol,
+    pub escape: bool,
+    pub typ: Ty,
 }
 
 pub enum Oper {
@@ -203,5 +226,5 @@ pub fn posed_exp(exp: _Exp, line: u32, column: u32) -> Box<Exp> {
     let pos = Pos::new(line, column);
     let pos_exp = WithPos::new(exp, pos);
 
-    return Box::new(pos_exp);
+    Box::new(pos_exp)
 }

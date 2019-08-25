@@ -1,18 +1,15 @@
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     use Tipo::*;
-    match exp { Exp {node: _Exp::SeqExp(exps), pos: _} => {
+    match exp { Exp {node: _Exp::SeqExp(exps), ..} => {
         let mut seq_type : Tipo = TUnit;
-        if exps.len() == 0 {
-            panic!("0 length SeqExp");
+        if exps.is_empty() {
+            panic!("empty seqexp");
         }
         for exp in exps {
-            match tipar_exp(*exp, type_env.clone(), value_env.clone()) {
-                Ok(t) => seq_type = t,
-                Err(type_error) => return Err(type_error)
-            }
+            seq_type = tipar_exp(exp, &type_env, value_env)?
         }
         Ok(seq_type)
     }
@@ -21,5 +18,5 @@ pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> 
 }
 
 pub fn traducir(_exp: Exp) -> ExpInterm {
-    return ExpInterm::CONST(0);
+    ExpInterm::CONST(0)
 }

@@ -1,36 +1,35 @@
 use std::fs::{read_dir, read_to_string};
 
-use super::super::ast::parser::{parse, ParseError};
+use super::super::ast::parser::{parse};
 use super::super::ast::position::Pos;
-use super::super::ast::tigerabs::_Exp::*;
 use super::super::ast::tigerabs::*;
 
 #[test]
 fn test_good() {
     let good_path = "./tiger_sources/good/";
-    let source_files = read_dir(good_path).unwrap();
+    let source_files = read_dir(good_path).expect("read_dir");
     for direntry in source_files {
-        let path = direntry.unwrap().path();
-        let contents = read_to_string(&path).unwrap();
+        let path = direntry.expect("direntry").path();
+        let contents = read_to_string(&path).expect("read_to_string");
         let parsed = parse(contents);
         match parsed {
-            Ok(_) => assert!(true),
-            Err(_) => panic!("{:?} deberia parsear bien pero falla", path),
+            Ok(..) => (),
+            Err(..) => panic!("{:?} deberia parsear bien pero falla", path),
         }
     }
 }
 
 #[test]
 fn test_type() {
-    let good_path = "./tiger_sources/type/";
-    let source_files = read_dir(good_path).unwrap();
+    let type_path = "./tiger_sources/type/";
+    let source_files = read_dir(type_path).expect("read_dir");
     for direntry in source_files {
-        let path = direntry.unwrap().path();
-        let contents = read_to_string(&path).unwrap();
+        let path = direntry.expect("direntry").path();
+        let contents = read_to_string(&path).expect("read_to_string");
         let parsed = parse(contents);
         match parsed {
-            Ok(_) => assert!(true),
-            Err(_) => panic!(
+            Ok(..) => (),
+            Err(..) => panic!(
                 "{:?} deberia parsear bien (aunque despues no tipa) pero falla",
                 path
             ),
@@ -41,14 +40,14 @@ fn test_type() {
 #[test]
 fn test_syntax() {
     let syntax_path = "./tiger_sources/syntax/";
-    let source_files = read_dir(syntax_path).unwrap();
+    let source_files = read_dir(syntax_path).expect("read_dir");
     for direntry in source_files {
-        let path = direntry.unwrap().path();
-        let contents = read_to_string(&path).unwrap();
+        let path = direntry.expect("direntry").path();
+        let contents = read_to_string(&path).expect("read_to_string");
         let parsed = parse(contents);
         match parsed {
-            Err(_) => assert!(true),
-            Ok(_) => panic!("{:?} debería fallar pero parsea bien", path),
+            Err(..) => (),
+            Ok(..) => panic!("{:?} deberia fallar pero parsea bien", path),
         }
     }
 }
@@ -59,11 +58,11 @@ fn test_parse_number() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: IntExp(0),
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            node: _Exp::IntExp(0),
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -73,11 +72,11 @@ fn test_parse_string() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: StringExp(_),
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            node: _Exp::StringExp(_),
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -87,11 +86,11 @@ fn test_parse_breakexp() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: BreakExp,
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            node: _Exp::BreakExp,
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -101,11 +100,11 @@ fn test_parse_simplevar() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: VarExp(Var::SimpleVar(_)),
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            node: _Exp::VarExp(Var::SimpleVar(_)),
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -115,11 +114,11 @@ fn test_parse_subscriptvar() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: VarExp(Var::SubscriptVar(_, _)),
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            node: _Exp::VarExp(Var::SubscriptVar(_, _)),
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -129,11 +128,11 @@ fn test_parse_fieldvar() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: VarExp(Var::FieldVar(_, _)),
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            node: _Exp::VarExp(Var::FieldVar(_, _)),
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -143,11 +142,11 @@ fn test_parse_callexp() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: CallExp { func: _, args: _ },
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            node: _Exp::CallExp {..},
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -158,7 +157,7 @@ fn test_parse_custom() {
 
     match parsed {
         Ok(exp) => println!("Parsed expresion:\n\n{:?}\n\n", exp),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -169,15 +168,14 @@ fn test_parse_simple_sum() {
     match parsed {
         Ok(Exp {
             node:
-                OpExp {
-                    left: _,
+                _Exp::OpExp {
                     oper: Oper::PlusOp,
-                    right: _,
+                    ..
                 },
             pos: Pos { line: 0, column: 0 },
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -188,15 +186,14 @@ fn test_parse_simple_mult() {
     match parsed {
         Ok(Exp {
             node:
-                OpExp {
-                    left: _,
+                _Exp::OpExp {
                     oper: Oper::TimesOp,
-                    right: _,
+                    ..
                 },
             pos: Pos { line: 0, column: 0 },
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -207,15 +204,14 @@ fn test_parse_simple_comp() {
     match parsed {
         Ok(Exp {
             node:
-                OpExp {
-                    left: _,
+                _Exp::OpExp {
                     oper: Oper::GeOp,
-                    right: _,
+                    ..
                 },
             pos: Pos { line: 0, column: 0 },
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -225,11 +221,11 @@ fn test_parse_recordexp() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: RecordExp { fields: _, typ: _ },
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            node: _Exp::RecordExp {..},
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -239,11 +235,11 @@ fn test_parse_seqexp() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: SeqExp(_),
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            node: _Exp::SeqExp(_),
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -254,14 +250,14 @@ fn test_parse_assignexp() {
     match parsed {
         Ok(Exp {
             node:
-                AssignExp {
+                _Exp::AssignExp {
                     var: Var::SimpleVar(_),
-                    exp: _,
+                    ..
                 },
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -272,15 +268,13 @@ fn test_parse_ifexp() {
     match parsed {
         Ok(Exp {
             node:
-                IfExp {
-                    test: _,
-                    then_: _,
-                    else_: _,
+                _Exp::IfExp {
+                    ..
                 },
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -290,11 +284,11 @@ fn test_parse_whileexp() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: WhileExp { test: _, body: _ },
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            node: _Exp::WhileExp {..},
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -305,17 +299,13 @@ fn test_parse_forexp() {
     match parsed {
         Ok(Exp {
             node:
-                ForExp {
-                    var: _,
-                    escape: _,
-                    lo: _,
-                    hi: _,
-                    body: _,
+                _Exp::ForExp {
+                    ..
                 },
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -327,14 +317,13 @@ fn test_parse_letexp_functiondec() {
     match parsed {
         Ok(Exp {
             node:
-                LetExp {
-                    decs: _,
-                    body: _,
+                _Exp::LetExp {
+                    ..
                 },
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -347,14 +336,13 @@ fn test_parse_letexp_typedec_namety() {
     match parsed {
         Ok(Exp {
             node:
-                LetExp {
-                    decs: _,
-                    body: _,
+                _Exp::LetExp {
+                    ..
                 },
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -366,14 +354,13 @@ fn test_parse_letexp_typedec_recordty() {
     match parsed {
         Ok(Exp {
             node:
-                LetExp {
-                    decs: _,
-                    body: _,
+                _Exp::LetExp {
+                    ..
                 },
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -385,14 +372,13 @@ fn test_parse_letexp_typedec_arrayty() {
     match parsed {
         Ok(Exp {
             node:
-                LetExp {
-                    decs: _,
-                    body: _,
+                _Exp::LetExp {
+                    ..
                 },
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }
 
@@ -405,14 +391,12 @@ fn test_parse_letexp_arrayexp() {
     match parsed {
         Ok(Exp {
             node:
-                ArrayExp {
-                    typ: _,
-                    size: _,
-                    init: _,
+                _Exp::ArrayExp {
+                    ..
                 },
-            pos: _,
-        }) => assert!(true),
-        Ok(_) => panic!("mal parseado"),
-        Err(_) => panic!("el parser falla en una expresion bien formada"),
+            ..
+        }) => (),
+        Ok(..) => panic!("mal parseado"),
+        Err(..) => panic!("el parser falla en una expresion bien formada"),
     }
 }

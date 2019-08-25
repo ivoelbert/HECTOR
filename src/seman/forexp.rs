@@ -3,36 +3,31 @@ use std::result::Result;
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env:& ValueEnviroment) -> Result<Tipo, TypeError> {
     use Tipo::*;
-    match exp { Exp {node: _Exp::ForExp {var, escape: _, lo, hi, body}, pos} => {
-        let _ = match tipar_exp(*lo, type_env.clone(), value_env.clone()) {
-            Ok(TInt(_)) => (),
-            Ok(_) => return Err(TypeError::NonIntegerForRange(pos)),
-            Err(type_error) => return Err(type_error)
-        };
-        let _ = match tipar_exp(*hi, type_env.clone(), value_env.clone()) {
-            Ok(TInt(_)) => (),
-            Ok(_) => return Err(TypeError::NonIntegerForRange(pos)),
-            Err(type_error) => return Err(type_error)
-        };
+    match exp { Exp {node: _Exp::ForExp {var, lo, hi, body, ..}, pos} => {
+        let lo_type = tipo_real(tipar_exp(&*lo, type_env, value_env)?, type_env);
+        let hi_type = tipo_real(tipar_exp(&*hi, type_env, value_env)?, type_env);
+        if !es_int(&lo_type) || !es_int(&hi_type) {
+            return Err(TypeError::NonIntegerForRange(*pos));
+        }
         let mut new_value_env = value_env.clone();
-        new_value_env.insert(var, EnvEntry::Var {
+        new_value_env.insert(var.clone(), EnvEntry::Var {
             ty: TInt(R::RO),
             access: Access::InFrame(0),
             level: 0
         });
-        let _ = match tipar_exp(*body, type_env.clone(), new_value_env) {
+        match tipar_exp(&*body, type_env, &new_value_env) {
             Ok(TUnit) => (),
-            Ok(_) => return Err(TypeError::NonUnitBody(pos)),
+            Ok(_) => return Err(TypeError::NonUnitBody(*pos)),
             Err(type_error) => return Err(type_error)
         };
-        return Ok(TUnit);
+        Ok(TUnit)
     }
     _ => panic!("delegation panic in forexp::tipar")
     }
 }
 
 pub fn traducir(_exp: Exp) -> ExpInterm {
-    return ExpInterm::CONST(0);
+    ExpInterm::CONST(0)
 }

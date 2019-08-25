@@ -3,32 +3,26 @@ use std::result::Result;
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     match exp { Exp {node: _Exp::IfExp{test, then_, else_}, pos} => {
-        use Tipo::*;
-        let _ = match tipar_exp(*test, type_env.clone(), value_env.clone()) {
-            Ok(TInt(_)) => (),
-            Ok(_) => return Err(TypeError::NonIntegerCondition(pos)),
-            Err(type_error) => return Err(type_error)
-        };
-        let then_type = match tipar_exp(*then_, type_env.clone(), value_env.clone()) {
-            Ok(t) => t,
-            Err(type_error) => return Err(type_error)
-        };
+        if !es_int(&tipo_real(tipar_exp(&*test, type_env, value_env)?, type_env)) {
+            return Err(TypeError::NonIntegerCondition(*pos));
+        }
+        let then_type = tipar_exp(&*then_, type_env, value_env)?;
         match else_ {
-            Some(else_exp) => match tipar_exp(*else_exp, type_env.clone(), value_env.clone()) {
+            Some(else_exp) => match tipar_exp(&*else_exp, type_env, value_env) {
                 Ok(else_type) => if else_type == then_type {
-                    return Ok(else_type);
+                    Ok(else_type)
                 }
                 else {
-                    return Err(TypeError::ThenElseTypeMismatch(pos));
+                    Err(TypeError::ThenElseTypeMismatch(*pos))
                 }
                 Err(type_error) => Err(type_error)
             }
-            None => if then_type == TUnit {
-                return Ok(TUnit);
+            None => if then_type == Tipo::TUnit {
+                Ok(Tipo::TUnit)
             } else {
-                return Err(TypeError::NonUnitBody(pos));
+                Err(TypeError::NonUnitBody(*pos))
             }
         }
     }
@@ -37,5 +31,5 @@ pub fn tipar(exp: Exp, type_env: TypeEnviroment, value_env: ValueEnviroment) -> 
 }
 
 pub fn traducir(_exp: Exp) -> ExpInterm {
-    return ExpInterm::CONST(0);
+    ExpInterm::CONST(0)
 }
