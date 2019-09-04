@@ -3,7 +3,7 @@ use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
 pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
-    let tipar_args = |args: &Vec<Box<Exp>>| -> Vec<Result<Tipo, TypeError>> {
+    let tipar_args = |args: &Vec<Exp>| -> Vec<Result<Tipo, TypeError>> {
         args.iter().map(|arg| tipar_exp(&*arg, type_env, value_env)).rev().collect()
     };
     match exp {

@@ -1,10 +1,11 @@
+#![feature(advanced_slice_patterns, slice_patterns, exclusive_range_pattern)]
 use std::convert::TryInto;
 
 use super::super::ast::tigerabs::*;
 use super::super::ast::position::Pos;
 use super::tigerseman::*;
 
-// use pathfinding::directed::topological_sort;
+use pathfinding::directed::topological_sort;
 
 fn tipar_dec_variable(_VarDec {name, typ, init, ..}: &_VarDec, type_env: &TypeEnviroment, mut value_env: ValueEnviroment, pos: Pos) -> Result<ValueEnviroment, TypeError> {
     let init_type = tipar_exp(init, type_env, &value_env)?;
@@ -125,21 +126,56 @@ fn tipar_decs_bloque_funciones(decs: &[(_FunctionDec, Pos)], type_env: &TypeEnvi
     // // Devolver los envs con los prototipos.
 }
 
-fn sort_types(decs: Vec<_TypeDec>, _type_env: &TypeEnviroment) -> Result<Vec<_TypeDec>, _TypeDec> {
-    // Esto eventualmente debería hacer un sort topologico.
-    // Encuentra ciclos.
-    // topological_sort::topological_sort(&decs, |_TypeDec {ty, ..}: _TypeDec| {
-    //     match ty {
-    //         Ty::Name(s) => vec![],
-    //         Ty::Record(fields) => vec![],
-    //         Ty::Array(s) => vec![],
-    //     }
-    // })
-    Ok(decs)
+fn fija_tipos(decs: &[_TypeDec], mut type_env: TypeEnviroment) -> Result<TypeEnviroment, TypeError> {
+    fn gen_pairs(decs: &[_TypeDec]) -> Vec<(Symbol, Symbol)> {
+        fn genp(decs: &[_TypeDec], mut res: Vec<(Symbol, Symbol)>) -> Vec<(Symbol, Symbol)> {
+            match decs.split_first() {
+                None => res,
+                Some((_TypeDec{name, ty: Ty::Name(s_)}, rest)) => {
+                    res.push((s_.clone(), name.clone()));
+                    genp(rest, res)
+                },
+                Some((_TypeDec{name, ty: Ty::Array(s_)}, rest)) => {
+                    res.push((s_.clone(), name.clone()));
+                    genp(rest, res)
+                },
+                Some((_TypeDec{ty: Ty::Record(_), ..}, rest)) => {
+                    genp(rest, res)
+                },
+            }
+        }
+        genp(decs, vec![])
+    }
+    fn top_sort(pairs: &[(Symbol, Symbol)]) -> Result<Vec<Symbol>, Symbol> {
+        fn elements(pairs: &[(Symbol, Symbol)]) -> Vec<Symbol> {
+            pairs.iter().fold(vec![], |mut l: Vec<Symbol>, (a, b): &(Symbol, Symbol)| -> Vec<Symbol> {
+                let mut l1 = match l.iter().find(|&x| *x == *a) {
+                    None => {l.push(a.clone()); l},
+                    _ => l
+                };
+                match l1.iter().find(|&x| *x == *b) {
+                    None => {l1.push(b.clone()); l1},
+                    _ => l1
+                }
+            })
+        }
+        topological_sort::topological_sort(&elements(pairs), |n| -> Vec<Symbol> {
+            pairs
+                .iter()
+                .filter(|(_, b)| b == n)
+                .map(|(a, _)| a.clone())
+                .collect::<Vec<Symbol>>()
+        })
+    }
+    let pairs : Vec<(Symbol, Symbol)> = gen_pairs(decs);
+    let orden = top_sort(&pairs);
+    // Ahora hay que procesar todas las decs en este orden, agregandolas al env.
+    // Esto es ignorando los Records.
+    // Para agregar el tema de los records, hay que separar los que hacen ciclos y tratarlos aparte.
+    Ok(type_env)
 }
 
 fn tipar_decs_bloque_tipos(decs: &[(_TypeDec, Pos)], mut  type_env: TypeEnviroment) -> Result<TypeEnviroment, TypeError> {
-    //let sorted_decs = sort_types(decs, &type_env);
     for (_TypeDec {name, ty}, pos) in decs {
         type_env.insert(name.clone(), tipar_ty(&ty, &type_env, *pos)?);
     }

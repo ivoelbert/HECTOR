@@ -1,7 +1,7 @@
 use std::fmt::{self, Display, Debug, Formatter};
 use std::u32;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Pos {
     pub column: u32,
     pub line: u32,

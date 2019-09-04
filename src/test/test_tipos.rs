@@ -426,10 +426,10 @@ fn test_tipado_callexp_args_de_mas() {
     let exp = Exp {
         node: _Exp::CallExp {
             func: Symbol::from("f"),
-            args: vec![Box::new(Exp {
+            args: vec![Exp {
                 node: _Exp::IntExp(1),
                 pos: Pos {line: 0, column: 0}
-            })],
+            }],
         },
         pos: Pos {line: 0, column: 0}
     };
@@ -705,8 +705,8 @@ fn test_tipado_arrayexp_tipo_no_existe() {
 fn test_tipado_seqexp_ok() {
     let exp = Exp {
         node: _Exp::SeqExp(vec![
-            Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
-            Box::new(Exp {node: _Exp::IntExp(2), pos: Pos {line: 0, column: 0}}),
+            Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}},
+            Exp {node: _Exp::IntExp(2), pos: Pos {line: 0, column: 0}},
         ]),
         pos: Pos {line: 0, column: 0}
     };
@@ -933,7 +933,7 @@ fn test_tipado_forexp_iterador_es_usable() {
         escape: false,
         lo: Box::new(Exp { node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0,}}),
         hi: Box::new(Exp { node: _Exp::IntExp(10), pos: Pos {line: 0, column: 0,}}),
-        body: boxed_exp(_Exp::SeqExp(vec![boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("i")))), boxed_exp(_Exp::UnitExp)])),
+        body: boxed_exp(_Exp::SeqExp(vec![possed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("i")))), possed_exp(_Exp::UnitExp)])),
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
@@ -1309,7 +1309,7 @@ fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
                     Some(Symbol::from("int")),
                     boxed_exp(_Exp::CallExp {
                         func: Symbol::from("foo"),
-                        args: vec![boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("arg2"))))],
+                        args: vec![possed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("arg2"))))],
                     })
                 ),
                 Pos{line: 0, column: 0}
@@ -1317,7 +1317,7 @@ fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
         ],
         body: boxed_exp(_Exp::CallExp {
             func: Symbol::from("baaz"),
-            args: vec![boxed_exp(_Exp::IntExp(2))]
+            args: vec![possed_exp(_Exp::IntExp(2))]
         })
     });
     let type_env = initial_type_env();
@@ -1504,7 +1504,7 @@ fn test_tipado_letexp_todas_las_decs_ok() {
         ],
         body: boxed_exp(_Exp::CallExp {
             func: Symbol::from("baaz"),
-            args: vec![boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("foo"))))]
+            args: vec![possed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("foo"))))]
         })
     });
     let type_env = initial_type_env();

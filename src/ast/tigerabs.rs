@@ -21,7 +21,7 @@ pub enum _Exp {
     StringExp(String),
     CallExp {
         func: Symbol,
-        args: Vec<Box<Exp>>,
+        args: Vec<Exp>,
     },
     OpExp {
         left: Box<Exp>,
@@ -32,7 +32,7 @@ pub enum _Exp {
         fields: Vec<(Symbol, Box<Exp>)>,
         typ: Symbol,
     },
-    SeqExp(Vec<Box<Exp>>),
+    SeqExp(Vec<Exp>),
     AssignExp {
         var: Var,
         exp: Box<Exp>,
@@ -112,7 +112,7 @@ pub struct _VarDec {
     pub init: Box<Exp>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct _TypeDec {
     pub name: Symbol,
     pub ty: Ty,
@@ -126,8 +126,8 @@ pub enum Dec {
 }
 
 impl _FunctionDec {
-    pub fn new(name: Symbol, params: Vec<Field>, result: Option<Symbol>, body: Box<Exp>) -> _FunctionDec {
-        _FunctionDec {
+    pub fn new(name: Symbol, params: Vec<Field>, result: Option<Symbol>, body: Box<Exp>) -> Self {
+        Self {
             name,
             params,
             result,
@@ -137,8 +137,8 @@ impl _FunctionDec {
 }
 
 impl _VarDec {
-    pub fn new(name: Symbol, typ: Option<Symbol>, init: Box<Exp>) -> _VarDec {
-        _VarDec {
+    pub fn new(name: Symbol, typ: Option<Symbol>, init: Box<Exp>) -> Self {
+        Self {
             name,
             escape: false,
             typ,
@@ -148,44 +148,45 @@ impl _VarDec {
 }
 
 impl _TypeDec {
-    pub fn new(name: Symbol, ty: Ty) -> _TypeDec {
-        _TypeDec {
+    pub fn new(name: Symbol, ty: Ty) -> Self {
+        Self {
             name,
             ty,
         }
     }
 }
-impl PartialEq for _TypeDec {
-    fn eq(&self, other: &Self) -> bool {
-        self.ty == other.ty
-    }
-}
-impl Eq for _TypeDec {}
 
-#[derive(Debug)]
+// impl PartialEq for _TypeDec {
+//     fn eq(&self, other: &Self) -> bool {
+//         self.ty == other.ty
+//     }
+// }
+// impl Eq for _TypeDec {}
+
+#[derive(Debug, Clone)]
 pub enum Ty {
     Name(Symbol),
     Record(Vec<Field>),
     Array(Symbol),
 }
-
+// Falta implementar!!
 fn compara_fields(f1: &[Field], f2: &[Field]) -> bool {
     true
 }
 
-impl PartialEq for Ty {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Ty::Name(s1), Ty::Name(s2)) => s1 == s2,
-            (Ty::Array(s1), Ty::Array(s2)) => s1 == s2,
-            (Ty::Record(fields1), Ty::Record(fields2)) => compara_fields(fields1, fields2),
-            _ => false
-        }
-    }
-}
-impl Eq for Ty {}
+// impl PartialEq for Ty {
+//     fn eq(&self, other: &Self) -> bool {
+//         match (self, other) {
+//             (Ty::Name(s1), Ty::Name(s2)) => s1 == s2,
+//             (Ty::Array(s1), Ty::Array(s2)) => s1 == s2,
+//             (Ty::Record(fields1), Ty::Record(fields2)) => compara_fields(fields1, fields2),
+//             _ => false
+//         }
+//     }
+// }
+// impl Eq for Ty {}
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Field {
     pub name: Symbol,
     pub escape: bool,

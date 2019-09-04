@@ -180,7 +180,7 @@ pub enum TypeError {
     InvalidCallArgument(Pos),
     MissingRecordField(Pos),
     NonIntegerOperand(Pos),
-    TypeDecSortingError(Pos),
+    TypeCycle(Pos),
 }
 
 impl PartialEq for Tipo {
