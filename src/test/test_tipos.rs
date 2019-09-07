@@ -112,8 +112,8 @@ fn test_tipado_intexp() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("_Exp::IntExp tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -131,8 +131,8 @@ fn test_tipado_stringexp() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TString) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("_Exp::StringExp tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -151,8 +151,8 @@ fn test_tipado_varexp_simplevar_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("simplevar tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -170,8 +170,8 @@ fn test_tipado_varexp_simplevar_no_declarada() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredSimpleVar(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("Puedo tipar una simplevar no declarada")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -196,8 +196,8 @@ fn test_tipado_varexp_simplevar_no_es_simple() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotSimpleVar(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("Puedo tipar una simplevar no declarada")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -225,8 +225,8 @@ fn test_tipado_varexp_fieldvar_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("fieldvar esta tipando mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -256,8 +256,8 @@ fn test_tipado_varexp_fieldvar_field_inexistente() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::FieldDoesNotExist(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("fieldvar con field inexistente esta tipando mal")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -282,8 +282,8 @@ fn test_tipado_varexp_fieldvar_sobre_tipo_no_record() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotRecordType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("fieldvar sobre algo que no es record esta tipando mal")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -318,8 +318,8 @@ fn test_tipado_varexp_subscriptvar_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("subscriptvar esta tipando mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -354,8 +354,8 @@ fn test_tipado_varexp_subscriptvar_indice_no_entero() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::SunscriptNotInteger(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo tipar un subscript var con indice no entero")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -387,8 +387,8 @@ fn test_tipado_varexp_subscriptvar_no_array() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotArrayType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("subscriptvar sobre algo que no es array esta tipando mal")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -416,8 +416,8 @@ fn test_tipado_callexp_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("callexp tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -445,8 +445,8 @@ fn test_tipado_callexp_args_de_mas() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TooManyArguments(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("una llamada a funcion con argumentos de mas tipa")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -471,8 +471,8 @@ fn test_tipado_callexp_args_de_menos() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TooFewArguments(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("una llamada a funcion con argumentos de menos tipa")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -493,8 +493,8 @@ fn test_tipado_callexp_funcion_no_declarada() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredFunction(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("llamar a una funcion que no existe tipa")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -513,8 +513,8 @@ fn test_tipado_opexp_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("opexp tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -533,8 +533,8 @@ fn test_tipado_opexp_tipos_distintos() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podes sumar 1 con perro"),
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -557,7 +557,7 @@ fn test_tipado_recordexp_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(return_type) => assert!(return_type == foo_type),
-        Err(..) => panic!("recordexp tipa mal")
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -575,8 +575,8 @@ fn test_tipado_recordexp_tipo_inexistente() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podes darle a un record un tipo que no existe"),
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -595,8 +595,8 @@ fn test_tipado_recordexp_con_tipo_no_record() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotRecordType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podes darle a un record un tipo que no es record"),
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -638,8 +638,8 @@ fn test_tipado_arrayexp_size_no_int() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerSize(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podemos tipar array de tamano perro")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -660,8 +660,8 @@ fn test_tipado_arrayexp_tipos_distintos() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("un array inicializado con algo de un tipo distinto tipa")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -679,8 +679,8 @@ fn test_tipado_arrayexp_tipo_no_array() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotArrayType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("un array inicializado con algo de un tipo distinto tipa")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -696,8 +696,8 @@ fn test_tipado_arrayexp_tipo_no_existe() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("un array de tipo que no existe tipa")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -715,8 +715,8 @@ fn test_tipado_seqexp_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("seqexp esta tipando mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 // Se puede testear algo mas de _Exp::SeqExp? Hay alguna condicion del ultimo tipo?
@@ -738,8 +738,8 @@ fn test_tipado_assignexp_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("assignexp tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -754,8 +754,8 @@ fn test_tipado_assignexp_variable_no_existe() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredSimpleVar(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("Podes asginar a una variable no declarada")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -776,8 +776,8 @@ fn test_tipado_assignexp_tipos_distintos() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("Podes asginar a una variable un valor de otro tipo")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -798,8 +798,8 @@ fn test_tipado_assignexp_variable_read_only() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::ReadOnlyAssignment(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("Podes asginar a una variable read only")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -816,8 +816,8 @@ fn test_tipado_ifexp_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(_)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("ifexp esta tipando mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -834,8 +834,8 @@ fn test_tipado_ifexp_test_no_entero() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerCondition(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puede tener un if con condicion no entera"),
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -852,8 +852,8 @@ fn test_tipado_ifexp_tipos_then_else_distintos() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::ThenElseTypeMismatch(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo tener un if con tipos distintos en then y else"),
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -870,8 +870,8 @@ fn test_tipado_ifexp_sin_else_no_unit() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonUnitBody(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo tener un if sin else y con then no Tipo::TUnit"),
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -886,8 +886,8 @@ fn test_tipado_whileexp_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("whileexp tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -902,8 +902,8 @@ fn test_tipado_whileexp_condicion_no_entera() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerCondition(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podes tener un while con condicion no entera")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -921,8 +921,8 @@ fn test_tipado_forexp_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("forexp tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -940,8 +940,8 @@ fn test_tipado_forexp_iterador_es_usable() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("el iterador del for no es usable en el body")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -959,8 +959,8 @@ fn test_tipado_forexp_body_no_es_unit() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonUnitBody(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podes tener un for con body no unit")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -978,8 +978,8 @@ fn test_tipado_forexp_lo_no_es_int() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerForRange(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podes tener un for con body lo no int")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -997,8 +997,8 @@ fn test_tipado_forexp_hi_no_es_int() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerForRange(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podes tener un for con hi no int")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -1020,8 +1020,8 @@ fn test_tipado_letexp_vardec_sin_tipo_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("no puedo tipar un vardec de tipo inferido")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -1044,8 +1044,8 @@ fn test_tipado_letexp_vardec_con_tipo_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("no puedo tipar un vardec de tipo explicito")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -1067,8 +1067,8 @@ fn test_tipado_letexp_vardec_tipo_no_esta_declarado() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo tipar una declaracion de variable con un tipo que no existe")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -1090,8 +1090,8 @@ fn test_tipado_letexp_vardec_tipos_distintos() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo tipar una declaracion de variable con un tipo distinto al init")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -1122,8 +1122,8 @@ fn test_tipado_letexp_typedec_name_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("las typedecs tipan mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -1163,8 +1163,8 @@ fn test_tipado_letexp_typedec_array_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("las typedecs tipan mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -1177,29 +1177,29 @@ fn test_tipado_letexp_typedec_record_ok() {
                     Symbol::from("FooType"),
                     Ty::Record(vec![
                         Field {
-                            name: Symbol::from("FooType"),
+                            name: Symbol::from("bar"),
                             typ: Ty::Name(Symbol::from("int")),
                             escape: false,
                         }
                     ])
                 ),
-                Pos{line: 0, column: 0}
+                Pos{line: 0, column: 1}
             )]),
             Dec::VarDec(
                 _VarDec::new(
                     Symbol::from("foo"),
                     Some(Symbol::from("FooType")),
                     boxed_exp(_Exp::RecordExp {
-                        fields: vec![(Symbol::from("baz"), boxed_exp(_Exp::IntExp(1)))],
+                        fields: vec![(Symbol::from("bar"), boxed_exp(_Exp::IntExp(1)))],
                         typ: Symbol::from("FooType"),
                     })
                 ),
-                Pos{line: 0, column: 0}
+                Pos{line: 0, column: 2}
             )],
         body: boxed_exp(_Exp::VarExp(
             Var::FieldVar(
                 Box::new(Var::SimpleVar(Symbol::from("foo"))),
-                Symbol::from("baz")
+                Symbol::from("bar")
             )
         ))
     });
@@ -1208,8 +1208,8 @@ fn test_tipado_letexp_typedec_record_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("las typedecs tipan mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -1227,8 +1227,8 @@ fn test_tipado_letexp_typedec_recursion_infinita() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeCycle(_)) => (),
-        Err(..) => panic!(""),
-        Ok(..) => panic!("")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 #[test]
@@ -1268,8 +1268,8 @@ fn test_tipado_letexp_typedec_referencia_tipo_inexistente() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo declarar un sinonimo a un tipo inexistente")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -1296,8 +1296,8 @@ fn test_tipado_letexp_functiondec_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -1345,8 +1345,8 @@ fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("no puedo tipar una funcion que llama a otra de su bloque")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -1373,8 +1373,8 @@ fn test_tipado_letexp_functiondec_body_no_tipa() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredSimpleVar(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo tipar una funcion con un body que no tipa")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -1401,8 +1401,8 @@ fn test_tipado_letexp_functiondec_body_distinto_result() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo tipar una funcion con un body que tipa distinto a result")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
@@ -1429,8 +1429,8 @@ fn test_tipado_letexp_functiondec_params_repetidos() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -1457,8 +1457,8 @@ fn test_tipado_letexp_functiondec_nombres_repetidos() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
@@ -1484,8 +1484,8 @@ fn test_tipado_letexp_functiondec_recursivas() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 

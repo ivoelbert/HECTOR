@@ -156,35 +156,13 @@ impl _TypeDec {
     }
 }
 
-// impl PartialEq for _TypeDec {
-//     fn eq(&self, other: &Self) -> bool {
-//         self.ty == other.ty
-//     }
-// }
-// impl Eq for _TypeDec {}
-
 #[derive(Debug, Clone)]
 pub enum Ty {
     Name(Symbol),
     Record(Vec<Field>),
     Array(Symbol),
 }
-// Falta implementar!!
-fn compara_fields(f1: &[Field], f2: &[Field]) -> bool {
-    true
-}
 
-// impl PartialEq for Ty {
-//     fn eq(&self, other: &Self) -> bool {
-//         match (self, other) {
-//             (Ty::Name(s1), Ty::Name(s2)) => s1 == s2,
-//             (Ty::Array(s1), Ty::Array(s2)) => s1 == s2,
-//             (Ty::Record(fields1), Ty::Record(fields2)) => compara_fields(fields1, fields2),
-//             _ => false
-//         }
-//     }
-// }
-// impl Eq for Ty {}
 
 #[derive(Debug, Clone)]
 pub struct Field {

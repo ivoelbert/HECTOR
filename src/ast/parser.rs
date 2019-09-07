@@ -1,5 +1,5 @@
-use super::tigerabs::{Exp, _Exp};
-use super::position::{Pos, WithPos};
+use super::tigerabs::{Exp};
+use super::position::{Pos};
 use lalrpop_util::lalrpop_mod;
 
 #[macro_use]

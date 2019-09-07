@@ -35,22 +35,47 @@ fn possed_exp(exp: _Exp) -> Exp {
 fn boxed_exp(exp: _Exp) -> Box<Exp> {
     Box::new(Exp {node: exp, pos: Pos {line: 0, column: 0}})
 }
-
 fn main() {
-   let exp = possed_exp(_Exp::LetExp {
-        decs: vec![Dec::TypeDec(vec![
-            (_TypeDec::new(Symbol::from("C"), Ty::Name(Symbol::from("B"))), Pos{line: 0, column: 0}),
-            (_TypeDec::new(Symbol::from("B"), Ty::Name(Symbol::from("A"))), Pos{line: 0, column: 0}),
-            (_TypeDec::new(Symbol::from("A"), Ty::Name(Symbol::from("int"))), Pos{line: 0, column: 0}),
-        ])],
-        body: boxed_exp(_Exp::UnitExp)
+    let exp = possed_exp(_Exp::LetExp {
+        decs: vec![
+            Dec::TypeDec(vec![(
+                _TypeDec::new(
+                    Symbol::from("FooType"),
+                    Ty::Record(vec![
+                        Field {
+                            name: Symbol::from("bar"),
+                            typ: Ty::Name(Symbol::from("int")),
+                            escape: false,
+                        }
+                    ])
+                ),
+                Pos{line: 0, column: 0}
+            )]),
+            Dec::VarDec(
+                _VarDec::new(
+                    Symbol::from("foo"),
+                    Some(Symbol::from("FooType")),
+                    boxed_exp(_Exp::RecordExp {
+                        fields: vec![(Symbol::from("bar"), boxed_exp(_Exp::IntExp(1)))],
+                        typ: Symbol::from("FooType"),
+                    })
+                ),
+                Pos{line: 0, column: 0}
+            )],
+        body: boxed_exp(_Exp::VarExp(
+            Var::FieldVar(
+                Box::new(Var::SimpleVar(Symbol::from("foo"))),
+                Symbol::from("bar")
+            )
+        ))
     });
+    println!("Expresion {:?}", exp);
     let type_env = initial_type_env();
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("wrong type"),
-        Err(..) => panic!("type error"),
+        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(..) => panic!("resultado incorrecto"),
+        Err(..) => panic!("las typedecs tipan mal")
     }
 }
