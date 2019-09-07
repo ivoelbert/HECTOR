@@ -12,7 +12,7 @@ fn field_type(fields: &[(Box<String>, Box<Tipo>, u8)], symbol: &str) -> Option<T
     None
 }
 
-pub fn tipar_var(var: &Var, pos: Pos, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn typecheck_var(var: &Var, pos: Pos, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     match var {
         Var::SimpleVar(var_symbol) => match value_env.get(var_symbol) {
             Some(env_entry) => match env_entry {
@@ -32,7 +32,7 @@ pub fn tipar_var(var: &Var, pos: Pos, type_env: &TypeEnviroment, value_env: &Val
                         EnvEntry::Var {
                             ty: Tipo::TArray(array_of, _),
                             ..
-                        } => match tipar_exp(&*index, type_env, value_env){
+                        } => match type_exp(&*index, type_env, value_env){
                                 Ok(Tipo::TInt(_)) => Ok(*array_of.clone()),
                                 Ok(_) => Err(TypeError::SunscriptNotInteger(pos)),
                                 Err(e) => Err(e)
@@ -62,7 +62,7 @@ pub fn tipar_var(var: &Var, pos: Pos, type_env: &TypeEnviroment, value_env: &Val
 
 }
 
-pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     use _Exp::*;
 
     match exp {
@@ -74,6 +74,6 @@ pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) 
 }
 
 
-pub fn traducir(_exp: Exp) -> ExpInterm {
+pub fn translate(_exp: Exp) -> ExpInterm {
     ExpInterm::CONST(0)
 }

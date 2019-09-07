@@ -17,7 +17,7 @@ fn test_good() {
         let exp = parse(contents).expect("falla el parser");
         let type_env = TypeEnviroment::new();
         let value_env = ValueEnviroment::new();
-        tipar_exp(&exp , &type_env, &value_env).expect("{:?} deberia tipar bien pero falla"/*, path*/);
+        type_exp(&exp , &type_env, &value_env).expect("{:?} deberia tipar bien pero falla"/*, path*/);
     }
 }
 
@@ -31,7 +31,7 @@ fn test_type() {
         let exp = parse(contents).expect("falla el parser");
         let type_env = TypeEnviroment::new();
         let value_env = ValueEnviroment::new();
-        let typed = tipar_exp(&exp , &type_env, &value_env);
+        let typed = type_exp(&exp , &type_env, &value_env);
         match typed {
             Err(_) => (),
             Ok(_) => panic!("{:?} deberia fallar pero tipa bien", path),
@@ -58,7 +58,7 @@ fn test_tipado_unitexp() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -77,7 +77,7 @@ fn test_tipado_nilexp() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TNil) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -90,7 +90,7 @@ fn test_tipado_breakexp() {
     let exp = Exp {node: _Exp::BreakExp, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -109,7 +109,7 @@ fn test_tipado_intexp() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -128,7 +128,7 @@ fn test_tipado_stringexp() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TString) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -148,7 +148,7 @@ fn test_tipado_varexp_simplevar_ok() {
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{ty: Tipo::TInt(R::RW), access: Access::InFrame(1), level: 1});
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -167,7 +167,7 @@ fn test_tipado_varexp_simplevar_no_declarada() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredSimpleVar(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -193,7 +193,7 @@ fn test_tipado_varexp_simplevar_no_es_simple() {
         // level: 0,
         external: false,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotSimpleVar(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -222,7 +222,7 @@ fn test_tipado_varexp_fieldvar_ok() {
         level: 0,
         ty: foo_type,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -253,7 +253,7 @@ fn test_tipado_varexp_fieldvar_field_inexistente() {
         level: 0,
         ty: foo_type,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::FieldDoesNotExist(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -279,7 +279,7 @@ fn test_tipado_varexp_fieldvar_sobre_tipo_no_record() {
         level: 0,
         ty: foo_type,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotRecordType(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -315,7 +315,7 @@ fn test_tipado_varexp_subscriptvar_ok() {
         level: 0,
         ty: foo_type,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -351,7 +351,7 @@ fn test_tipado_varexp_subscriptvar_indice_no_entero() {
         level: 0,
         ty: foo_type,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::SunscriptNotInteger(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -384,7 +384,7 @@ fn test_tipado_varexp_subscriptvar_no_array() {
         level: 0,
         ty: foo_type,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotArrayType(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -413,7 +413,7 @@ fn test_tipado_callexp_ok() {
         // level: 0,
         external: false,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -442,7 +442,7 @@ fn test_tipado_callexp_args_de_mas() {
         // level: 0,
         external: true,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TooManyArguments(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -468,7 +468,7 @@ fn test_tipado_callexp_args_de_menos() {
         // level: 0,
         external: true,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TooFewArguments(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -490,7 +490,7 @@ fn test_tipado_callexp_funcion_no_declarada() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredFunction(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -510,7 +510,7 @@ fn test_tipado_opexp_ok() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -530,7 +530,7 @@ fn test_tipado_opexp_tipos_distintos() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -554,7 +554,7 @@ fn test_tipado_recordexp_ok() {
                 Box::new(Tipo::TInt(R::RW)),
                 0)], TypeId::new());
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(return_type) => assert!(return_type == foo_type),
         Err(..) => panic!("recordexp tipa mal")
@@ -572,7 +572,7 @@ fn test_tipado_recordexp_tipo_inexistente() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -592,7 +592,7 @@ fn test_tipado_recordexp_con_tipo_no_record() {
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
     type_env.insert(Symbol::from("FooType"), Tipo::TInt(R::RW));
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotRecordType(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -614,7 +614,7 @@ fn test_tipado_arrayexp_ok() {
         TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(return_type) => assert!(return_type == foo_type),
         Err(..) => panic!("array")
@@ -635,7 +635,7 @@ fn test_tipado_arrayexp_size_no_int() {
         TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), foo_type);
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerSize(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -657,7 +657,7 @@ fn test_tipado_arrayexp_tipos_distintos() {
         TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), foo_type);
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -676,7 +676,7 @@ fn test_tipado_arrayexp_tipo_no_array() {
     let value_env = initial_value_env();
     let foo_type = Tipo::TInt(R::RW);
     type_env.insert(Symbol::from("FooType"), foo_type);
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotArrayType(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -693,7 +693,7 @@ fn test_tipado_arrayexp_tipo_no_existe() {
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -712,7 +712,7 @@ fn test_tipado_seqexp_ok() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -735,7 +735,7 @@ fn test_tipado_assignexp_ok() {
         level: 1,
     };
     value_env.insert(Symbol::from("foo"), env_entry);
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -751,7 +751,7 @@ fn test_tipado_assignexp_variable_no_existe() {
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredSimpleVar(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -773,7 +773,7 @@ fn test_tipado_assignexp_tipos_distintos() {
         level: 1,
     };
     value_env.insert(Symbol::from("foo"), env_entry);
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -795,7 +795,7 @@ fn test_tipado_assignexp_variable_read_only() {
         level: 1,
     };
     value_env.insert(Symbol::from("i"), env_entry);
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::ReadOnlyAssignment(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -813,7 +813,7 @@ fn test_tipado_ifexp_ok() {
     , pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(_)) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -831,7 +831,7 @@ fn test_tipado_ifexp_test_no_entero() {
     , pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerCondition(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -849,7 +849,7 @@ fn test_tipado_ifexp_tipos_then_else_distintos() {
     , pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::ThenElseTypeMismatch(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -867,7 +867,7 @@ fn test_tipado_ifexp_sin_else_no_unit() {
     , pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonUnitBody(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -883,7 +883,7 @@ fn test_tipado_whileexp_ok() {
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -899,7 +899,7 @@ fn test_tipado_whileexp_condicion_no_entera() {
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerCondition(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -918,7 +918,7 @@ fn test_tipado_forexp_ok() {
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -937,7 +937,7 @@ fn test_tipado_forexp_iterador_es_usable() {
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -956,7 +956,7 @@ fn test_tipado_forexp_body_no_es_unit() {
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonUnitBody(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -975,7 +975,7 @@ fn test_tipado_forexp_lo_no_es_int() {
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerForRange(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -994,7 +994,7 @@ fn test_tipado_forexp_hi_no_es_int() {
     }, pos: Pos {line: 0, column: 0}};
         let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerForRange(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -1017,7 +1017,7 @@ fn test_tipado_letexp_vardec_sin_tipo_ok() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -1041,7 +1041,7 @@ fn test_tipado_letexp_vardec_con_tipo_ok() {
     let type_env = initial_type_env();
     let value_env = initial_value_env();
 
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -1064,7 +1064,7 @@ fn test_tipado_letexp_vardec_tipo_no_esta_declarado() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -1087,7 +1087,7 @@ fn test_tipado_letexp_vardec_tipos_distintos() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -1119,7 +1119,7 @@ fn test_tipado_letexp_typedec_name_ok() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -1160,7 +1160,7 @@ fn test_tipado_letexp_typedec_array_ok() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -1205,7 +1205,7 @@ fn test_tipado_letexp_typedec_record_ok() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -1224,7 +1224,7 @@ fn test_tipado_letexp_typedec_record_ok() {
 //     });
 //     let type_env = initial_type_env();
 //     let value_env = initial_value_env();
-//     let res = tipar_exp(&exp, &type_env, &value_env);
+//     let res = type_exp(&exp, &type_env, &value_env);
 //     match res {
 //         Err(TypeDecSortingError(_)) => (),
 //         Err(..) => panic!("")
@@ -1245,7 +1245,7 @@ fn test_tipado_letexp_typedec_referencia_tipo_inexistente() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -1273,7 +1273,7 @@ fn test_tipado_letexp_functiondec_ok() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -1322,7 +1322,7 @@ fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -1350,7 +1350,7 @@ fn test_tipado_letexp_functiondec_body_no_tipa() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredSimpleVar(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -1378,7 +1378,7 @@ fn test_tipado_letexp_functiondec_body_distinto_result() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
         Err(..) => panic!("error incorrecto"),
@@ -1406,7 +1406,7 @@ fn test_tipado_letexp_functiondec_params_repetidos() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -1434,7 +1434,7 @@ fn test_tipado_letexp_functiondec_nombres_repetidos() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -1461,7 +1461,7 @@ fn test_tipado_letexp_functiondec_recursivas() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -1509,7 +1509,7 @@ fn test_tipado_letexp_todas_las_decs_ok() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env)
+    let res = type_exp(&exp, &type_env, &value_env)
         .expect("no puedo tipar un let que usa las declaraciones");
     assert_eq!(res, Tipo::TInt(R::RW))
 }

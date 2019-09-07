@@ -1,10 +1,10 @@
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) ->  Result<Tipo, TypeError> {
+pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) ->  Result<Tipo, TypeError> {
     use std::collections::HashMap;
     let tipar_fields = |args: &Vec<(Symbol, Box<Exp>)>| -> HashMap<Symbol, Result<Tipo, TypeError>> {
-        args.iter().map(|arg| (arg.0.clone(), tipar_exp(&*arg.1, type_env, value_env))).rev().collect()
+        args.iter().map(|arg| (arg.0.clone(), type_exp(&*arg.1, type_env, value_env))).rev().collect()
     };
     match exp { Exp {node: _Exp::RecordExp{fields, typ: record_type_string}, pos} => {
         let mut field_types = tipar_fields(fields);
@@ -40,6 +40,6 @@ pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) 
     }
 }
 
-pub fn traducir(_exp: Exp) -> ExpInterm {
+pub fn translate(_exp: Exp) -> ExpInterm {
     ExpInterm::CONST(0)
 }

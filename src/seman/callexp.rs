@@ -2,9 +2,9 @@
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     let tipar_args = |args: &Vec<Exp>| -> Vec<Result<Tipo, TypeError>> {
-        args.iter().map(|arg| tipar_exp(&*arg, type_env, value_env)).rev().collect()
+        args.iter().map(|arg| type_exp(&*arg, type_env, value_env)).rev().collect()
     };
     match exp {
         Exp {node: _Exp::CallExp {func: function_symbol, args}, pos} => {
@@ -34,6 +34,6 @@ pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) 
     }
 }
 
-pub fn traducir(_exp: Exp) -> ExpInterm {
+pub fn translate(_exp: Exp) -> ExpInterm {
     ExpInterm::CONST(0)
 }
