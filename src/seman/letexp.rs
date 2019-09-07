@@ -123,20 +123,20 @@ fn type_functiondec_batch(decs: &[(_FunctionDec, Pos)], type_env: &TypeEnviromen
     }
 }
 
-fn check_typedec_cycles(decs: &[_TypeDec], mut type_env: TypeEnviroment) -> Result<TypeEnviroment, TypeError> {
-    fn gen_pairs(decs: &[_TypeDec]) -> Vec<(Symbol, Symbol)> {
-        fn genp(decs: &[_TypeDec], mut res: Vec<(Symbol, Symbol)>) -> Vec<(Symbol, Symbol)> {
+fn sort_type_decs<'a>(decs: &'a [(_TypeDec, Pos)]) -> Result<Vec<&'a (_TypeDec, Pos)>, Symbol> {
+    fn gen_pairs(decs: &[(_TypeDec, Pos)]) -> Vec<(Symbol, Symbol)> {
+        fn genp(decs: &[(_TypeDec, Pos)], mut res: Vec<(Symbol, Symbol)>) -> Vec<(Symbol, Symbol)> {
             match decs.split_first() {
                 None => res,
-                Some((_TypeDec{name, ty: Ty::Name(s_)}, rest)) => {
+                Some(((_TypeDec{name, ty: Ty::Name(s_)}, _), rest)) => {
                     res.push((s_.clone(), name.clone()));
                     genp(rest, res)
                 },
-                Some((_TypeDec{name, ty: Ty::Array(s_)}, rest)) => {
+                Some(((_TypeDec{name, ty: Ty::Array(s_)}, _), rest)) => {
                     res.push((s_.clone(), name.clone()));
                     genp(rest, res)
                 },
-                Some((_TypeDec{ty: Ty::Record(_), ..}, rest)) => {
+                Some(((_TypeDec{ty: Ty::Record(_), ..}, _), rest)) => {
                     genp(rest, res)
                 },
             }
@@ -164,16 +164,29 @@ fn check_typedec_cycles(decs: &[_TypeDec], mut type_env: TypeEnviroment) -> Resu
                 .collect::<Vec<Symbol>>()
         })
     }
+    fn sort_decs(decs: &[(_TypeDec, Pos)], order: Vec<(Symbol)>) -> Vec<&(_TypeDec, Pos)> {
+        let mut vec = vec![];
+        for order_symbol in order {
+            vec.push(decs.iter().find(|&(_TypeDec{name, ..}, _)| *name == order_symbol).expect("sorted symbol must be on decs"))
+        }
+        vec
+    }
     let pairs : Vec<(Symbol, Symbol)> = gen_pairs(decs);
-    let orden = top_sort(&pairs);
-    // Ahora hay que procesar todas las decs en este orden, agregandolas al env.
+    let order = top_sort(&pairs)?;
+    Ok(sort_decs(decs, order))
     // Esto es ignorando los Records.
     // Para agregar el tema de los records, hay que separar los que hacen ciclos y tratarlos aparte.
-    Ok(type_env)
 }
 
-fn tipar_decs_bloque_tipos(decs: &[(_TypeDec, Pos)], mut  type_env: TypeEnviroment) -> Result<TypeEnviroment, TypeError> {
-    for (_TypeDec {name, ty}, pos) in decs {
+fn type_typedec_block(decs: &[(_TypeDec, Pos)], mut  type_env: TypeEnviroment) -> Result<TypeEnviroment, TypeError> {
+    let sorted_decs = match sort_type_decs(decs) {
+        Ok(sd) => sd,
+        Err(s) => return Err(TypeError::TypeCycle(
+            // This is the Pos of the dec corresponding to the cycle error
+            decs.iter().find(|&(_TypeDec{name, ..}, _)| *name == s).expect("sorted symbol must be on decs").1)
+        )
+    };
+    for (_TypeDec {name, ty}, pos) in sorted_decs {
         type_env.insert(name.clone(), type_ty(&ty, &type_env, *pos)?);
     }
     Ok(type_env)
@@ -192,7 +205,7 @@ fn type_decs(decs: &[Dec], type_env: &TypeEnviroment, value_env: &ValueEnviromen
                 Ok(venv) => new_value_env = venv,
                 Err(type_error) => return Err(type_error),
             },
-            Dec::TypeDec(td) => match tipar_decs_bloque_tipos(td, new_type_env) {
+            Dec::TypeDec(td) => match type_typedec_block(td, new_type_env) {
                 Ok(tenv) => new_type_env = tenv,
                 Err(type_error) => return Err(type_error),
             },

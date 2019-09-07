@@ -5,10 +5,10 @@ use super::tigerseman::*;
 
 pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     use Tipo::*;
-    use super::varexp::tipar_var;
+    use super::varexp::typecheck_var;
     match exp {
         Exp {node: _Exp::AssignExp{var , exp: value_exp}, pos} => {
-            let var_type = match tipar_var(var, *pos, type_env, value_env) {
+            let var_type = match typecheck_var(var, *pos, type_env, value_env) {
                 Ok(TInt(R::RO)) => return Err(TypeError::ReadOnlyAssignment(*pos)),
                 Ok(tipo) => tipo,
                 Err(type_error) => return Err(type_error)

@@ -7,7 +7,7 @@
     clippy::missing_docs_in_private_items, // esto es una verdadera paja
     clippy::implicit_return, // se contradice con otro?
     clippy::use_debug, // para debuguear el parser
-    clippy::print_stdout, 
+    clippy::print_stdout,
     clippy::needless_pass_by_value, // para tener los translate muertos
 )]
 

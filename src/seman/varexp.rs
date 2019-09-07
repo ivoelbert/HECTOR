@@ -67,7 +67,7 @@ pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnvirome
 
     match exp {
         Exp { node: VarExp(var), pos} => {
-            tipar_var(var, *pos, type_env, value_env)
+            typecheck_var(var, *pos, type_env, value_env)
         },
         _ => panic!("le llego algo nada que ver a varexp::tipar")
     }

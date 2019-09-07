@@ -1213,23 +1213,43 @@ fn test_tipado_letexp_typedec_record_ok() {
     }
 }
 
-// #[test]
-// fn test_tipado_letexp_typedec_recursion_infinita() {
-//    let exp = possed_exp(_Exp::LetExp {
-//         decs: vec![Dec::TypeDec(vec![
-//             _TypeDec::new(Symbol::from("FooType"), Ty::Name(Symbol::from("BaazType"))),
-//             _TypeDec::new(Symbol::from("BaazType"), Ty::Name(Symbol::from("FooType"))),
-//         ])],
-//         body: boxed_exp(_Exp::UnitExp)
-//     });
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = type_exp(&exp, &type_env, &value_env);
-//     match res {
-//         Err(TypeDecSortingError(_)) => (),
-//         Err(..) => panic!("")
-//     }
-// }
+#[test]
+fn test_tipado_letexp_typedec_recursion_infinita() {
+   let exp = possed_exp(_Exp::LetExp {
+        decs: vec![Dec::TypeDec(vec![
+            (_TypeDec::new(Symbol::from("FooType"), Ty::Name(Symbol::from("BaazType"))), Pos{line: 0, column: 0}),
+            (_TypeDec::new(Symbol::from("BaazType"), Ty::Name(Symbol::from("FooType"))), Pos{line: 0, column: 0}),
+        ])],
+        body: boxed_exp(_Exp::UnitExp)
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = type_exp(&exp, &type_env, &value_env);
+    match res {
+        Err(TypeError::TypeCycle(_)) => (),
+        Err(..) => panic!(""),
+        Ok(..) => panic!("")
+    }
+}
+#[test]
+fn test_typecheck_recursive_typecheck_ok() {
+   let exp = possed_exp(_Exp::LetExp {
+        decs: vec![Dec::TypeDec(vec![
+            (_TypeDec::new(Symbol::from("C"), Ty::Name(Symbol::from("B"))), Pos{line: 0, column: 0}),
+            (_TypeDec::new(Symbol::from("B"), Ty::Name(Symbol::from("A"))), Pos{line: 0, column: 0}),
+            (_TypeDec::new(Symbol::from("A"), Ty::Name(Symbol::from("int"))), Pos{line: 0, column: 0}),
+        ])],
+        body: boxed_exp(_Exp::UnitExp)
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = type_exp(&exp, &type_env, &value_env);
+    match res {
+        Ok(Tipo::TUnit) => (),
+        Ok(..) => panic!("wrong type"),
+        Err(..) => panic!("type error"),
+    }
+}
 
 #[test]
 fn test_tipado_letexp_typedec_referencia_tipo_inexistente() {
