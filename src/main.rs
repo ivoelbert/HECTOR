@@ -28,26 +28,29 @@ use seman::tigerseman::*;
 extern crate lalrpop_util;
 extern crate pathfinding;
 
+fn possed_exp(exp: _Exp) -> Exp {
+    Exp {node: exp, pos: Pos {line: 0, column: 0}}
+}
+
+fn boxed_exp(exp: _Exp) -> Box<Exp> {
+    Box::new(Exp {node: exp, pos: Pos {line: 0, column: 0}})
+}
+
 fn main() {
-    let exp: Exp = WithPos {
-        node: OpExp {
-            left: Box::new(WithPos {
-                node: IntExp(2),
-                pos: Pos::new(1, 0),
-            }),
-            oper: Oper::PlusOp,
-            right: Box::new(WithPos {
-                node: IntExp(2),
-                pos: Pos::new(2, 0),
-            }),
-        },
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
-    let type_env = TypeEnviroment::new();
-    let value_env = ValueEnviroment::new();
+   let exp = possed_exp(_Exp::LetExp {
+        decs: vec![Dec::TypeDec(vec![
+            (_TypeDec::new(Symbol::from("C"), Ty::Name(Symbol::from("B"))), Pos{line: 0, column: 0}),
+            (_TypeDec::new(Symbol::from("B"), Ty::Name(Symbol::from("A"))), Pos{line: 0, column: 0}),
+            (_TypeDec::new(Symbol::from("A"), Ty::Name(Symbol::from("int"))), Pos{line: 0, column: 0}),
+        ])],
+        body: boxed_exp(_Exp::UnitExp)
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
-    println!("Expresion {:?}", res);
+    match res {
+        Ok(Tipo::TUnit) => (),
+        Ok(..) => panic!("wrong type"),
+        Err(..) => panic!("type error"),
+    }
 }

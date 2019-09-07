@@ -165,14 +165,21 @@ fn sort_type_decs<'a>(decs: &'a [(_TypeDec, Pos)]) -> Result<Vec<&'a (_TypeDec, 
         })
     }
     fn sort_decs(decs: &[(_TypeDec, Pos)], order: Vec<(Symbol)>) -> Vec<&(_TypeDec, Pos)> {
-        let mut vec = vec![];
-        for order_symbol in order {
-            vec.push(decs.iter().find(|&(_TypeDec{name, ..}, _)| *name == order_symbol).expect("sorted symbol must be on decs"))
-        }
-        vec
+        let mut     sorted_decs = order
+            .iter()
+            .filter_map(|order_symbol|
+                decs
+                    .iter()
+                    .find(|&(_TypeDec{name, ..}, _)| *name == *order_symbol)
+            )
+            .collect::<Vec<&(_TypeDec, Pos)>>();
+        sorted_decs.reverse();
+        sorted_decs
     }
     let pairs : Vec<(Symbol, Symbol)> = gen_pairs(decs);
+    println!("Pairs {:?}", pairs);
     let order = top_sort(&pairs)?;
+    println!("Order {:?}", order);
     Ok(sort_decs(decs, order))
     // Esto es ignorando los Records.
     // Para agregar el tema de los records, hay que separar los que hacen ciclos y tratarlos aparte.
@@ -186,6 +193,7 @@ fn type_typedec_block(decs: &[(_TypeDec, Pos)], mut  type_env: TypeEnviroment) -
             decs.iter().find(|&(_TypeDec{name, ..}, _)| *name == s).expect("sorted symbol must be on decs").1)
         )
     };
+    println!("Sorted decs {:?}", sorted_decs);
     for (_TypeDec {name, ty}, pos) in sorted_decs {
         type_env.insert(name.clone(), type_ty(&ty, &type_env, *pos)?);
     }
