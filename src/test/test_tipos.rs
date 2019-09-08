@@ -1274,6 +1274,77 @@ fn test_tipado_letexp_typedec_referencia_tipo_inexistente() {
 }
 
 #[test]
+fn typecheck_record_type_cycle_ok() {
+    let exp = possed_exp(_Exp::LetExp {
+        decs: vec![
+            Dec::TypeDec(vec![(
+                _TypeDec::new(
+                    Symbol::from("List"),
+                    Ty::Record(vec![
+                        Field {
+                            name: Symbol::from("head"),
+                            typ: Ty::Name(Symbol::from("int")),
+                            escape: false,
+                        },
+                        Field {
+                            name: Symbol::from("tail"),
+                            typ: Ty::Name(Symbol::from("List")),
+                            escape: false,
+                        }
+                    ])
+                ),
+                Pos{line: 0, column: 1}
+            )]),
+            Dec::VarDec(
+                _VarDec::new(
+                    Symbol::from("foo"),
+                    Some(Symbol::from("List")),
+                    boxed_exp(_Exp::RecordExp {
+                        fields: vec![
+                            (Symbol::from("head"), boxed_exp(_Exp::IntExp(1))),
+                            (Symbol::from("tail"), boxed_exp(_Exp::RecordExp {
+                                fields: vec![
+                                    (Symbol::from("head"), boxed_exp(_Exp::IntExp(2))),
+                                    (Symbol::from("tail"), boxed_exp(_Exp::RecordExp {
+                                        fields: vec![
+                                            (Symbol::from("head"), boxed_exp(_Exp::IntExp(3))),
+                                            (Symbol::from("tail"), boxed_exp(_Exp::RecordExp {
+                                                fields: vec![
+                                                    (Symbol::from("head"), boxed_exp(_Exp::IntExp(4))),
+                                                    (Symbol::from("tail"), boxed_exp(_Exp::NilExp))
+                                                ],
+                                                typ: Symbol::from("List"),
+                                            }))
+                                        ],
+                                        typ: Symbol::from("List"),
+                                    }))
+                                ],
+                                typ: Symbol::from("List"),
+                            }))
+                        ],
+                        typ: Symbol::from("List"),
+                    })
+                ),
+                Pos{line: 0, column: 2}
+            )],
+        body: boxed_exp(_Exp::VarExp(
+            Var::FieldVar(
+                Box::new(Var::SimpleVar(Symbol::from("foo"))),
+                Symbol::from("head")
+            )
+        ))
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = type_exp(&exp, &type_env, &value_env);
+    match res {
+        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
+    }
+}
+
+#[test]
 fn test_tipado_letexp_functiondec_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::FunctionDec(vec![(

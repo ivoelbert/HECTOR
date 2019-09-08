@@ -19,8 +19,7 @@ mod seman;
 mod test;
 
 use ast::tigerabs::*;
-use ast::tigerabs::_Exp::{OpExp, IntExp};
-use ast::position::{Pos, WithPos};
+use ast::position::{Pos};
 
 
 use seman::tigerseman::*;
@@ -40,42 +39,49 @@ fn main() {
         decs: vec![
             Dec::TypeDec(vec![(
                 _TypeDec::new(
-                    Symbol::from("FooType"),
+                    Symbol::from("List"),
                     Ty::Record(vec![
                         Field {
-                            name: Symbol::from("bar"),
+                            name: Symbol::from("head"),
                             typ: Ty::Name(Symbol::from("int")),
+                            escape: false,
+                        },
+                        Field {
+                            name: Symbol::from("tail"),
+                            typ: Ty::Name(Symbol::from("List")),
                             escape: false,
                         }
                     ])
                 ),
-                Pos{line: 0, column: 0}
+                Pos{line: 0, column: 1}
             )]),
             Dec::VarDec(
                 _VarDec::new(
                     Symbol::from("foo"),
-                    Some(Symbol::from("FooType")),
+                    Some(Symbol::from("List")),
                     boxed_exp(_Exp::RecordExp {
-                        fields: vec![(Symbol::from("bar"), boxed_exp(_Exp::IntExp(1)))],
-                        typ: Symbol::from("FooType"),
+                        fields: vec![
+                            (Symbol::from("head"), boxed_exp(_Exp::IntExp(1))),
+                            (Symbol::from("tail"), boxed_exp(_Exp::NilExp))
+                        ],
+                        typ: Symbol::from("List"),
                     })
                 ),
-                Pos{line: 0, column: 0}
+                Pos{line: 0, column: 2}
             )],
         body: boxed_exp(_Exp::VarExp(
             Var::FieldVar(
                 Box::new(Var::SimpleVar(Symbol::from("foo"))),
-                Symbol::from("bar")
+                Symbol::from("head")
             )
         ))
     });
-    println!("Expresion {:?}", exp);
     let type_env = initial_type_env();
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("las typedecs tipan mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }

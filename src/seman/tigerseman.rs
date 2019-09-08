@@ -22,11 +22,6 @@ use super::stringexp;
 use super::callexp;
 use super::breakexp;
 
-
-// Detalles faltantes:
-//      tipoReal y TipoInterno
-
-
 #[derive(Debug, PartialEq, Clone)]
 pub enum R {
     RO,
@@ -63,7 +58,7 @@ pub fn es_int(t: &Tipo) -> bool {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum EnvEntry {
     Var {
         ty: Tipo,
@@ -274,7 +269,7 @@ pub struct Level {
     // completar de tigertrans
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Access {
     InFrame(i32),
     InReg(Label)
