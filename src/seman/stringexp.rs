@@ -1,7 +1,7 @@
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn typecheck(_exp: &Exp, _type_env: &TypeEnviroment, _value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn typecheck<'a>(_exp: &Exp, _type_env: &TypeEnviroment, _value_env: &ValueEnviroment) -> Result<Tipo<'a>, TypeError> {
     Ok(Tipo::TString)
 }
 

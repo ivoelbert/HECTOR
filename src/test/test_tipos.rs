@@ -1,11 +1,11 @@
 use std::fs::{read_dir, read_to_string};
+use std::marker::PhantomData;
 
 use super::super::ast::tigerabs::*;
 use super::super::ast::position::*;
 use super::super::ast::parser::parse;
 
 use super::super::seman::tigerseman::*;
-
 
 #[test]
 fn test_good() {
@@ -214,7 +214,7 @@ fn test_tipado_varexp_fieldvar_ok() {
     let mut value_env = initial_value_env();
     let foo_type = Tipo::TRecord(
             vec![(Box::new(String::from("bar")),
-                Box::new(Tipo::TInt(R::RW)),
+                &Tipo::TInt(R::RW),
                 0)], TypeId::new());
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
@@ -242,11 +242,13 @@ fn test_tipado_varexp_fieldvar_field_inexistente() {
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let foo_type = Tipo::TRecord(
-            vec![(Box::new(String::from("bar")),
-                Box::new(Tipo::TInt(R::RW)),
-                0)],
-                TypeId::new(),
-            );
+            vec![(
+                Box::new(String::from("bar")),
+                &Tipo::TInt(R::RW),
+                0
+            )],
+            TypeId::new(),
+        );
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         access: Access::InFrame(0),
@@ -544,6 +546,7 @@ fn test_tipado_recordexp_ok() {
         node: _Exp::RecordExp {
             fields: vec![(Symbol::from("baz"), Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}))],
             typ: Symbol::from("FooType"),
+            phantom: PhantomData,
         },
         pos: Pos {line: 0, column: 0}
     };
@@ -551,7 +554,7 @@ fn test_tipado_recordexp_ok() {
     let value_env = initial_value_env();
     let foo_type = Tipo::TRecord(
             vec![(Box::new(String::from("baz")),
-                Box::new(Tipo::TInt(R::RW)),
+                &Tipo::TInt(R::RW),
                 0)], TypeId::new());
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     let res = type_exp(&exp, &type_env, &value_env);
@@ -567,6 +570,7 @@ fn test_tipado_recordexp_tipo_inexistente() {
         node: _Exp::RecordExp {
             fields: vec![(Symbol::from("baz"), Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}))],
             typ: Symbol::from("FooType"),
+            phantom: PhantomData,
         },
         pos: Pos {line: 0, column: 0}
     };
@@ -586,6 +590,7 @@ fn test_tipado_recordexp_con_tipo_no_record() {
         node: _Exp::RecordExp {
             fields: vec![(Symbol::from("baz"), Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}))],
             typ: Symbol::from("FooType"),
+            phantom: PhantomData,
         },
         pos: Pos {line: 0, column: 0}
     };
@@ -1180,6 +1185,7 @@ fn test_tipado_letexp_typedec_record_ok() {
                             name: Symbol::from("bar"),
                             typ: Ty::Name(Symbol::from("int")),
                             escape: false,
+                            phantom: PhantomData
                         }
                     ])
                 ),
@@ -1192,6 +1198,7 @@ fn test_tipado_letexp_typedec_record_ok() {
                     boxed_exp(_Exp::RecordExp {
                         fields: vec![(Symbol::from("bar"), boxed_exp(_Exp::IntExp(1)))],
                         typ: Symbol::from("FooType"),
+                        phantom: PhantomData,
                     })
                 ),
                 Pos{line: 0, column: 2}
@@ -1285,11 +1292,13 @@ fn typecheck_record_type_cycle_ok() {
                             name: Symbol::from("head"),
                             typ: Ty::Name(Symbol::from("int")),
                             escape: false,
+                            phantom: PhantomData,
                         },
                         Field {
                             name: Symbol::from("tail"),
                             typ: Ty::Name(Symbol::from("List")),
                             escape: false,
+                            phantom: PhantomData,
                         }
                     ])
                 ),
@@ -1314,15 +1323,19 @@ fn typecheck_record_type_cycle_ok() {
                                                     (Symbol::from("tail"), boxed_exp(_Exp::NilExp))
                                                 ],
                                                 typ: Symbol::from("List"),
+                                                phantom: PhantomData,
                                             }))
                                         ],
                                         typ: Symbol::from("List"),
+                                        phantom: PhantomData,
                                     }))
                                 ],
                                 typ: Symbol::from("List"),
+                                phantom: PhantomData,
                             }))
                         ],
                         typ: Symbol::from("List"),
+                        phantom: PhantomData,
                     })
                 ),
                 Pos{line: 0, column: 2}
@@ -1353,7 +1366,8 @@ fn test_tipado_letexp_functiondec_ok() {
                 vec![Field {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
-                    escape: false
+                    escape: false,
+                    phantom: PhantomData,
                 }],
                 None,
                 boxed_exp(_Exp::UnitExp)
@@ -1382,7 +1396,8 @@ fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
                     vec![Field {
                         name: Symbol::from("arg1"),
                         typ: Ty::Name(Symbol::from("int")),
-                        escape: false
+                        escape: false,
+                        phantom: PhantomData
                     }],
                     Some(Symbol::from("int")),
                     boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("arg1")))),
@@ -1395,7 +1410,8 @@ fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
                     vec![Field {
                         name: Symbol::from("arg2"),
                         typ: Ty::Name(Symbol::from("int")),
-                        escape: false
+                        escape: false,
+                        phantom: PhantomData
                     }],
                     Some(Symbol::from("int")),
                     boxed_exp(_Exp::CallExp {
@@ -1431,6 +1447,7 @@ fn test_tipado_letexp_functiondec_body_no_tipa() {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
                     escape: false,
+                    phantom: PhantomData
                 }],
                 None,
                 boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("baaz")))), // no declarada,
@@ -1458,7 +1475,8 @@ fn test_tipado_letexp_functiondec_body_distinto_result() {
                 vec![Field {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
-                    escape: false
+                    escape: false,
+                    phantom: PhantomData
                 }],
                 None,
                 boxed_exp(_Exp::IntExp(2)), // no declarada,
@@ -1486,7 +1504,8 @@ fn test_tipado_letexp_functiondec_params_repetidos() {
                 vec![Field {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
-                    escape: false
+                    escape: false,
+                    phantom: PhantomData
                 }],
                 None,
                 boxed_exp(_Exp::UnitExp)
@@ -1514,7 +1533,8 @@ fn test_tipado_letexp_functiondec_nombres_repetidos() {
                 vec![Field {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
-                    escape: false
+                    escape: false,
+                    phantom: PhantomData
                 }],
                 None,
                 boxed_exp(_Exp::UnitExp)
@@ -1542,7 +1562,8 @@ fn test_tipado_letexp_functiondec_recursivas() {
                 vec![Field {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
-                    escape: false
+                    escape: false,
+                    phantom: PhantomData,
                 }],
                 None,
                 boxed_exp(_Exp::UnitExp)
@@ -1585,7 +1606,8 @@ fn test_tipado_letexp_todas_las_decs_ok() {
                     vec![Field {
                         name: Symbol::from("bar"),
                         typ: Ty::Name(Symbol::from("FooType")),
-                        escape: false
+                        escape: false,
+                        phantom: PhantomData,
                     }],
                     Some(Symbol::from("FooType")),
                     boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("bar"))))

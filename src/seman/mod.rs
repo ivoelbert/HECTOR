@@ -1,4 +1,4 @@
-// pub mod escape;
+pub mod escape;
 pub mod tigerseman;
 mod intexp;
 mod opexp;

@@ -31,17 +31,17 @@ pub enum R {
 pub type TypeId = uid::Id<u16>;
 
 #[derive(Debug, Clone)]
-pub enum Tipo {
+pub enum Tipo<'a> {
     TUnit,
     TNil,
     TInt(R),
     TString,
-    TArray(Box<Tipo>, TypeId),
-    TRecord(Vec<(Box<String>, Box<Tipo>, u8)>, TypeId),
+    TArray(Box<Tipo<'a>>, TypeId),
+    TRecord(Vec<(Box<String>, &'a Tipo<'a>, u8)>, TypeId),
     TipoInterno(String)
 }
 
-pub fn tipo_real(t: Tipo, tenv: &TypeEnviroment) -> Tipo {
+pub fn tipo_real<'a>(t: Tipo<'a>, tenv: &'a TypeEnviroment) -> Tipo<'a> {
     match &t {
         Tipo::TipoInterno(s) => match tenv.get(s) {
             Some(tipo) => tipo.clone(),
@@ -59,25 +59,25 @@ pub fn es_int(t: &Tipo) -> bool {
 }
 
 #[derive(Clone, Debug)]
-pub enum EnvEntry {
+pub enum EnvEntry<'a> {
     Var {
-        ty: Tipo,
+        ty: Tipo<'a>,
         access: Access,
         level: i32,
     },
     Func {
         // level: Level,
         label: Label,
-        formals: Vec<Tipo>,
-        result: Tipo,
+        formals: Vec<Tipo<'a>>,
+        result: Tipo<'a>,
         external: bool
     }
 }
 
-pub type TypeEnviroment = HashMap<Symbol, Tipo>;
-pub type ValueEnviroment = HashMap<Symbol, EnvEntry>;
+pub type TypeEnviroment<'a> = HashMap<Symbol, Tipo<'a>>;
+pub type ValueEnviroment<'a> = HashMap<Symbol, EnvEntry<'a>>;
 
-pub fn initial_type_env() -> TypeEnviroment {
+pub fn initial_type_env<'a>() -> TypeEnviroment<'a> {
     let mut type_env = TypeEnviroment::new();
     type_env.insert(Symbol::from("int"), Tipo::TInt(R::RW));
     type_env.insert(Symbol::from("string"), Tipo::TString);
@@ -85,7 +85,7 @@ pub fn initial_type_env() -> TypeEnviroment {
 }
 
 // revisar valores de retorno de estas
-pub fn initial_value_env() -> ValueEnviroment {
+pub fn initial_value_env<'a>() -> ValueEnviroment<'a> {
     use Tipo::*;
     use EnvEntry::*;
     let mut value_env = ValueEnviroment::new();
@@ -178,7 +178,7 @@ pub enum TypeError {
     TypeCycle(Pos),
 }
 
-impl PartialEq for Tipo {
+impl<'a> PartialEq for Tipo<'a> {
     fn eq(&self, other: &Self) -> bool {
         use Tipo::*;
         match (self, other) {
@@ -275,7 +275,7 @@ pub enum Access {
     InReg(Label)
 }
 
-pub fn type_exp(exp : &Exp, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn type_exp<'a>(exp : &Exp<'a>, type_env : &'a TypeEnviroment<'a>, value_env: &ValueEnviroment<'a>) -> Result<Tipo<'a>, TypeError> {
     use _Exp::*;
     match exp {
         Exp {node, ..} => match node {

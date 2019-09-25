@@ -6,7 +6,7 @@ use super::tigerseman::*;
 
 use pathfinding::directed::topological_sort;
 
-fn typecheck_vardec(_VarDec {name, typ, init, ..}: &_VarDec, type_env: &TypeEnviroment, mut value_env: ValueEnviroment, pos: Pos) -> Result<ValueEnviroment, TypeError> {
+fn typecheck_vardec<'a>(_VarDec {name, typ, init, ..}: &_VarDec<'a>, type_env: &'a TypeEnviroment<'a>, mut value_env: ValueEnviroment<'a>, pos: Pos) -> Result<ValueEnviroment<'a>, TypeError> {
     println!("ValueEnv {:?}", value_env);
     println!("TypeEnv {:?}", type_env);
     let init_type = type_exp(init, type_env, &value_env)?;
@@ -30,7 +30,7 @@ fn typecheck_vardec(_VarDec {name, typ, init, ..}: &_VarDec, type_env: &TypeEnvi
     Ok(value_env)
 }
 
-fn typecheck_ty(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<Tipo, TypeError> {
+fn typecheck_ty<'a>(ty: &Ty, type_env: &TypeEnviroment<'a>, pos: Pos) -> Result<Tipo<'a>, TypeError> {
     match ty {
         Ty::Name(symbol) => match type_env.get(symbol) {
             Some(tipo) => Ok(tipo.clone()),
@@ -41,17 +41,17 @@ fn typecheck_ty(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<Tipo, Ty
             None => Err(TypeError::UndeclaredType(pos))
         },
         Ty::Record(fields_vector) => {
-            let mut record : Vec<(Box<String>, Box<Tipo>, u8)> = vec![];
+            let mut record : Vec<(Box<String>, &Tipo, u8)> = vec![];
             for (i, Field {name, typ : field_ty, ..}) in fields_vector.iter().enumerate()  {
                 let field_type = typecheck_ty(field_ty, type_env, pos)?;
-                record.push((Box::new(name.clone()), Box::new(field_type), i.try_into().expect("too many fields!")));
+                record.push((Box::new(name.clone()), &field_type, i.try_into().expect("too many fields!")));
             }
             Ok(Tipo::TRecord(record, uid::Id::new()))
         }
     }
 }
 
-fn add_prototype_to_env(_FunctionDec {name, params, result, ..}: &_FunctionDec, mut value_env: ValueEnviroment, type_env: &TypeEnviroment, pos: Pos) -> Result<ValueEnviroment, TypeError> {
+fn add_prototype_to_env<'a>(_FunctionDec {name, params, result, ..}: &_FunctionDec<'a>, mut value_env: ValueEnviroment<'a>, type_env: &TypeEnviroment<'a>, pos: Pos) -> Result<ValueEnviroment<'a>, TypeError> {
     // Lookup result type in env
     let result_type = match result {
         None => Tipo::TUnit,
@@ -107,7 +107,7 @@ fn typecheck_functiondec(_FunctionDec {params, result, body, ..}: &_FunctionDec,
     }
 }
 
-fn typecheck_functiondec_batch(decs: &[(_FunctionDec, Pos)], type_env: &TypeEnviroment, mut value_env: ValueEnviroment) -> Result<ValueEnviroment, TypeError> {
+fn typecheck_functiondec_batch<'a>(decs: &[(_FunctionDec<'a>, Pos)], type_env: &TypeEnviroment<'a>, mut value_env: ValueEnviroment<'a>) -> Result<ValueEnviroment<'a>, TypeError> {
     // Check for repeated function names
 
     // Add prototypes to ValueEnviroment
@@ -125,20 +125,20 @@ fn typecheck_functiondec_batch(decs: &[(_FunctionDec, Pos)], type_env: &TypeEnvi
     }
 }
 
-fn sort_type_decs<'a>(decs: &'a [(_TypeDec, Pos)]) -> Result<(Vec<&'a (_TypeDec, Pos)>, Vec<&'a (_TypeDec, Pos)>), Symbol> {
+fn sort_type_decs<'a>(decs: &'a [(_TypeDec, Pos)]) -> Result<(Vec<&'a (_TypeDec<'a>, Pos)>, Vec<&'a (_TypeDec<'a>, Pos)>), Symbol> {
     fn gen_pairs(decs: &[(_TypeDec, Pos)]) -> (Vec<(Symbol, Symbol)>, Vec<Symbol>) {
         fn genp(decs: &[(_TypeDec, Pos)], mut res: Vec<(Symbol, Symbol)>, mut recursive_records: Vec<Symbol>) -> (Vec<(Symbol, Symbol)>, Vec<Symbol>) {
             match decs.split_first() {
                 None => (res, recursive_records),
-                Some(((_TypeDec{name, ty: Ty::Name(s_)}, _), rest)) => {
+                Some(((_TypeDec{name, ty: Ty::Name(s_), ..}, _), rest)) => {
                     res.push((s_.clone(), name.clone()));
                     genp(rest, res, recursive_records)
                 },
-                Some(((_TypeDec{name, ty: Ty::Array(s_)}, _), rest)) => {
+                Some(((_TypeDec{name, ty: Ty::Array(s_), ..}, _), rest)) => {
                     res.push((s_.clone(), name.clone()));
                     genp(rest, res, recursive_records)
                 },
-                Some(((_TypeDec{name: record_name, ty: Ty::Record(fields)}, _), rest)) => {
+                Some(((_TypeDec{name: record_name, ty: Ty::Record(fields), ..}, _), rest)) => {
                     for Field {typ, ..} in fields {
                         match typ {
                             Ty::Name(field_type_symbol) | Ty::Array(field_type_symbol) => {
@@ -178,7 +178,7 @@ fn sort_type_decs<'a>(decs: &'a [(_TypeDec, Pos)]) -> Result<(Vec<&'a (_TypeDec,
                 .collect::<Vec<Symbol>>()
         })
     }
-    fn sort_decs(decs: &[(_TypeDec, Pos)], order: Vec<(Symbol)>, recursive_record_names: Vec<(Symbol)>) -> (Vec<&(_TypeDec, Pos)>, Vec<&(_TypeDec, Pos)>) {
+    fn sort_decs<'a>(decs: &'a [(_TypeDec, Pos)], order: Vec<(Symbol)>, recursive_record_names: Vec<(Symbol)>) -> (Vec<&'a(_TypeDec<'a>, Pos)>, Vec<&'a(_TypeDec<'a>, Pos)>) {
         let mut sorted_decs = order
             .iter()
             .filter_map(|order_symbol|
@@ -205,7 +205,7 @@ fn sort_type_decs<'a>(decs: &'a [(_TypeDec, Pos)]) -> Result<(Vec<&'a (_TypeDec,
     // Para agregar el tema de los records, hay que separar los que hacen ciclos y tratarlos aparte.
 }
 
-fn typecheck_typedec_block(decs: &[(_TypeDec, Pos)], mut type_env: TypeEnviroment) -> Result<TypeEnviroment, TypeError> {
+fn typecheck_typedec_block<'a>(decs: &[(_TypeDec, Pos)], mut type_env: TypeEnviroment<'a>) -> Result<TypeEnviroment<'a>, TypeError> {
     // Sort by type dependency
     let (sorted_decs, recursive_records) = match sort_type_decs(decs) {
         Ok((sd, rr)) => (sd, rr),
@@ -223,20 +223,20 @@ fn typecheck_typedec_block(decs: &[(_TypeDec, Pos)], mut type_env: TypeEnviromen
         .for_each(|(_TypeDec {name, ..}, _)| {type_env.insert(name.clone(), Tipo::TipoInterno(name.clone()));});
     println!("TypeEnv {:?}", type_env);
     // Insert recursive records.
-    for (_TypeDec {name, ty}, pos) in recursive_records {
+    for (_TypeDec {name, ty, ..}, pos) in recursive_records {
         type_env.insert(name.clone(), typecheck_ty(&ty, &type_env, *pos)?);
     }
     println!("TypeEnv {:?}", type_env);
     // Insert declarations, except recursive records.
     // Problem: Record types have boxes on fields.
     // There is no posible representation of recursive records with this AST
-    for (_TypeDec {name, ty}, pos) in sorted_decs {
+    for (_TypeDec {name, ty, ..}, pos) in sorted_decs {
         type_env.insert(name.clone(), typecheck_ty(&ty, &type_env, *pos)?);
     }
     Ok(type_env)
 }
 
-fn typecheck_decs(decs: &[Dec], type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<(TypeEnviroment, ValueEnviroment), TypeError> {
+fn typecheck_decs<'a>(decs: &[Dec<'a>], type_env: &TypeEnviroment<'a>, value_env: &ValueEnviroment<'a>) -> Result<(TypeEnviroment<'a>, ValueEnviroment<'a>), TypeError> {
     let mut new_type_env = type_env.clone();
     let mut new_value_env = value_env.clone();
     for dec in decs {
@@ -259,7 +259,7 @@ fn typecheck_decs(decs: &[Dec], type_env: &TypeEnviroment, value_env: &ValueEnvi
     Ok((new_type_env, new_value_env))
 }
 
-pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn typecheck<'a>(exp: &Exp<'a>, type_env: &TypeEnviroment<'a>, value_env: &ValueEnviroment<'a>) -> Result<Tipo<'a>, TypeError> {
     match exp {
         Exp {node: _Exp::LetExp {decs, body}, ..} => {
             let (new_type_env, new_value_env) =  typecheck_decs(decs, type_env, value_env)?;

@@ -2,8 +2,8 @@
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
-    let tipar_args = |args: &Vec<Exp>| -> Vec<Result<Tipo, TypeError>> {
+pub fn typecheck<'a>(exp: &Exp<'a>, type_env: &'a TypeEnviroment<'a>, value_env: &ValueEnviroment<'a>) -> Result<Tipo<'a>, TypeError> {
+    let tipar_args = |args: &Vec<Exp<'a>>| -> Vec<Result<Tipo<'a>, TypeError>> {
         args.iter().map(|arg| type_exp(&*arg, type_env, value_env)).rev().collect()
     };
     match exp {

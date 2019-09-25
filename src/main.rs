@@ -10,6 +10,7 @@
     clippy::print_stdout,
     clippy::needless_pass_by_value, // para tener los translate muertos
 )]
+use std::marker::PhantomData;
 
 #[allow(dead_code)]
 mod ast;
@@ -21,10 +22,7 @@ mod test;
 use ast::tigerabs::*;
 use ast::position::{Pos};
 
-
-use seman::tigerseman::*;
-
-extern crate lalrpop_util;
+//extern crate lalrpop_util;
 extern crate pathfinding;
 
 fn possed_exp(exp: _Exp) -> Exp {
@@ -34,8 +32,9 @@ fn possed_exp(exp: _Exp) -> Exp {
 fn boxed_exp(exp: _Exp) -> Box<Exp> {
     Box::new(Exp {node: exp, pos: Pos {line: 0, column: 0}})
 }
+
 fn main() {
-    let exp = possed_exp(_Exp::LetExp {
+    let mut exp = possed_exp(_Exp::LetExp {
         decs: vec![
             Dec::TypeDec(vec![(
                 _TypeDec::new(
@@ -45,11 +44,13 @@ fn main() {
                             name: Symbol::from("head"),
                             typ: Ty::Name(Symbol::from("int")),
                             escape: false,
+                            phantom: PhantomData,
                         },
                         Field {
                             name: Symbol::from("tail"),
                             typ: Ty::Name(Symbol::from("List")),
                             escape: false,
+                            phantom: PhantomData,
                         }
                     ])
                 ),
@@ -65,6 +66,7 @@ fn main() {
                             (Symbol::from("tail"), boxed_exp(_Exp::NilExp))
                         ],
                         typ: Symbol::from("List"),
+                        phantom: PhantomData,
                     })
                 ),
                 Pos{line: 0, column: 2}
@@ -76,12 +78,5 @@ fn main() {
             )
         ))
     });
-    let type_env = initial_type_env();
-    let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
-    match res {
-        Ok(Tipo::TInt(R::RW)) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
-        Err(type_error) => panic!("type error: {:?}", type_error)
-    }
+    seman::escape::find_escapes(&mut exp)
 }

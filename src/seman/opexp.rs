@@ -1,7 +1,7 @@
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn typecheck<'a>(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo<'a>, TypeError> {
     match exp { Exp {node: _Exp::OpExp{left, right, oper}, pos} => {
         let left_type = tipo_real(type_exp(&*left, type_env, value_env)?, type_env);
         let right_type = tipo_real(type_exp(&*right, type_env, value_env)?, type_env);

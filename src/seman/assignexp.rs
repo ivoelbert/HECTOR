@@ -3,7 +3,7 @@ use std::result::Result;
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn typecheck<'a>(exp: &Exp<'a>, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo<'a>, TypeError> {
     use Tipo::*;
     use super::varexp::typecheck_var;
     match exp {
