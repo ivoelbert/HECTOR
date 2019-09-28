@@ -1,72 +1,72 @@
 #![allow(clippy::pub_enum_variant_names)]
 use std::fmt::{self, Debug, Formatter};
-use std::marker::PhantomData;
 use super::position::{Pos, WithPos};
 
 pub type Symbol = String;
 
 #[derive(Debug)]
-pub enum Var<'a> {
+#[derive(Clone)]
+pub enum Var {
     SimpleVar(Symbol),
-    FieldVar(Box<Var<'a>>, Symbol),
-    SubscriptVar(Box<Var<'a>>, Box<Exp<'a>>),
+    FieldVar(Box<Var>, Symbol),
+    SubscriptVar(Box<Var>, Box<Exp>),
 }
 
 #[allow(dead_code)]
-pub enum _Exp<'a> {
-    VarExp(Var<'a>),
+#[derive(Clone)]
+pub enum _Exp {
+    VarExp(Var),
     UnitExp,
     NilExp,
     IntExp(i32),
     StringExp(String),
     CallExp {
         func: Symbol,
-        args: Vec<Exp<'a>>,
+        args: Vec<Exp>,
     },
     OpExp {
-        left: Box<Exp<'a>>,
+        left: Box<Exp>,
         oper: Oper,
-        right: Box<Exp<'a>>,
+        right: Box<Exp>,
     },
     RecordExp {
-        fields: Vec<(Symbol, Box<Exp<'a>>)>,
+        fields: Vec<(Symbol, Box<Exp>)>,
         typ: Symbol,
-        phantom: PhantomData<&'a Exp<'a>>
     },
-    SeqExp(Vec<Exp<'a>>),
+    SeqExp(Vec<Exp>),
     AssignExp {
-        var: Var<'a>,
-        exp: Box<Exp<'a>>,
+        var: Var,
+        exp: Box<Exp>,
     },
     IfExp {
-        test: Box<Exp<'a>>,
-        then_: Box<Exp<'a>>,
-        else_: Option<Box<Exp<'a>>>,
+        test: Box<Exp>,
+        then_: Box<Exp>,
+        else_: Option<Box<Exp>>,
     },
     WhileExp {
-        test: Box<Exp<'a>>,
-        body: Box<Exp<'a>>,
+        test: Box<Exp>,
+        body: Box<Exp>,
     },
     ForExp {
         var: Symbol,
         escape: bool,
-        lo: Box<Exp<'a>>,
-        hi: Box<Exp<'a>>,
-        body: Box<Exp<'a>>,
+        lo: Box<Exp>,
+        hi: Box<Exp>,
+        body: Box<Exp>,
     },
     LetExp {
-        decs: Vec<Dec<'a>>,
-        body: Box<Exp<'a>>,
+        decs: Vec<Dec>,
+        body: Box<Exp>,
     },
     BreakExp,
     ArrayExp {
         typ: Symbol,
-        size: Box<Exp<'a>>,
-        init: Box<Exp<'a>>,
+        size: Box<Exp>,
+        init: Box<Exp>,
     },
 }
 
-impl<'a> Debug for _Exp<'a> {
+impl Debug for _Exp {
     fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
         match self {
             _Exp::VarExp(var) => write!(formatter, "Var({:?})", var),
@@ -90,45 +90,44 @@ impl<'a> Debug for _Exp<'a> {
     }
 }
 
-pub type Exp<'a> = WithPos<_Exp<'a>>;
-impl<'a> Debug for Exp<'a> {
+pub type Exp = WithPos<_Exp>;
+impl Debug for Exp {
     fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
         write!(formatter, "{:?}", self.node)
     }
 }
 
-#[derive(Debug)]
-pub struct _FunctionDec<'a> {
+#[derive(Debug, Clone)]
+pub struct _FunctionDec {
     pub name: Symbol,
-    pub params: Vec<Field<'a>>,
+    pub params: Vec<Field>,
     pub result: Option<Symbol>,
-    pub body: Box<Exp<'a>>,
-}
-
-#[derive(Debug)]
-pub struct _VarDec<'a> {
-    pub name: Symbol,
-    pub escape: bool,
-    pub typ: Option<Symbol>,
-    pub init: Box<Exp<'a>>,
+    pub body: Box<Exp>,
 }
 
 #[derive(Debug, Clone)]
-pub struct _TypeDec<'a> {
+pub struct _VarDec {
     pub name: Symbol,
-    pub ty: Ty<'a>,
-    phantom: PhantomData<&'a _TypeDec<'a>>
+    pub escape: bool,
+    pub typ: Option<Symbol>,
+    pub init: Box<Exp>,
 }
 
-#[derive(Debug)]
-pub enum Dec<'a> {
-    FunctionDec(Vec<(_FunctionDec<'a>, Pos)>),
-    VarDec(_VarDec<'a>, Pos),
-    TypeDec(Vec<(_TypeDec<'a>, Pos)>),
+#[derive(Debug, Clone)]
+pub struct _TypeDec {
+    pub name: Symbol,
+    pub ty: Ty,
 }
 
-impl<'a> _FunctionDec<'a> {
-    pub fn new(name: Symbol, params: Vec<Field<'a>>, result: Option<Symbol>, body: Box<Exp<'a>>) -> Self {
+#[derive(Debug, Clone)]
+pub enum Dec {
+    FunctionDec(Vec<(_FunctionDec, Pos)>),
+    VarDec(_VarDec, Pos),
+    TypeDec(Vec<(_TypeDec, Pos)>),
+}
+
+impl _FunctionDec {
+    pub fn new(name: Symbol, params: Vec<Field>, result: Option<Symbol>, body: Box<Exp>) -> Self {
         Self {
             name,
             params,
@@ -138,8 +137,8 @@ impl<'a> _FunctionDec<'a> {
     }
 }
 
-impl<'a> _VarDec<'a> {
-    pub fn new(name: Symbol, typ: Option<Symbol>, init: Box<Exp<'a>>) -> Self {
+impl _VarDec {
+    pub fn new(name: Symbol, typ: Option<Symbol>, init: Box<Exp>) -> Self {
         Self {
             name,
             escape: false,
@@ -149,32 +148,31 @@ impl<'a> _VarDec<'a> {
     }
 }
 
-impl<'a> _TypeDec<'a> {
-    pub fn new(name: Symbol, ty: Ty<'a>) -> Self {
+impl _TypeDec {
+    pub fn new(name: Symbol, ty: Ty) -> Self {
         Self {
             name,
             ty,
-            phantom: PhantomData
         }
     }
 }
 
 #[derive(Debug, Clone)]
-pub enum Ty<'a> {
+pub enum Ty {
     Name(Symbol),
-    Record(Vec<Field<'a>>),
+    Record(Vec<Field>),
     Array(Symbol),
 }
 
 
 #[derive(Debug, Clone)]
-pub struct Field<'a> {
+pub struct Field {
     pub name: Symbol,
     pub escape: bool,
-    pub typ: Ty<'a>,
-    phantom: PhantomData<&'a Field<'a>>
+    pub typ: Ty,
 }
 
+#[derive(Clone)]
 pub enum Oper {
     PlusOp,
     MinusOp,

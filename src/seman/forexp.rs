@@ -3,7 +3,7 @@ use std::result::Result;
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn typecheck<'a>(exp: &Exp<'a>, type_env: &TypeEnviroment<'a>, value_env:& ValueEnviroment) -> Result<Tipo<'a>, TypeError> {
+pub fn typecheck<'a>(exp: &Exp, type_env: &TypeEnviroment<'a>, value_env:& ValueEnviroment) -> Result<Tipo<'a>, TypeError> {
     use Tipo::*;
     match exp { Exp {node: _Exp::ForExp {var, lo, hi, body, ..}, pos} => {
         let lo_type = tipo_real(type_exp(&*lo, type_env, value_env)?, type_env);

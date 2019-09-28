@@ -10,7 +10,7 @@ pub enum ParseError {
     UnexpectedToken(Pos),
 }
 
-pub fn parse(source : String) -> Result<Exp<'static>, ParseError> {
+pub fn parse(source : String) -> Result<Exp, ParseError> {
     let str_src: &str = &*source;
     let box_exp = posed_exp(_Exp::UnitExp, 1, 1);
 

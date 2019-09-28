@@ -78,5 +78,4 @@ fn main() {
             )
         ))
     });
-    seman::escape::find_escapes(&mut exp)
 }

@@ -275,7 +275,7 @@ pub enum Access {
     InReg(Label)
 }
 
-pub fn type_exp<'a>(exp : &Exp<'a>, type_env : &'a TypeEnviroment<'a>, value_env: &ValueEnviroment<'a>) -> Result<Tipo<'a>, TypeError> {
+pub fn type_exp<'a>(exp : &Exp, type_env : &'a TypeEnviroment<'a>, value_env: &ValueEnviroment<'a>) -> Result<Tipo<'a>, TypeError> {
     use _Exp::*;
     match exp {
         Exp {node, ..} => match node {

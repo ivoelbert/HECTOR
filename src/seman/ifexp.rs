@@ -3,7 +3,7 @@ use std::result::Result;
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn typecheck<'a>(exp: &Exp<'a>, type_env: &'a TypeEnviroment<'a>, value_env: &ValueEnviroment<'a>) -> Result<Tipo<'a>, TypeError> {
+pub fn typecheck<'a>(exp: &Exp, type_env: &'a TypeEnviroment<'a>, value_env: &ValueEnviroment<'a>) -> Result<Tipo<'a>, TypeError> {
     match exp { Exp {node: _Exp::IfExp{test, then_, else_}, pos} => {
         if !es_int(&tipo_real(type_exp(&*test, type_env, value_env)?, type_env)) {
             return Err(TypeError::NonIntegerCondition(*pos));
