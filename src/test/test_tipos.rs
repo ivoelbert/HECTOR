@@ -1,5 +1,4 @@
 use std::fs::{read_dir, read_to_string};
-use std::marker::PhantomData;
 
 use super::super::ast::tigerabs::*;
 use super::super::ast::position::*;
@@ -48,7 +47,7 @@ fn boxed_exp(exp: _Exp) -> Box<Exp> {
 }
 
 #[test]
-fn test_tipado_unitexp() {
+fn typecheck_unitexp() {
     let exp = Exp {
         node: _Exp::UnitExp,
         pos: Pos {
@@ -67,7 +66,7 @@ fn test_tipado_unitexp() {
 }
 
 #[test]
-fn test_tipado_nilexp() {
+fn typecheck_nilexp() {
     let exp = Exp {
         node: _Exp::NilExp,
         pos: Pos {
@@ -86,7 +85,7 @@ fn test_tipado_nilexp() {
 }
 
 #[test]
-fn test_tipado_breakexp() {
+fn typecheck_breakexp() {
     let exp = Exp {node: _Exp::BreakExp, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
@@ -99,7 +98,7 @@ fn test_tipado_breakexp() {
 }
 
 #[test]
-fn test_tipado_intexp() {
+fn typecheck_intexp() {
     let exp = Exp {
         node: _Exp::IntExp(1),
         pos: Pos {
@@ -118,7 +117,7 @@ fn test_tipado_intexp() {
 }
 
 #[test]
-fn test_tipado_stringexp() {
+fn typecheck_stringexp() {
     let exp = Exp {
         node: _Exp::StringExp(String::from("lorem ipsum")),
         pos: Pos {
@@ -137,7 +136,7 @@ fn test_tipado_stringexp() {
 }
 
 #[test]
-fn test_tipado_varexp_simplevar_ok() {
+fn typecheck_varexp_simplevar_ok() {
     let exp = Exp {
         node: _Exp::VarExp(Var::SimpleVar(Symbol::from("foo"))),
         pos: Pos {
@@ -157,7 +156,7 @@ fn test_tipado_varexp_simplevar_ok() {
 }
 
 #[test]
-fn test_tipado_varexp_simplevar_no_declarada() {
+fn typecheck_varexp_simplevar_no_declarada() {
     let exp = Exp {
         node: _Exp::VarExp(Var::SimpleVar(Symbol::from("foo"))),
         pos: Pos {
@@ -176,7 +175,7 @@ fn test_tipado_varexp_simplevar_no_declarada() {
 }
 
 #[test]
-fn test_tipado_varexp_simplevar_no_es_simple() {
+fn typecheck_varexp_simplevar_no_es_simple() {
     let exp = Exp {
         node: _Exp::VarExp(Var::SimpleVar(Symbol::from("f"))),
         pos: Pos {
@@ -202,7 +201,7 @@ fn test_tipado_varexp_simplevar_no_es_simple() {
 }
 
 #[test]
-fn test_tipado_varexp_fieldvar_ok() {
+fn typecheck_varexp_fieldvar_ok() {
     let exp = Exp {
         node: _Exp::VarExp(Var::FieldVar(Box::new(Var::SimpleVar(Symbol::from("foo"))),Symbol::from("bar"))),
         pos: Pos {
@@ -231,7 +230,7 @@ fn test_tipado_varexp_fieldvar_ok() {
 }
 
 #[test]
-fn test_tipado_varexp_fieldvar_field_inexistente() {
+fn typecheck_varexp_fieldvar_field_inexistente() {
     let exp = Exp {
         node: _Exp::VarExp(Var::FieldVar(Box::new(Var::SimpleVar(Symbol::from("foo"))),Symbol::from("perro"))),
         pos: Pos {
@@ -264,7 +263,7 @@ fn test_tipado_varexp_fieldvar_field_inexistente() {
 }
 
 #[test]
-fn test_tipado_varexp_fieldvar_sobre_tipo_no_record() {
+fn typecheck_varexp_fieldvar_sobre_tipo_no_record() {
     let exp = Exp {
         node: _Exp::VarExp(Var::FieldVar(Box::new(Var::SimpleVar(Symbol::from("foo"))),Symbol::from("bar"))),
         pos: Pos {
@@ -290,7 +289,7 @@ fn test_tipado_varexp_fieldvar_sobre_tipo_no_record() {
 }
 
 #[test]
-fn test_tipado_varexp_subscriptvar_ok() {
+fn typecheck_varexp_subscriptvar_ok() {
     let exp = Exp {
         node: _Exp::VarExp(
             Var::SubscriptVar(Box::new(Var::SimpleVar(Symbol::from("foo"))),
@@ -326,7 +325,7 @@ fn test_tipado_varexp_subscriptvar_ok() {
 }
 
 #[test]
-fn test_tipado_varexp_subscriptvar_indice_no_entero() {
+fn typecheck_varexp_subscriptvar_indice_no_entero() {
     let exp = Exp {
         node: _Exp::VarExp(
             Var::SubscriptVar(Box::new(Var::SimpleVar(Symbol::from("foo"))),
@@ -362,7 +361,7 @@ fn test_tipado_varexp_subscriptvar_indice_no_entero() {
 }
 
 #[test]
-fn test_tipado_varexp_subscriptvar_no_array() {
+fn typecheck_varexp_subscriptvar_no_array() {
     let exp = Exp {
         node: _Exp::VarExp(
             Var::SubscriptVar(Box::new(Var::SimpleVar(Symbol::from("foo"))),
@@ -395,7 +394,7 @@ fn test_tipado_varexp_subscriptvar_no_array() {
 }
 
 #[test]
-fn test_tipado_callexp_ok() {
+fn typecheck_callexp_ok() {
     let exp = Exp {
         node: _Exp::CallExp {
             func: Symbol::from("f"),
@@ -424,7 +423,7 @@ fn test_tipado_callexp_ok() {
 }
 
 #[test]
-fn test_tipado_callexp_args_de_mas() {
+fn typecheck_callexp_args_de_mas() {
     let exp = Exp {
         node: _Exp::CallExp {
             func: Symbol::from("f"),
@@ -453,7 +452,7 @@ fn test_tipado_callexp_args_de_mas() {
 }
 
 #[test]
-fn test_tipado_callexp_args_de_menos() {
+fn typecheck_callexp_args_de_menos() {
     let exp = Exp {
         node: _Exp::CallExp {
             func: Symbol::from("f"),
@@ -479,7 +478,7 @@ fn test_tipado_callexp_args_de_menos() {
 }
 
 #[test]
-fn test_tipado_callexp_funcion_no_declarada() {
+fn typecheck_callexp_funcion_no_declarada() {
     let exp = Exp {
         node: _Exp::CallExp {
             func: Symbol::from("f"),
@@ -501,7 +500,7 @@ fn test_tipado_callexp_funcion_no_declarada() {
 }
 
 #[test]
-fn test_tipado_opexp_ok() {
+fn typecheck_opexp_ok() {
     let exp = Exp {
         node: _Exp::OpExp {
             left: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -521,7 +520,7 @@ fn test_tipado_opexp_ok() {
 }
 
 #[test]
-fn test_tipado_opexp_tipos_distintos() {
+fn typecheck_opexp_tipos_distintos() {
     let exp = Exp {
         node: _Exp::OpExp {
             left: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -541,12 +540,11 @@ fn test_tipado_opexp_tipos_distintos() {
 }
 
 #[test]
-fn test_tipado_recordexp_ok() {
+fn typecheck_recordexp_ok() {
     let exp = Exp {
         node: _Exp::RecordExp {
             fields: vec![(Symbol::from("baz"), Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}))],
             typ: Symbol::from("FooType"),
-            phantom: PhantomData,
         },
         pos: Pos {line: 0, column: 0}
     };
@@ -565,12 +563,11 @@ fn test_tipado_recordexp_ok() {
 }
 
 #[test]
-fn test_tipado_recordexp_tipo_inexistente() {
+fn typecheck_recordexp_tipo_inexistente() {
     let exp = Exp {
         node: _Exp::RecordExp {
             fields: vec![(Symbol::from("baz"), Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}))],
             typ: Symbol::from("FooType"),
-            phantom: PhantomData,
         },
         pos: Pos {line: 0, column: 0}
     };
@@ -585,12 +582,11 @@ fn test_tipado_recordexp_tipo_inexistente() {
 }
 
 #[test]
-fn test_tipado_recordexp_con_tipo_no_record() {
+fn typecheck_recordexp_con_tipo_no_record() {
     let exp = Exp {
         node: _Exp::RecordExp {
             fields: vec![(Symbol::from("baz"), Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}))],
             typ: Symbol::from("FooType"),
-            phantom: PhantomData,
         },
         pos: Pos {line: 0, column: 0}
     };
@@ -606,7 +602,7 @@ fn test_tipado_recordexp_con_tipo_no_record() {
 }
 
 #[test]
-fn test_tipado_arrayexp_ok() {
+fn typecheck_arrayexp_ok() {
     let exp = Exp {node: _Exp::ArrayExp {
         typ: Symbol::from("FooType"),
         size: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -627,7 +623,7 @@ fn test_tipado_arrayexp_ok() {
 }
 
 #[test]
-fn test_tipado_arrayexp_size_no_int() {
+fn typecheck_arrayexp_size_no_int() {
     let exp = Exp {node: _Exp::ArrayExp {
         typ: Symbol::from("FooType"),
         size: Box::new(Exp {node: _Exp::StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
@@ -649,7 +645,7 @@ fn test_tipado_arrayexp_size_no_int() {
 }
 
 #[test]
-fn test_tipado_arrayexp_tipos_distintos() {
+fn typecheck_arrayexp_tipos_distintos() {
     let exp = Exp {node: _Exp::ArrayExp {
         typ: Symbol::from("FooType"),
         size: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -671,7 +667,7 @@ fn test_tipado_arrayexp_tipos_distintos() {
 }
 
 #[test]
-fn test_tipado_arrayexp_tipo_no_array() {
+fn typecheck_arrayexp_tipo_no_array() {
     let exp = Exp {node: _Exp::ArrayExp {
         typ: Symbol::from("FooType"),
         size: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -690,7 +686,7 @@ fn test_tipado_arrayexp_tipo_no_array() {
 }
 
 #[test]
-fn test_tipado_arrayexp_tipo_no_existe() {
+fn typecheck_arrayexp_tipo_no_existe() {
     let exp = Exp {node: _Exp::ArrayExp {
         typ: Symbol::from("FooType"),
         size: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -707,7 +703,7 @@ fn test_tipado_arrayexp_tipo_no_existe() {
 }
 
 #[test]
-fn test_tipado_seqexp_ok() {
+fn typecheck_seqexp_ok() {
     let exp = Exp {
         node: _Exp::SeqExp(vec![
             Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}},
@@ -727,7 +723,7 @@ fn test_tipado_seqexp_ok() {
 // Se puede testear algo mas de _Exp::SeqExp? Hay alguna condicion del ultimo tipo?
 
 #[test]
-fn test_tipado_assignexp_ok() {
+fn typecheck_assignexp_ok() {
     let exp = Exp {node: _Exp::AssignExp{
         var: Var::SimpleVar(Symbol::from("foo")),
         exp: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -749,7 +745,7 @@ fn test_tipado_assignexp_ok() {
 }
 
 #[test]
-fn test_tipado_assignexp_variable_no_existe() {
+fn typecheck_assignexp_variable_no_existe() {
     let exp = Exp {node: _Exp::AssignExp{
         var: Var::SimpleVar(Symbol::from("foo")),
         exp: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -765,7 +761,7 @@ fn test_tipado_assignexp_variable_no_existe() {
 }
 
 #[test]
-fn test_tipado_assignexp_tipos_distintos() {
+fn typecheck_assignexp_tipos_distintos() {
     let exp = Exp {node: _Exp::AssignExp{
         var: Var::SimpleVar(Symbol::from("foo")),
         exp: Box::new(Exp {node: _Exp::StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
@@ -787,7 +783,7 @@ fn test_tipado_assignexp_tipos_distintos() {
 }
 
 #[test]
-fn test_tipado_assignexp_variable_read_only() {
+fn typecheck_assignexp_variable_read_only() {
     let exp = Exp {node: _Exp::AssignExp{
         var: Var::SimpleVar(Symbol::from("i")),
         exp: Box::new(Exp {node: _Exp::IntExp(2), pos: Pos {line: 0, column: 0}}),
@@ -809,7 +805,7 @@ fn test_tipado_assignexp_variable_read_only() {
 }
 
 #[test]
-fn test_tipado_ifexp_ok() {
+fn typecheck_ifexp_ok() {
     let exp = Exp {node: _Exp::IfExp {
         test: Box::new(Exp {node: _Exp::IntExp(0), pos: Pos {line: 0, column: 0}}),
         then_: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -827,7 +823,7 @@ fn test_tipado_ifexp_ok() {
 }
 
 #[test]
-fn test_tipado_ifexp_test_no_entero() {
+fn typecheck_ifexp_test_no_entero() {
     let exp = Exp {node: _Exp::IfExp {
         test: Box::new(Exp {node: _Exp::StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
         then_: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -845,7 +841,7 @@ fn test_tipado_ifexp_test_no_entero() {
 }
 
 #[test]
-fn test_tipado_ifexp_tipos_then_else_distintos() {
+fn typecheck_ifexp_tipos_then_else_distintos() {
     let exp = Exp {node: _Exp::IfExp {
         test: Box::new(Exp {node: _Exp::IntExp(0), pos: Pos {line: 0, column: 0}}),
         then_: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -863,7 +859,7 @@ fn test_tipado_ifexp_tipos_then_else_distintos() {
 }
 
 #[test]
-fn test_tipado_ifexp_sin_else_no_unit() {
+fn typecheck_ifexp_sin_else_no_unit() {
     let exp = Exp {node: _Exp::IfExp {
         test: Box::new(Exp {node: _Exp::IntExp(0), pos: Pos {line: 0, column: 0}}),
         then_: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -881,7 +877,7 @@ fn test_tipado_ifexp_sin_else_no_unit() {
 }
 
 #[test]
-fn test_tipado_whileexp_ok() {
+fn typecheck_whileexp_ok() {
     let exp = Exp {node: _Exp::WhileExp {
         test: Box::new(Exp {node: _Exp::IntExp(0), pos: Pos {line: 0, column: 0}}),
         body: Box::new(Exp {node: _Exp::UnitExp, pos: Pos {line: 0, column: 0}}),
@@ -897,7 +893,7 @@ fn test_tipado_whileexp_ok() {
 }
 
 #[test]
-fn test_tipado_whileexp_condicion_no_entera() {
+fn typecheck_whileexp_condicion_no_entera() {
     let exp = Exp {node: _Exp::WhileExp {
         test: Box::new(Exp {node: _Exp::UnitExp, pos: Pos {line: 0, column: 0}}),
         body: Box::new(Exp {node: _Exp::UnitExp, pos: Pos {line: 0, column: 0}}),
@@ -913,7 +909,7 @@ fn test_tipado_whileexp_condicion_no_entera() {
 }
 
 #[test]
-fn test_tipado_forexp_ok() {
+fn typecheck_forexp_ok() {
     let exp = Exp {node: _Exp::ForExp {
         var: Symbol::from("i"),
         escape: false,
@@ -932,7 +928,7 @@ fn test_tipado_forexp_ok() {
 }
 
 #[test]
-fn test_tipado_forexp_iterador_es_usable() {
+fn typecheck_forexp_iterador_es_usable() {
     let exp = Exp {node: _Exp::ForExp {
         var: Symbol::from("i"),
         escape: false,
@@ -951,7 +947,7 @@ fn test_tipado_forexp_iterador_es_usable() {
 }
 
 #[test]
-fn test_tipado_forexp_body_no_es_unit() {
+fn typecheck_forexp_body_no_es_unit() {
     let exp = Exp {node: _Exp::ForExp {
         var: Symbol::from("i"),
         escape: false,
@@ -970,7 +966,7 @@ fn test_tipado_forexp_body_no_es_unit() {
 }
 
 #[test]
-fn test_tipado_forexp_lo_no_es_int() {
+fn typecheck_forexp_lo_no_es_int() {
     let exp = Exp {node: _Exp::ForExp {
         var: Symbol::from("i"),
         escape: false,
@@ -989,7 +985,7 @@ fn test_tipado_forexp_lo_no_es_int() {
 }
 
 #[test]
-fn test_tipado_forexp_hi_no_es_int() {
+fn typecheck_forexp_hi_no_es_int() {
     let exp = Exp {node: _Exp::ForExp {
         var: Symbol::from("i"),
         escape: false,
@@ -1008,7 +1004,7 @@ fn test_tipado_forexp_hi_no_es_int() {
 }
 
 #[test]
-fn test_tipado_letexp_vardec_sin_tipo_ok() {
+fn typecheck_letexp_vardec_sin_tipo_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::VarDec(
             _VarDec::new(
@@ -1031,7 +1027,7 @@ fn test_tipado_letexp_vardec_sin_tipo_ok() {
 }
 
 #[test]
-fn test_tipado_letexp_vardec_con_tipo_ok() {
+fn typecheck_letexp_vardec_con_tipo_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::VarDec(
             _VarDec::new(
@@ -1055,7 +1051,7 @@ fn test_tipado_letexp_vardec_con_tipo_ok() {
 }
 
 #[test]
-fn test_tipado_letexp_vardec_tipo_no_esta_declarado() {
+fn typecheck_letexp_vardec_tipo_no_esta_declarado() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::VarDec(
             _VarDec::new(
@@ -1078,7 +1074,7 @@ fn test_tipado_letexp_vardec_tipo_no_esta_declarado() {
 }
 
 #[test]
-fn test_tipado_letexp_vardec_tipos_distintos() {
+fn typecheck_letexp_vardec_tipos_distintos() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::VarDec(
             _VarDec::new(
@@ -1101,7 +1097,7 @@ fn test_tipado_letexp_vardec_tipos_distintos() {
 }
 
 #[test]
-fn test_tipado_letexp_typedec_name_ok() {
+fn typecheck_letexp_typedec_name_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![
             Dec::TypeDec(vec![(
@@ -1133,7 +1129,7 @@ fn test_tipado_letexp_typedec_name_ok() {
 }
 
 #[test]
-fn test_tipado_letexp_typedec_array_ok() {
+fn typecheck_letexp_typedec_array_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![
             Dec::TypeDec(vec![(
@@ -1174,7 +1170,7 @@ fn test_tipado_letexp_typedec_array_ok() {
 }
 
 #[test]
-fn test_tipado_letexp_typedec_record_ok() {
+fn typecheck_letexp_typedec_record_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![
             Dec::TypeDec(vec![(
@@ -1185,7 +1181,6 @@ fn test_tipado_letexp_typedec_record_ok() {
                             name: Symbol::from("bar"),
                             typ: Ty::Name(Symbol::from("int")),
                             escape: false,
-                            phantom: PhantomData
                         }
                     ])
                 ),
@@ -1198,7 +1193,6 @@ fn test_tipado_letexp_typedec_record_ok() {
                     boxed_exp(_Exp::RecordExp {
                         fields: vec![(Symbol::from("bar"), boxed_exp(_Exp::IntExp(1)))],
                         typ: Symbol::from("FooType"),
-                        phantom: PhantomData,
                     })
                 ),
                 Pos{line: 0, column: 2}
@@ -1221,7 +1215,7 @@ fn test_tipado_letexp_typedec_record_ok() {
 }
 
 #[test]
-fn test_tipado_letexp_typedec_recursion_infinita() {
+fn typecheck_letexp_typedec_recursion_infinita() {
    let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::TypeDec(vec![
             (_TypeDec::new(Symbol::from("FooType"), Ty::Name(Symbol::from("BaazType"))), Pos{line: 0, column: 0}),
@@ -1259,7 +1253,7 @@ fn test_typecheck_recursive_typecheck_ok() {
 }
 
 #[test]
-fn test_tipado_letexp_typedec_referencia_tipo_inexistente() {
+fn typecheck_letexp_typedec_referencia_tipo_inexistente() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::TypeDec(vec![(
             _TypeDec::new(
@@ -1292,13 +1286,11 @@ fn typecheck_record_type_cycle_ok() {
                             name: Symbol::from("head"),
                             typ: Ty::Name(Symbol::from("int")),
                             escape: false,
-                            phantom: PhantomData,
                         },
                         Field {
                             name: Symbol::from("tail"),
                             typ: Ty::Name(Symbol::from("List")),
                             escape: false,
-                            phantom: PhantomData,
                         }
                     ])
                 ),
@@ -1323,19 +1315,15 @@ fn typecheck_record_type_cycle_ok() {
                                                     (Symbol::from("tail"), boxed_exp(_Exp::NilExp))
                                                 ],
                                                 typ: Symbol::from("List"),
-                                                phantom: PhantomData,
                                             }))
                                         ],
                                         typ: Symbol::from("List"),
-                                        phantom: PhantomData,
                                     }))
                                 ],
                                 typ: Symbol::from("List"),
-                                phantom: PhantomData,
                             }))
                         ],
                         typ: Symbol::from("List"),
-                        phantom: PhantomData,
                     })
                 ),
                 Pos{line: 0, column: 2}
@@ -1358,7 +1346,7 @@ fn typecheck_record_type_cycle_ok() {
 }
 
 #[test]
-fn test_tipado_letexp_functiondec_ok() {
+fn typecheck_letexp_functiondec_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1367,7 +1355,6 @@ fn test_tipado_letexp_functiondec_ok() {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
                     escape: false,
-                    phantom: PhantomData,
                 }],
                 None,
                 boxed_exp(_Exp::UnitExp)
@@ -1387,7 +1374,7 @@ fn test_tipado_letexp_functiondec_ok() {
 }
 
 #[test]
-fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
+fn typecheck_letexp_functiondec_llamada_en_bloque_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![
             Dec::FunctionDec(vec![(
@@ -1397,7 +1384,6 @@ fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
                         name: Symbol::from("arg1"),
                         typ: Ty::Name(Symbol::from("int")),
                         escape: false,
-                        phantom: PhantomData
                     }],
                     Some(Symbol::from("int")),
                     boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("arg1")))),
@@ -1411,7 +1397,6 @@ fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
                         name: Symbol::from("arg2"),
                         typ: Ty::Name(Symbol::from("int")),
                         escape: false,
-                        phantom: PhantomData
                     }],
                     Some(Symbol::from("int")),
                     boxed_exp(_Exp::CallExp {
@@ -1438,7 +1423,7 @@ fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
 }
 
 #[test]
-fn test_tipado_letexp_functiondec_body_no_tipa() {
+fn typecheck_letexp_functiondec_body_no_tipa() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1447,7 +1432,6 @@ fn test_tipado_letexp_functiondec_body_no_tipa() {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
                     escape: false,
-                    phantom: PhantomData
                 }],
                 None,
                 boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("baaz")))), // no declarada,
@@ -1467,7 +1451,7 @@ fn test_tipado_letexp_functiondec_body_no_tipa() {
 }
 
 #[test]
-fn test_tipado_letexp_functiondec_body_distinto_result() {
+fn typecheck_letexp_functiondec_body_distinto_result() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1476,7 +1460,6 @@ fn test_tipado_letexp_functiondec_body_distinto_result() {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
                     escape: false,
-                    phantom: PhantomData
                 }],
                 None,
                 boxed_exp(_Exp::IntExp(2)), // no declarada,
@@ -1496,7 +1479,7 @@ fn test_tipado_letexp_functiondec_body_distinto_result() {
 }
 
 #[test]
-fn test_tipado_letexp_functiondec_params_repetidos() {
+fn typecheck_letexp_functiondec_params_repetidos() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1505,7 +1488,6 @@ fn test_tipado_letexp_functiondec_params_repetidos() {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
                     escape: false,
-                    phantom: PhantomData
                 }],
                 None,
                 boxed_exp(_Exp::UnitExp)
@@ -1525,7 +1507,7 @@ fn test_tipado_letexp_functiondec_params_repetidos() {
 }
 
 #[test]
-fn test_tipado_letexp_functiondec_nombres_repetidos() {
+fn typecheck_letexp_functiondec_nombres_repetidos() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1534,7 +1516,6 @@ fn test_tipado_letexp_functiondec_nombres_repetidos() {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
                     escape: false,
-                    phantom: PhantomData
                 }],
                 None,
                 boxed_exp(_Exp::UnitExp)
@@ -1554,7 +1535,7 @@ fn test_tipado_letexp_functiondec_nombres_repetidos() {
 }
 
 #[test]
-fn test_tipado_letexp_functiondec_recursivas() {
+fn typecheck_letexp_functiondec_recursivas() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1563,7 +1544,6 @@ fn test_tipado_letexp_functiondec_recursivas() {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
                     escape: false,
-                    phantom: PhantomData,
                 }],
                 None,
                 boxed_exp(_Exp::UnitExp)
@@ -1582,7 +1562,7 @@ fn test_tipado_letexp_functiondec_recursivas() {
 }
 
 #[test]
-fn test_tipado_letexp_todas_las_decs_ok() {
+fn typecheck_letexp_todas_las_decs_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![
             Dec::TypeDec(vec![(
@@ -1607,7 +1587,6 @@ fn test_tipado_letexp_todas_las_decs_ok() {
                         name: Symbol::from("bar"),
                         typ: Ty::Name(Symbol::from("FooType")),
                         escape: false,
-                        phantom: PhantomData,
                     }],
                     Some(Symbol::from("FooType")),
                     boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("bar"))))

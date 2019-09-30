@@ -3,14 +3,15 @@ use super::super::ast::tigerabs::*;
 
 type EscapeTable = HashMap<Symbol, (u32, bool)>;
 
-fn trav_var(var: Var, mut table: EscapeTable, current_depth: u32) -> (Var, EscapeTable) {
+fn trav_var(var: Var, table: EscapeTable, current_depth: u32) -> (Var, EscapeTable) {
     match var {
         Var::SimpleVar(symbol) => match table.get(&symbol) {
-            Some((table_depth, escape)) => {
+            Some((table_depth, ..)) => {
+                let mut new_table = table.clone();
                 if current_depth > *table_depth {
-                    table.insert(symbol.clone(), (*table_depth, true));
+                    new_table.insert(symbol.clone(), (*table_depth, true));
                 }
-                (Var::SimpleVar(symbol), table)
+                (Var::SimpleVar(symbol), new_table)
             }
             None => panic!("Var {} does not exist!", symbol)
         },
@@ -25,7 +26,7 @@ fn trav_var(var: Var, mut table: EscapeTable, current_depth: u32) -> (Var, Escap
         }
     }
 }
-fn trav_decs(decs: Vec<Dec>, mut table: EscapeTable, current_depth: u32) -> (Vec<Dec>, EscapeTable, EscapeTable) {
+fn trav_decs(mut decs: Vec<Dec>, table: EscapeTable, current_depth: u32) -> (Vec<Dec>, EscapeTable, EscapeTable) {
     // trav_decs returns:
     //  - the rebuilt declarations, with it's components recursibely traversed.
     //  - a table with the escapes of outer variables
@@ -35,33 +36,66 @@ fn trav_decs(decs: Vec<Dec>, mut table: EscapeTable, current_depth: u32) -> (Vec
         Some(dec) => {
             match dec {
                 Dec::VarDec(_VarDec{name, typ, init, ..}, pos) => {
-                    let (r_init, outer_table) = trav_exp(*init, table, current_depth);
-                    let inner_table = table.clone();
-                    inner_table.insert(name, (current_depth, false));
-                    let (r_decs, decs_outer_table, decs_table) = trav_decs(decs, inner_table, current_depth);
-                    let escape = decs_outer_table.remove(&name).unwrap();
-                    let r_dec = Dec::VarDec(_VarDec{name, typ, init: Box::new(r_init), escape: escape.1}, pos);
-                    r_decs.push(r_dec);
-                    decs_table.insert(name, escape);
-                    (r_decs, merge_tables(outer_table, decs_outer_table), decs_table)
-
+                    // traverse the init
+                    let (r_init, init_table) = trav_exp(*init, table, current_depth);
+                    println!("VarDec init_table {:?}", init_table);
+                    // Add this dec to an inner table
+                    let mut inner_table = init_table.clone();
+                    inner_table.insert(name.clone(), (current_depth, false));
+                    // traverse previous declarations using the inner table
+                    let (mut r_later_decs, later_decs_outer_table, mut later_decs_inner_table) = trav_decs(decs, inner_table, current_depth);
+                    println!("VarDec later_decs_outer_table {:?}", later_decs_outer_table);
+                    println!("VarDec later_decs_inner_table {:?}", later_decs_inner_table);
+                    // find the resulting escape for this var, build a (so far) correct VarDec
+                    let escape = later_decs_inner_table.remove(&name).unwrap();
+                    let r_dec = Dec::VarDec(_VarDec{name: name.clone(), typ, init: Box::new(r_init), escape: escape.1}, pos);
+                    r_later_decs.push(r_dec);
+                    // Add the dec to the outer table, so that it can be escaped in the body
+                    later_decs_inner_table.insert(name, escape);
+                    (r_later_decs, later_decs_outer_table, later_decs_inner_table)
                 },
-                Dec::FunctionDec(fd) => {
-                    (vec![Dec::FunctionDec(fd)], table, table.clone())
-                }, // TODO: depth + here
+                Dec::FunctionDec(funtion_decs) => {
+                    let (r_function_decs, function_decs_table) = funtion_decs
+                        .iter()
+                        .fold((vec![], table.clone()), |(mut prev_decs, prev_table), (_FunctionDec{name, params, result, body}, pos)| {
+                            println!("FunctionDec prev_decs: {:?}, prev_table: {:?}", prev_decs, prev_table);
+                            let mut new_table = prev_table.clone();
+                            for Field {name, ..} in params {
+                                new_table.insert(name.clone(), (current_depth + 1, false));
+                            }
+                            let (r_body, mut body_table) = trav_exp(*body.clone(), new_table, current_depth + 1);
+                            let mut r_params = vec![];
+                            println!("FunctionDec body_table: {:?}", body_table);
+                            for Field {name, typ, ..} in params {
+                                let escape = body_table.remove(name).unwrap().1;
+                                r_params.push(Field{name: name.clone(), typ: typ.clone(), escape});
+                            }
+                            println!("FuncionDec Fields: {:?}", r_params);
+                            prev_decs.push((_FunctionDec{name: name.clone(), params: r_params, result: result.clone(), body: Box::new(r_body)}, *pos));
+                            (prev_decs, merge_tables(prev_table, body_table))
+                        });
+                    let (mut r_decs, outer_table, inner_table) = trav_decs(decs, table, current_depth);
+                    println!("FunctionDec outer_table: {:?}", outer_table);
+                    println!("FunctionDec inner_table: {:?}", inner_table);
+                    println!("FunctionDec function_decs_table: {:?}", function_decs_table);
+                    r_decs.push(Dec::FunctionDec(r_function_decs));
+                    (r_decs, merge_tables(outer_table, function_decs_table.clone()), merge_tables(inner_table, function_decs_table))
+                },
                 Dec::TypeDec(td) => {
-                    (vec![Dec::TypeDec(td)], table, table.clone())
+                    let (mut r_prev_decs, outer_table, inner_table) = trav_decs(decs, table.clone(), current_depth);
+                    r_prev_decs.push(Dec::TypeDec(td));
+                    (r_prev_decs, outer_table, inner_table)
                 },
             }
         }
-        None => (vec![], table, table.clone()),
+        None => (vec![], table.clone(), table),
     }
 }
 
-fn post_decs(decs: Vec<Dec>, mut table: EscapeTable) -> (Vec<Dec>, EscapeTable) {
+fn post_decs(decs: Vec<Dec>, table: EscapeTable) -> (Vec<Dec>, EscapeTable) {
     // Declarations have allready been traversed.
     // We need to set escapes and clean the table.
-    fn post_decs_internal(decs: Vec<Dec>, table: EscapeTable, prev: Vec<Dec>) -> (Vec<Dec>, EscapeTable) {
+    fn post_decs_internal(mut decs: Vec<Dec>, mut table: EscapeTable, mut prev: Vec<Dec>) -> (Vec<Dec>, EscapeTable) {
         let maybe_dec = decs.pop();
         match maybe_dec {
             Some(dec) => {
@@ -71,7 +105,6 @@ fn post_decs(decs: Vec<Dec>, mut table: EscapeTable) -> (Vec<Dec>, EscapeTable) 
                         prev.push(Dec::VarDec(_VarDec{name, init, typ, escape}, pos))
                     },
                     Dec::FunctionDec(fd) => {
-                        // LAST TO DO
                         prev.push(Dec::FunctionDec(fd));
                     },
                     Dec::TypeDec(td) => {
@@ -83,23 +116,22 @@ fn post_decs(decs: Vec<Dec>, mut table: EscapeTable) -> (Vec<Dec>, EscapeTable) 
             None => (prev, table),
         }
     }
-    let (decs, table) = post_decs_internal(decs, table, vec![]);
-    decs.reverse();
+    let (mut decs, table) = post_decs_internal(decs, table, vec![]);
     (decs, table)
 }
-fn merge_tables(mut outer_table: EscapeTable, inner_table: EscapeTable) -> EscapeTable {
+fn merge_tables(outer_table: EscapeTable, inner_table: EscapeTable) -> EscapeTable {
     outer_table
         .iter()
         .map(|(var, outer_escape)| {
             match inner_table.get(var) {
                 Some(inner_escape) => (var.clone(), *inner_escape),
-                None => (var.clone(), *outer_escape)
+                None => (var.clone(), *outer_escape) // This here discards and clones the same value. There should be a better way.
             }
         })
         .collect()
 }
 
-fn trav_exp(Exp {node, pos}: Exp, mut table: EscapeTable, current_depth: u32) -> (Exp, EscapeTable) {
+fn trav_exp(Exp {node, pos}: Exp, table: EscapeTable, current_depth: u32) -> (Exp, EscapeTable) {
     // This function consumes consumes an Exp and generates a new one with correct variable escapes.
     // If a variable is declared, then a new entry is inserted in the table with a false value (replacing if necesary).
     //      Then, the lower branches are computed and the resulting table is checked for escapes.
@@ -128,8 +160,8 @@ fn trav_exp(Exp {node, pos}: Exp, mut table: EscapeTable, current_depth: u32) ->
         _Exp::CallExp{func, args} => {
             let (r_args, r_table) : (Vec<Exp>, EscapeTable)  = args
                 .iter()
-                .fold((vec![], table), |(prev, table), exp| {
-                    let (e, t) = trav_exp(*exp, table, current_depth);  // move problems here?
+                .fold((vec![], table), move |(mut prev, table), exp| {
+                    let (e, t) = trav_exp(exp.clone(), table, current_depth);  // move problems here?
                     prev.push(e);
                     (prev, t)
                 });
@@ -142,14 +174,14 @@ fn trav_exp(Exp {node, pos}: Exp, mut table: EscapeTable, current_depth: u32) ->
             // ForExp is kinda tricky. Variables referenced in range are outside, not the iterator.
             let (lo_exp, lo_table) = trav_exp(*lo, table, current_depth);
             let (hi_exp, hi_table) = trav_exp(*hi, lo_table, current_depth);
-            let inner_table = hi_table.clone();
+            let mut inner_table = hi_table.clone();
             inner_table.insert(var.clone(), (current_depth, false));
-            let (body_exp, body_table) = trav_exp(*body, inner_table, current_depth);
+            let (body_exp, mut body_table) = trav_exp(*body, inner_table, current_depth);
             let escape = body_table.remove(&var).unwrap().1;
             (Exp {
                 node: _Exp::ForExp {var, lo: Box::new(lo_exp), hi: Box::new(hi_exp), body: Box::new(body_exp), escape},
                 pos
-            }, merge_tables(hi_table, inner_table))
+            }, merge_tables(hi_table, body_table))
         },
         _Exp::IfExp{test, then_, else_} => {
             let (test_exp, test_table) = trav_exp(*test, table, current_depth);
@@ -167,10 +199,15 @@ fn trav_exp(Exp {node, pos}: Exp, mut table: EscapeTable, current_depth: u32) ->
                 }, then_table)
             }
         },
-        _Exp::LetExp{decs, body} => {
+        _Exp::LetExp{mut decs, body} => {
+            decs.reverse();
             let (r_decs, outer_table, decs_table) = trav_decs(decs, table.clone(), current_depth);
+            println!("LetExp outer_table: {:?}", outer_table);
+            println!("LetExp decs_table: {:?}", decs_table);
             let (r_body, body_table) = trav_exp(*body, decs_table, current_depth);
-            let (rr_decs, post_body_table) = post_decs(decs, body_table);
+            println!("LetExp body_table: {:?}", body_table);
+            let (rr_decs, post_body_table) = post_decs(r_decs, body_table);
+            println!("LetExp post_body_table: {:?}", post_body_table);
             (Exp {
                 node: _Exp::LetExp{decs: rr_decs, body: Box::new(r_body)},
                 pos
@@ -187,8 +224,8 @@ fn trav_exp(Exp {node, pos}: Exp, mut table: EscapeTable, current_depth: u32) ->
         _Exp::RecordExp{fields, typ} => {
             let (r_fields, r_table) : (Vec<(Symbol, Box<Exp>)>, EscapeTable)  = fields
                 .iter()
-                .fold((vec![], table), |(prev, table), (s, exp)| {
-                    let (e, t) = trav_exp(**exp, table, current_depth);  // move problems here?
+                .fold((vec![], table), |(mut prev, table), (s, exp)| {
+                    let (e, t) = trav_exp(*exp.clone(), table, current_depth);  // move problems here?
                     prev.push((s.clone(), Box::new(e)));
                     (prev, t)
                 });
@@ -200,8 +237,8 @@ fn trav_exp(Exp {node, pos}: Exp, mut table: EscapeTable, current_depth: u32) ->
         _Exp::SeqExp(exps) => {
             let (r_exps, r_table) : (Vec<Exp>, EscapeTable)  = exps
                 .iter()
-                .fold((vec![], table), |(prev, table), exp| {
-                    let (e, t) = trav_exp(*exp, table, current_depth);  // move problems here?
+                .fold((vec![], table), |(mut prev, table), exp| {
+                    let (e, t) = trav_exp(exp.clone(), table, current_depth);  // move problems here?
                     prev.push(e);
                     (prev, t)
                 });
