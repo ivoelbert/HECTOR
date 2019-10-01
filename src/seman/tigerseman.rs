@@ -22,11 +22,6 @@ use super::stringexp;
 use super::callexp;
 use super::breakexp;
 
-
-// Detalles faltantes:
-//      tipoReal y TipoInterno
-
-
 #[derive(Debug, PartialEq, Clone)]
 pub enum R {
     RO,
@@ -57,13 +52,13 @@ pub fn tipo_real(t: Tipo, tenv: &TypeEnviroment) -> Tipo {
 }
 
 pub fn es_int(t: &Tipo) -> bool {
-    match &t {
+    match *t {
         Tipo::TInt(_) => true,
         _ => false
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum EnvEntry {
     Var {
         ty: Tipo,
@@ -180,7 +175,7 @@ pub enum TypeError {
     InvalidCallArgument(Pos),
     MissingRecordField(Pos),
     NonIntegerOperand(Pos),
-    TypeDecSortingError(Pos),
+    TypeCycle(Pos),
 }
 
 impl PartialEq for Tipo {
@@ -274,32 +269,32 @@ pub struct Level {
     // completar de tigertrans
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Access {
     InFrame(i32),
     InReg(Label)
 }
 
-pub fn tipar_exp(exp : &Exp, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn type_exp(exp : &Exp, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     use _Exp::*;
     match exp {
         Exp {node, ..} => match node {
-            VarExp(..) => varexp::tipar(exp, type_env, value_env),
-            UnitExp => unitexp::tipar(exp, type_env, value_env),
-            NilExp => nilexp::tipar(exp, type_env, value_env),
-            IntExp(..) => intexp::tipar(exp, type_env,&value_env),
-            StringExp(..) => stringexp::tipar(exp, type_env, value_env),
-            CallExp{..} => callexp::tipar(exp, type_env, value_env),
-            OpExp{..} => opexp::tipar(exp,&type_env, value_env),
-            AssignExp{..} => assignexp::tipar(exp, type_env, value_env),
-            RecordExp{..} => recordexp::tipar(exp, type_env, value_env),
-            SeqExp(..) => seqexp::tipar(exp, type_env, value_env),
-            IfExp{..} => ifexp::tipar(exp, type_env, value_env),
-            WhileExp{..} => whileexp::tipar(exp, type_env, value_env),
-            ForExp{..} => forexp::tipar(exp, type_env, value_env),
-            LetExp{..} => letexp::tipar(exp, type_env, value_env),
-            BreakExp => breakexp::tipar(exp, type_env, value_env),
-            ArrayExp{..} => arrayexp::tipar(exp, type_env, value_env),
+            VarExp(..) => varexp::typecheck(exp, type_env, value_env),
+            UnitExp => unitexp::typecheck(exp, type_env, value_env),
+            NilExp => nilexp::typecheck(exp, type_env, value_env),
+            IntExp(..) => intexp::typecheck(exp, type_env,&value_env),
+            StringExp(..) => stringexp::typecheck(exp, type_env, value_env),
+            CallExp{..} => callexp::typecheck(exp, type_env, value_env),
+            OpExp{..} => opexp::typecheck(exp,&type_env, value_env),
+            AssignExp{..} => assignexp::typecheck(exp, type_env, value_env),
+            RecordExp{..} => recordexp::typecheck(exp, type_env, value_env),
+            SeqExp(..) => seqexp::typecheck(exp, type_env, value_env),
+            IfExp{..} => ifexp::typecheck(exp, type_env, value_env),
+            WhileExp{..} => whileexp::typecheck(exp, type_env, value_env),
+            ForExp{..} => forexp::typecheck(exp, type_env, value_env),
+            LetExp{..} => letexp::typecheck(exp, type_env, value_env),
+            BreakExp => breakexp::typecheck(exp, type_env, value_env),
+            ArrayExp{..} => arrayexp::typecheck(exp, type_env, value_env),
         }
     }
 }
@@ -308,22 +303,22 @@ pub fn trans_exp(exp : Exp) -> ExpInterm {
     use _Exp::*;
     match exp {
         Exp {node: exp, pos} => match exp {
-            VarExp(_) => varexp::traducir(Exp{node: exp, pos}),
-            UnitExp => unitexp::traducir(Exp{node: exp, pos}),
-            NilExp => nilexp::traducir(Exp{node: exp, pos}),
-            IntExp(_) =>  intexp::traducir(Exp{node: exp, pos}),
-            StringExp(_) => stringexp::traducir(Exp{node: exp, pos}),
-            CallExp{..} => callexp::traducir(Exp{node: exp, pos}),
-            OpExp{..} => opexp::traducir(Exp{node: exp, pos}),
-            AssignExp{..} => assignexp::traducir(Exp{node: exp, pos}),
-            RecordExp{..} => recordexp::traducir(Exp{node: exp, pos}),
-            SeqExp(_) => seqexp::traducir(Exp{node: exp, pos}),
-            IfExp{..} => ifexp::traducir(Exp{node: exp, pos}),
-            WhileExp{..} => whileexp::traducir(Exp{node: exp, pos}),
-            ForExp{..} => forexp::traducir(Exp{node: exp, pos}),
-            LetExp{..} => letexp::traducir(Exp{node: exp, pos}),
-            BreakExp => breakexp::traducir(Exp{node: exp, pos}),
-            ArrayExp{..} => arrayexp::traducir(Exp{node: exp, pos}),
+            VarExp(_) => varexp::translate(Exp{node: exp, pos}),
+            UnitExp => unitexp::translate(Exp{node: exp, pos}),
+            NilExp => nilexp::translate(Exp{node: exp, pos}),
+            IntExp(_) =>  intexp::translate(Exp{node: exp, pos}),
+            StringExp(_) => stringexp::translate(Exp{node: exp, pos}),
+            CallExp{..} => callexp::translate(Exp{node: exp, pos}),
+            OpExp{..} => opexp::translate(Exp{node: exp, pos}),
+            AssignExp{..} => assignexp::translate(Exp{node: exp, pos}),
+            RecordExp{..} => recordexp::translate(Exp{node: exp, pos}),
+            SeqExp(_) => seqexp::translate(Exp{node: exp, pos}),
+            IfExp{..} => ifexp::translate(Exp{node: exp, pos}),
+            WhileExp{..} => whileexp::translate(Exp{node: exp, pos}),
+            ForExp{..} => forexp::translate(Exp{node: exp, pos}),
+            LetExp{..} => letexp::translate(Exp{node: exp, pos}),
+            BreakExp => breakexp::translate(Exp{node: exp, pos}),
+            ArrayExp{..} => arrayexp::translate(Exp{node: exp, pos}),
         }
     }
 }

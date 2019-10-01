@@ -1,11 +1,11 @@
 #![allow(clippy::pub_enum_variant_names)]
 use std::fmt::{self, Debug, Formatter};
-
 use super::position::{Pos, WithPos};
 
 pub type Symbol = String;
 
 #[derive(Debug)]
+#[derive(Clone)]
 pub enum Var {
     SimpleVar(Symbol),
     FieldVar(Box<Var>, Symbol),
@@ -13,6 +13,7 @@ pub enum Var {
 }
 
 #[allow(dead_code)]
+#[derive(Clone)]
 pub enum _Exp {
     VarExp(Var),
     UnitExp,
@@ -21,7 +22,7 @@ pub enum _Exp {
     StringExp(String),
     CallExp {
         func: Symbol,
-        args: Vec<Box<Exp>>,
+        args: Vec<Exp>,
     },
     OpExp {
         left: Box<Exp>,
@@ -32,7 +33,7 @@ pub enum _Exp {
         fields: Vec<(Symbol, Box<Exp>)>,
         typ: Symbol,
     },
-    SeqExp(Vec<Box<Exp>>),
+    SeqExp(Vec<Exp>),
     AssignExp {
         var: Var,
         exp: Box<Exp>,
@@ -75,7 +76,7 @@ impl Debug for _Exp {
             _Exp::StringExp(string) => write!(formatter, "Str({:?})", string),
             _Exp::CallExp {func, args} => write!(formatter, "{:?}({:?})", func, args),
             _Exp::OpExp {left, oper, right} => write!(formatter, "({:?} {:?} {:?})", left, oper, right),
-            _Exp::RecordExp {fields, typ} => write!(formatter, "(Record({:?}) {{ {:?} }})", typ, fields),
+            _Exp::RecordExp {fields, typ, ..} => write!(formatter, "(Record({:?}) {{ {:?} }})", typ, fields),
             _Exp::SeqExp(seq) => write!(formatter, "{:?}", seq),
             _Exp::AssignExp {var, exp} => write!(formatter, "({:?} := {:?})", var, exp),
             _Exp::IfExp {test, then_, else_: Some(e)} => write!(formatter, "(if {:?} then {:?} else {:?})", test, then_, e),
@@ -96,7 +97,7 @@ impl Debug for Exp {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct _FunctionDec {
     pub name: Symbol,
     pub params: Vec<Field>,
@@ -104,7 +105,7 @@ pub struct _FunctionDec {
     pub body: Box<Exp>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct _VarDec {
     pub name: Symbol,
     pub escape: bool,
@@ -112,13 +113,13 @@ pub struct _VarDec {
     pub init: Box<Exp>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct _TypeDec {
     pub name: Symbol,
     pub ty: Ty,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Dec {
     FunctionDec(Vec<(_FunctionDec, Pos)>),
     VarDec(_VarDec, Pos),
@@ -126,8 +127,8 @@ pub enum Dec {
 }
 
 impl _FunctionDec {
-    pub fn new(name: Symbol, params: Vec<Field>, result: Option<Symbol>, body: Box<Exp>) -> _FunctionDec {
-        _FunctionDec {
+    pub fn new(name: Symbol, params: Vec<Field>, result: Option<Symbol>, body: Box<Exp>) -> Self {
+        Self {
             name,
             params,
             result,
@@ -137,8 +138,8 @@ impl _FunctionDec {
 }
 
 impl _VarDec {
-    pub fn new(name: Symbol, typ: Option<Symbol>, init: Box<Exp>) -> _VarDec {
-        _VarDec {
+    pub fn new(name: Symbol, typ: Option<Symbol>, init: Box<Exp>) -> Self {
+        Self {
             name,
             escape: false,
             typ,
@@ -148,50 +149,30 @@ impl _VarDec {
 }
 
 impl _TypeDec {
-    pub fn new(name: Symbol, ty: Ty) -> _TypeDec {
-        _TypeDec {
+    pub fn new(name: Symbol, ty: Ty) -> Self {
+        Self {
             name,
             ty,
         }
     }
 }
-impl PartialEq for _TypeDec {
-    fn eq(&self, other: &Self) -> bool {
-        self.ty == other.ty
-    }
-}
-impl Eq for _TypeDec {}
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Ty {
     Name(Symbol),
     Record(Vec<Field>),
     Array(Symbol),
 }
 
-fn compara_fields(f1: &[Field], f2: &[Field]) -> bool {
-    true
-}
 
-impl PartialEq for Ty {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Ty::Name(s1), Ty::Name(s2)) => s1 == s2,
-            (Ty::Array(s1), Ty::Array(s2)) => s1 == s2,
-            (Ty::Record(fields1), Ty::Record(fields2)) => compara_fields(fields1, fields2),
-            _ => false
-        }
-    }
-}
-impl Eq for Ty {}
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Field {
     pub name: Symbol,
     pub escape: bool,
     pub typ: Ty,
 }
 
+#[derive(Clone)]
 pub enum Oper {
     PlusOp,
     MinusOp,

@@ -1,0 +1,11 @@
+let var  b := 0
+in
+    let var  c := 0
+        function a (a : a) = b + c
+        var b := 0
+    in
+        a(1)
+    end
+end
+
+// By Fede, not sure if Good

@@ -1,43 +1,42 @@
-use std::fs::{read_dir, read_to_string};
+// use std::fs::{read_dir, read_to_string};
 
 use super::super::ast::tigerabs::*;
 use super::super::ast::position::*;
-use super::super::ast::parser::parse;
+// use super::super::ast::parser::parse;
 
 use super::super::seman::tigerseman::*;
 
+// #[test]
+// fn test_good() {
+//     let good_path = "./tiger_sources/good/";
+//     let source_files = read_dir(good_path).expect("read_dir");
+//     for direntry in source_files {
+//         let path = direntry.expect("direntry").path();
+//         let contents = read_to_string(&path).expect("read_to_string");
+//         let exp = parse(contents).expect("falla el parser");
+//         let type_env = TypeEnviroment::new();
+//         let value_env = ValueEnviroment::new();
+//         type_exp(&exp , &type_env, &value_env).expect("{:?} deberia tipar bien pero falla"/*, path*/);
+//     }
+// }
 
-#[test]
-fn test_good() {
-    let good_path = "./tiger_sources/good/";
-    let source_files = read_dir(good_path).expect("read_dir");
-    for direntry in source_files {
-        let path = direntry.expect("direntry").path();
-        let contents = read_to_string(&path).expect("read_to_string");
-        let exp = parse(contents).expect("falla el parser");
-        let type_env = TypeEnviroment::new();
-        let value_env = ValueEnviroment::new();
-        tipar_exp(&exp , &type_env, &value_env).expect("{:?} deberia tipar bien pero falla"/*, path*/);
-    }
-}
-
-#[test]
-fn test_type() {
-    let syntax_path = "./tiger_sources/type/";
-    let source_files = read_dir(syntax_path).expect("read_dir");
-    for direntry in source_files {
-        let path = direntry.expect("direntry").path();
-        let contents = read_to_string(&path).expect("read_to_string");
-        let exp = parse(contents).expect("falla el parser");
-        let type_env = TypeEnviroment::new();
-        let value_env = ValueEnviroment::new();
-        let typed = tipar_exp(&exp , &type_env, &value_env);
-        match typed {
-            Err(_) => (),
-            Ok(_) => panic!("{:?} deberia fallar pero tipa bien", path),
-        }
-    }
-}
+// #[test]
+// fn test_type() {
+//     let syntax_path = "./tiger_sources/type/";
+//     let source_files = read_dir(syntax_path).expect("read_dir");
+//     for direntry in source_files {
+//         let path = direntry.expect("direntry").path();
+//         let contents = read_to_string(&path).expect("read_to_string");
+//         let exp = parse(contents).expect("falla el parser");
+//         let type_env = TypeEnviroment::new();
+//         let value_env = ValueEnviroment::new();
+//         let typed = type_exp(&exp , &type_env, &value_env);
+//         match typed {
+//             Err(_) => (),
+//             Ok(_) => panic!("{:?} deberia fallar pero tipa bien", path),
+//         }
+//     }
+// }
 
 fn possed_exp(exp: _Exp) -> Exp {
     Exp {node: exp, pos: Pos {line: 0, column: 0}}
@@ -48,7 +47,7 @@ fn boxed_exp(exp: _Exp) -> Box<Exp> {
 }
 
 #[test]
-fn test_tipado_unitexp() {
+fn typecheck_unitexp() {
     let exp = Exp {
         node: _Exp::UnitExp,
         pos: Pos {
@@ -58,7 +57,7 @@ fn test_tipado_unitexp() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -67,7 +66,7 @@ fn test_tipado_unitexp() {
 }
 
 #[test]
-fn test_tipado_nilexp() {
+fn typecheck_nilexp() {
     let exp = Exp {
         node: _Exp::NilExp,
         pos: Pos {
@@ -77,7 +76,7 @@ fn test_tipado_nilexp() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TNil) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -86,11 +85,11 @@ fn test_tipado_nilexp() {
 }
 
 #[test]
-fn test_tipado_breakexp() {
+fn typecheck_breakexp() {
     let exp = Exp {node: _Exp::BreakExp, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
         Ok(..) => panic!("resultado incorrecto"),
@@ -99,7 +98,7 @@ fn test_tipado_breakexp() {
 }
 
 #[test]
-fn test_tipado_intexp() {
+fn typecheck_intexp() {
     let exp = Exp {
         node: _Exp::IntExp(1),
         pos: Pos {
@@ -109,16 +108,16 @@ fn test_tipado_intexp() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("_Exp::IntExp tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_stringexp() {
+fn typecheck_stringexp() {
     let exp = Exp {
         node: _Exp::StringExp(String::from("lorem ipsum")),
         pos: Pos {
@@ -128,16 +127,16 @@ fn test_tipado_stringexp() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TString) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("_Exp::StringExp tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_varexp_simplevar_ok() {
+fn typecheck_varexp_simplevar_ok() {
     let exp = Exp {
         node: _Exp::VarExp(Var::SimpleVar(Symbol::from("foo"))),
         pos: Pos {
@@ -148,16 +147,16 @@ fn test_tipado_varexp_simplevar_ok() {
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{ty: Tipo::TInt(R::RW), access: Access::InFrame(1), level: 1});
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("simplevar tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_varexp_simplevar_no_declarada() {
+fn typecheck_varexp_simplevar_no_declarada() {
     let exp = Exp {
         node: _Exp::VarExp(Var::SimpleVar(Symbol::from("foo"))),
         pos: Pos {
@@ -167,16 +166,16 @@ fn test_tipado_varexp_simplevar_no_declarada() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredSimpleVar(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("Puedo tipar una simplevar no declarada")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_varexp_simplevar_no_es_simple() {
+fn typecheck_varexp_simplevar_no_es_simple() {
     let exp = Exp {
         node: _Exp::VarExp(Var::SimpleVar(Symbol::from("f"))),
         pos: Pos {
@@ -193,16 +192,16 @@ fn test_tipado_varexp_simplevar_no_es_simple() {
         // level: 0,
         external: false,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotSimpleVar(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("Puedo tipar una simplevar no declarada")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_varexp_fieldvar_ok() {
+fn typecheck_varexp_fieldvar_ok() {
     let exp = Exp {
         node: _Exp::VarExp(Var::FieldVar(Box::new(Var::SimpleVar(Symbol::from("foo"))),Symbol::from("bar"))),
         pos: Pos {
@@ -222,16 +221,16 @@ fn test_tipado_varexp_fieldvar_ok() {
         level: 0,
         ty: foo_type,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("fieldvar esta tipando mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_varexp_fieldvar_field_inexistente() {
+fn typecheck_varexp_fieldvar_field_inexistente() {
     let exp = Exp {
         node: _Exp::VarExp(Var::FieldVar(Box::new(Var::SimpleVar(Symbol::from("foo"))),Symbol::from("perro"))),
         pos: Pos {
@@ -242,27 +241,29 @@ fn test_tipado_varexp_fieldvar_field_inexistente() {
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let foo_type = Tipo::TRecord(
-            vec![(Box::new(String::from("bar")),
+            vec![(
+                Box::new(String::from("bar")),
                 Box::new(Tipo::TInt(R::RW)),
-                0)],
-                TypeId::new(),
-            );
+                0
+            )],
+            TypeId::new(),
+        );
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         access: Access::InFrame(0),
         level: 0,
         ty: foo_type,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::FieldDoesNotExist(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("fieldvar con field inexistente esta tipando mal")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_varexp_fieldvar_sobre_tipo_no_record() {
+fn typecheck_varexp_fieldvar_sobre_tipo_no_record() {
     let exp = Exp {
         node: _Exp::VarExp(Var::FieldVar(Box::new(Var::SimpleVar(Symbol::from("foo"))),Symbol::from("bar"))),
         pos: Pos {
@@ -279,16 +280,16 @@ fn test_tipado_varexp_fieldvar_sobre_tipo_no_record() {
         level: 0,
         ty: foo_type,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotRecordType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("fieldvar sobre algo que no es record esta tipando mal")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_varexp_subscriptvar_ok() {
+fn typecheck_varexp_subscriptvar_ok() {
     let exp = Exp {
         node: _Exp::VarExp(
             Var::SubscriptVar(Box::new(Var::SimpleVar(Symbol::from("foo"))),
@@ -315,16 +316,16 @@ fn test_tipado_varexp_subscriptvar_ok() {
         level: 0,
         ty: foo_type,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("subscriptvar esta tipando mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_varexp_subscriptvar_indice_no_entero() {
+fn typecheck_varexp_subscriptvar_indice_no_entero() {
     let exp = Exp {
         node: _Exp::VarExp(
             Var::SubscriptVar(Box::new(Var::SimpleVar(Symbol::from("foo"))),
@@ -351,16 +352,16 @@ fn test_tipado_varexp_subscriptvar_indice_no_entero() {
         level: 0,
         ty: foo_type,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::SunscriptNotInteger(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo tipar un subscript var con indice no entero")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_varexp_subscriptvar_no_array() {
+fn typecheck_varexp_subscriptvar_no_array() {
     let exp = Exp {
         node: _Exp::VarExp(
             Var::SubscriptVar(Box::new(Var::SimpleVar(Symbol::from("foo"))),
@@ -384,16 +385,16 @@ fn test_tipado_varexp_subscriptvar_no_array() {
         level: 0,
         ty: foo_type,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotArrayType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("subscriptvar sobre algo que no es array esta tipando mal")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_callexp_ok() {
+fn typecheck_callexp_ok() {
     let exp = Exp {
         node: _Exp::CallExp {
             func: Symbol::from("f"),
@@ -413,23 +414,23 @@ fn test_tipado_callexp_ok() {
         // level: 0,
         external: false,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("callexp tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_callexp_args_de_mas() {
+fn typecheck_callexp_args_de_mas() {
     let exp = Exp {
         node: _Exp::CallExp {
             func: Symbol::from("f"),
-            args: vec![Box::new(Exp {
+            args: vec![Exp {
                 node: _Exp::IntExp(1),
                 pos: Pos {line: 0, column: 0}
-            })],
+            }],
         },
         pos: Pos {line: 0, column: 0}
     };
@@ -442,16 +443,16 @@ fn test_tipado_callexp_args_de_mas() {
         // level: 0,
         external: true,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TooManyArguments(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("una llamada a funcion con argumentos de mas tipa")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_callexp_args_de_menos() {
+fn typecheck_callexp_args_de_menos() {
     let exp = Exp {
         node: _Exp::CallExp {
             func: Symbol::from("f"),
@@ -468,16 +469,16 @@ fn test_tipado_callexp_args_de_menos() {
         // level: 0,
         external: true,
     });
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TooFewArguments(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("una llamada a funcion con argumentos de menos tipa")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_callexp_funcion_no_declarada() {
+fn typecheck_callexp_funcion_no_declarada() {
     let exp = Exp {
         node: _Exp::CallExp {
             func: Symbol::from("f"),
@@ -490,16 +491,16 @@ fn test_tipado_callexp_funcion_no_declarada() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredFunction(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("llamar a una funcion que no existe tipa")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_opexp_ok() {
+fn typecheck_opexp_ok() {
     let exp = Exp {
         node: _Exp::OpExp {
             left: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -510,16 +511,16 @@ fn test_tipado_opexp_ok() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("opexp tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_opexp_tipos_distintos() {
+fn typecheck_opexp_tipos_distintos() {
     let exp = Exp {
         node: _Exp::OpExp {
             left: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -530,16 +531,16 @@ fn test_tipado_opexp_tipos_distintos() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podes sumar 1 con perro"),
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_recordexp_ok() {
+fn typecheck_recordexp_ok() {
     let exp = Exp {
         node: _Exp::RecordExp {
             fields: vec![(Symbol::from("baz"), Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}))],
@@ -554,15 +555,15 @@ fn test_tipado_recordexp_ok() {
                 Box::new(Tipo::TInt(R::RW)),
                 0)], TypeId::new());
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(return_type) => assert!(return_type == foo_type),
-        Err(..) => panic!("recordexp tipa mal")
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_recordexp_tipo_inexistente() {
+fn typecheck_recordexp_tipo_inexistente() {
     let exp = Exp {
         node: _Exp::RecordExp {
             fields: vec![(Symbol::from("baz"), Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}))],
@@ -572,16 +573,16 @@ fn test_tipado_recordexp_tipo_inexistente() {
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podes darle a un record un tipo que no existe"),
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_recordexp_con_tipo_no_record() {
+fn typecheck_recordexp_con_tipo_no_record() {
     let exp = Exp {
         node: _Exp::RecordExp {
             fields: vec![(Symbol::from("baz"), Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}))],
@@ -592,16 +593,16 @@ fn test_tipado_recordexp_con_tipo_no_record() {
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
     type_env.insert(Symbol::from("FooType"), Tipo::TInt(R::RW));
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotRecordType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podes darle a un record un tipo que no es record"),
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_arrayexp_ok() {
+fn typecheck_arrayexp_ok() {
     let exp = Exp {node: _Exp::ArrayExp {
         typ: Symbol::from("FooType"),
         size: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -614,7 +615,7 @@ fn test_tipado_arrayexp_ok() {
         TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(return_type) => assert!(return_type == foo_type),
         Err(..) => panic!("array")
@@ -622,7 +623,7 @@ fn test_tipado_arrayexp_ok() {
 }
 
 #[test]
-fn test_tipado_arrayexp_size_no_int() {
+fn typecheck_arrayexp_size_no_int() {
     let exp = Exp {node: _Exp::ArrayExp {
         typ: Symbol::from("FooType"),
         size: Box::new(Exp {node: _Exp::StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
@@ -635,16 +636,16 @@ fn test_tipado_arrayexp_size_no_int() {
         TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), foo_type);
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerSize(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podemos tipar array de tamano perro")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_arrayexp_tipos_distintos() {
+fn typecheck_arrayexp_tipos_distintos() {
     let exp = Exp {node: _Exp::ArrayExp {
         typ: Symbol::from("FooType"),
         size: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -657,16 +658,16 @@ fn test_tipado_arrayexp_tipos_distintos() {
         TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), foo_type);
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("un array inicializado con algo de un tipo distinto tipa")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_arrayexp_tipo_no_array() {
+fn typecheck_arrayexp_tipo_no_array() {
     let exp = Exp {node: _Exp::ArrayExp {
         typ: Symbol::from("FooType"),
         size: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -676,16 +677,16 @@ fn test_tipado_arrayexp_tipo_no_array() {
     let value_env = initial_value_env();
     let foo_type = Tipo::TInt(R::RW);
     type_env.insert(Symbol::from("FooType"), foo_type);
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotArrayType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("un array inicializado con algo de un tipo distinto tipa")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_arrayexp_tipo_no_existe() {
+fn typecheck_arrayexp_tipo_no_existe() {
     let exp = Exp {node: _Exp::ArrayExp {
         typ: Symbol::from("FooType"),
         size: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -693,36 +694,36 @@ fn test_tipado_arrayexp_tipo_no_existe() {
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("un array de tipo que no existe tipa")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_seqexp_ok() {
+fn typecheck_seqexp_ok() {
     let exp = Exp {
         node: _Exp::SeqExp(vec![
-            Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
-            Box::new(Exp {node: _Exp::IntExp(2), pos: Pos {line: 0, column: 0}}),
+            Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}},
+            Exp {node: _Exp::IntExp(2), pos: Pos {line: 0, column: 0}},
         ]),
         pos: Pos {line: 0, column: 0}
     };
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("seqexp esta tipando mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 // Se puede testear algo mas de _Exp::SeqExp? Hay alguna condicion del ultimo tipo?
 
 #[test]
-fn test_tipado_assignexp_ok() {
+fn typecheck_assignexp_ok() {
     let exp = Exp {node: _Exp::AssignExp{
         var: Var::SimpleVar(Symbol::from("foo")),
         exp: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -735,32 +736,32 @@ fn test_tipado_assignexp_ok() {
         level: 1,
     };
     value_env.insert(Symbol::from("foo"), env_entry);
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("assignexp tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_assignexp_variable_no_existe() {
+fn typecheck_assignexp_variable_no_existe() {
     let exp = Exp {node: _Exp::AssignExp{
         var: Var::SimpleVar(Symbol::from("foo")),
         exp: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredSimpleVar(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("Podes asginar a una variable no declarada")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_assignexp_tipos_distintos() {
+fn typecheck_assignexp_tipos_distintos() {
     let exp = Exp {node: _Exp::AssignExp{
         var: Var::SimpleVar(Symbol::from("foo")),
         exp: Box::new(Exp {node: _Exp::StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
@@ -773,16 +774,16 @@ fn test_tipado_assignexp_tipos_distintos() {
         level: 1,
     };
     value_env.insert(Symbol::from("foo"), env_entry);
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("Podes asginar a una variable un valor de otro tipo")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_assignexp_variable_read_only() {
+fn typecheck_assignexp_variable_read_only() {
     let exp = Exp {node: _Exp::AssignExp{
         var: Var::SimpleVar(Symbol::from("i")),
         exp: Box::new(Exp {node: _Exp::IntExp(2), pos: Pos {line: 0, column: 0}}),
@@ -795,16 +796,16 @@ fn test_tipado_assignexp_variable_read_only() {
         level: 1,
     };
     value_env.insert(Symbol::from("i"), env_entry);
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::ReadOnlyAssignment(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("Podes asginar a una variable read only")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_ifexp_ok() {
+fn typecheck_ifexp_ok() {
     let exp = Exp {node: _Exp::IfExp {
         test: Box::new(Exp {node: _Exp::IntExp(0), pos: Pos {line: 0, column: 0}}),
         then_: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -813,16 +814,16 @@ fn test_tipado_ifexp_ok() {
     , pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(_)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("ifexp esta tipando mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_ifexp_test_no_entero() {
+fn typecheck_ifexp_test_no_entero() {
     let exp = Exp {node: _Exp::IfExp {
         test: Box::new(Exp {node: _Exp::StringExp(String::from("perro")), pos: Pos {line: 0, column: 0}}),
         then_: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -831,16 +832,16 @@ fn test_tipado_ifexp_test_no_entero() {
     , pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerCondition(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puede tener un if con condicion no entera"),
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_ifexp_tipos_then_else_distintos() {
+fn typecheck_ifexp_tipos_then_else_distintos() {
     let exp = Exp {node: _Exp::IfExp {
         test: Box::new(Exp {node: _Exp::IntExp(0), pos: Pos {line: 0, column: 0}}),
         then_: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -849,16 +850,16 @@ fn test_tipado_ifexp_tipos_then_else_distintos() {
     , pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::ThenElseTypeMismatch(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo tener un if con tipos distintos en then y else"),
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_ifexp_sin_else_no_unit() {
+fn typecheck_ifexp_sin_else_no_unit() {
     let exp = Exp {node: _Exp::IfExp {
         test: Box::new(Exp {node: _Exp::IntExp(0), pos: Pos {line: 0, column: 0}}),
         then_: Box::new(Exp {node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0}}),
@@ -867,48 +868,48 @@ fn test_tipado_ifexp_sin_else_no_unit() {
     , pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonUnitBody(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo tener un if sin else y con then no Tipo::TUnit"),
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_whileexp_ok() {
+fn typecheck_whileexp_ok() {
     let exp = Exp {node: _Exp::WhileExp {
         test: Box::new(Exp {node: _Exp::IntExp(0), pos: Pos {line: 0, column: 0}}),
         body: Box::new(Exp {node: _Exp::UnitExp, pos: Pos {line: 0, column: 0}}),
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("whileexp tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_whileexp_condicion_no_entera() {
+fn typecheck_whileexp_condicion_no_entera() {
     let exp = Exp {node: _Exp::WhileExp {
         test: Box::new(Exp {node: _Exp::UnitExp, pos: Pos {line: 0, column: 0}}),
         body: Box::new(Exp {node: _Exp::UnitExp, pos: Pos {line: 0, column: 0}}),
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerCondition(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podes tener un while con condicion no entera")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_forexp_ok() {
+fn typecheck_forexp_ok() {
     let exp = Exp {node: _Exp::ForExp {
         var: Symbol::from("i"),
         escape: false,
@@ -918,35 +919,35 @@ fn test_tipado_forexp_ok() {
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("forexp tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_forexp_iterador_es_usable() {
+fn typecheck_forexp_iterador_es_usable() {
     let exp = Exp {node: _Exp::ForExp {
         var: Symbol::from("i"),
         escape: false,
         lo: Box::new(Exp { node: _Exp::IntExp(1), pos: Pos {line: 0, column: 0,}}),
         hi: Box::new(Exp { node: _Exp::IntExp(10), pos: Pos {line: 0, column: 0,}}),
-        body: boxed_exp(_Exp::SeqExp(vec![boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("i")))), boxed_exp(_Exp::UnitExp)])),
+        body: boxed_exp(_Exp::SeqExp(vec![possed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("i")))), possed_exp(_Exp::UnitExp)])),
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("el iterador del for no es usable en el body")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_forexp_body_no_es_unit() {
+fn typecheck_forexp_body_no_es_unit() {
     let exp = Exp {node: _Exp::ForExp {
         var: Symbol::from("i"),
         escape: false,
@@ -956,16 +957,16 @@ fn test_tipado_forexp_body_no_es_unit() {
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonUnitBody(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podes tener un for con body no unit")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_forexp_lo_no_es_int() {
+fn typecheck_forexp_lo_no_es_int() {
     let exp = Exp {node: _Exp::ForExp {
         var: Symbol::from("i"),
         escape: false,
@@ -975,16 +976,16 @@ fn test_tipado_forexp_lo_no_es_int() {
     }, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerForRange(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podes tener un for con body lo no int")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_forexp_hi_no_es_int() {
+fn typecheck_forexp_hi_no_es_int() {
     let exp = Exp {node: _Exp::ForExp {
         var: Symbol::from("i"),
         escape: false,
@@ -994,16 +995,16 @@ fn test_tipado_forexp_hi_no_es_int() {
     }, pos: Pos {line: 0, column: 0}};
         let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerForRange(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("podes tener un for con hi no int")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_letexp_vardec_sin_tipo_ok() {
+fn typecheck_letexp_vardec_sin_tipo_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::VarDec(
             _VarDec::new(
@@ -1017,16 +1018,16 @@ fn test_tipado_letexp_vardec_sin_tipo_ok() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("no puedo tipar un vardec de tipo inferido")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_letexp_vardec_con_tipo_ok() {
+fn typecheck_letexp_vardec_con_tipo_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::VarDec(
             _VarDec::new(
@@ -1041,16 +1042,16 @@ fn test_tipado_letexp_vardec_con_tipo_ok() {
     let type_env = initial_type_env();
     let value_env = initial_value_env();
 
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("no puedo tipar un vardec de tipo explicito")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_letexp_vardec_tipo_no_esta_declarado() {
+fn typecheck_letexp_vardec_tipo_no_esta_declarado() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::VarDec(
             _VarDec::new(
@@ -1064,16 +1065,16 @@ fn test_tipado_letexp_vardec_tipo_no_esta_declarado() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo tipar una declaracion de variable con un tipo que no existe")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_letexp_vardec_tipos_distintos() {
+fn typecheck_letexp_vardec_tipos_distintos() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::VarDec(
             _VarDec::new(
@@ -1087,16 +1088,16 @@ fn test_tipado_letexp_vardec_tipos_distintos() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo tipar una declaracion de variable con un tipo distinto al init")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_letexp_typedec_name_ok() {
+fn typecheck_letexp_typedec_name_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![
             Dec::TypeDec(vec![(
@@ -1119,16 +1120,16 @@ fn test_tipado_letexp_typedec_name_ok() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("las typedecs tipan mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_letexp_typedec_array_ok() {
+fn typecheck_letexp_typedec_array_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![
             Dec::TypeDec(vec![(
@@ -1160,16 +1161,16 @@ fn test_tipado_letexp_typedec_array_ok() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("las typedecs tipan mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_letexp_typedec_record_ok() {
+fn typecheck_letexp_typedec_record_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![
             Dec::TypeDec(vec![(
@@ -1177,62 +1178,82 @@ fn test_tipado_letexp_typedec_record_ok() {
                     Symbol::from("FooType"),
                     Ty::Record(vec![
                         Field {
-                            name: Symbol::from("FooType"),
+                            name: Symbol::from("bar"),
                             typ: Ty::Name(Symbol::from("int")),
                             escape: false,
                         }
                     ])
                 ),
-                Pos{line: 0, column: 0}
+                Pos{line: 0, column: 1}
             )]),
             Dec::VarDec(
                 _VarDec::new(
                     Symbol::from("foo"),
                     Some(Symbol::from("FooType")),
                     boxed_exp(_Exp::RecordExp {
-                        fields: vec![(Symbol::from("baz"), boxed_exp(_Exp::IntExp(1)))],
+                        fields: vec![(Symbol::from("bar"), boxed_exp(_Exp::IntExp(1)))],
                         typ: Symbol::from("FooType"),
                     })
                 ),
-                Pos{line: 0, column: 0}
+                Pos{line: 0, column: 2}
             )],
         body: boxed_exp(_Exp::VarExp(
             Var::FieldVar(
                 Box::new(Var::SimpleVar(Symbol::from("foo"))),
-                Symbol::from("baz")
+                Symbol::from("bar")
             )
         ))
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("las typedecs tipan mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
-// #[test]
-// fn test_tipado_letexp_typedec_recursion_infinita() {
-//    let exp = possed_exp(_Exp::LetExp {
-//         decs: vec![Dec::TypeDec(vec![
-//             _TypeDec::new(Symbol::from("FooType"), Ty::Name(Symbol::from("BaazType"))),
-//             _TypeDec::new(Symbol::from("BaazType"), Ty::Name(Symbol::from("FooType"))),
-//         ])],
-//         body: boxed_exp(_Exp::UnitExp)
-//     });
-//     let type_env = initial_type_env();
-//     let value_env = initial_value_env();
-//     let res = tipar_exp(&exp, &type_env, &value_env);
-//     match res {
-//         Err(TypeDecSortingError(_)) => (),
-//         Err(..) => panic!("")
-//     }
-// }
+#[test]
+fn typecheck_letexp_typedec_recursion_infinita() {
+   let exp = possed_exp(_Exp::LetExp {
+        decs: vec![Dec::TypeDec(vec![
+            (_TypeDec::new(Symbol::from("FooType"), Ty::Name(Symbol::from("BaazType"))), Pos{line: 0, column: 0}),
+            (_TypeDec::new(Symbol::from("BaazType"), Ty::Name(Symbol::from("FooType"))), Pos{line: 0, column: 0}),
+        ])],
+        body: boxed_exp(_Exp::UnitExp)
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = type_exp(&exp, &type_env, &value_env);
+    match res {
+        Err(TypeError::TypeCycle(_)) => (),
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+    }
+}
+#[test]
+fn test_typecheck_recursive_typecheck_ok() {
+   let exp = possed_exp(_Exp::LetExp {
+        decs: vec![Dec::TypeDec(vec![
+            (_TypeDec::new(Symbol::from("C"), Ty::Name(Symbol::from("B"))), Pos{line: 0, column: 0}),
+            (_TypeDec::new(Symbol::from("B"), Ty::Name(Symbol::from("A"))), Pos{line: 0, column: 0}),
+            (_TypeDec::new(Symbol::from("A"), Ty::Name(Symbol::from("int"))), Pos{line: 0, column: 0}),
+        ])],
+        body: boxed_exp(_Exp::UnitExp)
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = type_exp(&exp, &type_env, &value_env);
+    match res {
+        Ok(Tipo::TUnit) => (),
+        Ok(..) => panic!("wrong type"),
+        Err(..) => panic!("type error"),
+    }
+}
 
 #[test]
-fn test_tipado_letexp_typedec_referencia_tipo_inexistente() {
+fn typecheck_letexp_typedec_referencia_tipo_inexistente() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::TypeDec(vec![(
             _TypeDec::new(
@@ -1245,16 +1266,87 @@ fn test_tipado_letexp_typedec_referencia_tipo_inexistente() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo declarar un sinonimo a un tipo inexistente")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_letexp_functiondec_ok() {
+fn typecheck_record_type_cycle_ok() {
+    let exp = possed_exp(_Exp::LetExp {
+        decs: vec![
+            Dec::TypeDec(vec![(
+                _TypeDec::new(
+                    Symbol::from("List"),
+                    Ty::Record(vec![
+                        Field {
+                            name: Symbol::from("head"),
+                            typ: Ty::Name(Symbol::from("int")),
+                            escape: false,
+                        },
+                        Field {
+                            name: Symbol::from("tail"),
+                            typ: Ty::Name(Symbol::from("List")),
+                            escape: false,
+                        }
+                    ])
+                ),
+                Pos{line: 0, column: 1}
+            )]),
+            Dec::VarDec(
+                _VarDec::new(
+                    Symbol::from("foo"),
+                    Some(Symbol::from("List")),
+                    boxed_exp(_Exp::RecordExp {
+                        fields: vec![
+                            (Symbol::from("head"), boxed_exp(_Exp::IntExp(1))),
+                            (Symbol::from("tail"), boxed_exp(_Exp::RecordExp {
+                                fields: vec![
+                                    (Symbol::from("head"), boxed_exp(_Exp::IntExp(2))),
+                                    (Symbol::from("tail"), boxed_exp(_Exp::RecordExp {
+                                        fields: vec![
+                                            (Symbol::from("head"), boxed_exp(_Exp::IntExp(3))),
+                                            (Symbol::from("tail"), boxed_exp(_Exp::RecordExp {
+                                                fields: vec![
+                                                    (Symbol::from("head"), boxed_exp(_Exp::IntExp(4))),
+                                                    (Symbol::from("tail"), boxed_exp(_Exp::NilExp))
+                                                ],
+                                                typ: Symbol::from("List"),
+                                            }))
+                                        ],
+                                        typ: Symbol::from("List"),
+                                    }))
+                                ],
+                                typ: Symbol::from("List"),
+                            }))
+                        ],
+                        typ: Symbol::from("List"),
+                    })
+                ),
+                Pos{line: 0, column: 2}
+            )],
+        body: boxed_exp(_Exp::VarExp(
+            Var::FieldVar(
+                Box::new(Var::SimpleVar(Symbol::from("foo"))),
+                Symbol::from("head")
+            )
+        ))
+    });
+    let type_env = initial_type_env();
+    let value_env = initial_value_env();
+    let res = type_exp(&exp, &type_env, &value_env);
+    match res {
+        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
+    }
+}
+
+#[test]
+fn typecheck_letexp_functiondec_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1262,7 +1354,7 @@ fn test_tipado_letexp_functiondec_ok() {
                 vec![Field {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
-                    escape: false
+                    escape: false,
                 }],
                 None,
                 boxed_exp(_Exp::UnitExp)
@@ -1273,16 +1365,16 @@ fn test_tipado_letexp_functiondec_ok() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
+fn typecheck_letexp_functiondec_llamada_en_bloque_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![
             Dec::FunctionDec(vec![(
@@ -1291,7 +1383,7 @@ fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
                     vec![Field {
                         name: Symbol::from("arg1"),
                         typ: Ty::Name(Symbol::from("int")),
-                        escape: false
+                        escape: false,
                     }],
                     Some(Symbol::from("int")),
                     boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("arg1")))),
@@ -1304,12 +1396,12 @@ fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
                     vec![Field {
                         name: Symbol::from("arg2"),
                         typ: Ty::Name(Symbol::from("int")),
-                        escape: false
+                        escape: false,
                     }],
                     Some(Symbol::from("int")),
                     boxed_exp(_Exp::CallExp {
                         func: Symbol::from("foo"),
-                        args: vec![boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("arg2"))))],
+                        args: vec![possed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("arg2"))))],
                     })
                 ),
                 Pos{line: 0, column: 0}
@@ -1317,21 +1409,21 @@ fn test_tipado_letexp_functiondec_llamada_en_bloque_ok() {
         ],
         body: boxed_exp(_Exp::CallExp {
             func: Symbol::from("baaz"),
-            args: vec![boxed_exp(_Exp::IntExp(2))]
+            args: vec![possed_exp(_Exp::IntExp(2))]
         })
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TInt(R::RW)) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("no puedo tipar una funcion que llama a otra de su bloque")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_letexp_functiondec_body_no_tipa() {
+fn typecheck_letexp_functiondec_body_no_tipa() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1350,16 +1442,16 @@ fn test_tipado_letexp_functiondec_body_no_tipa() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredSimpleVar(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo tipar una funcion con un body que no tipa")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_letexp_functiondec_body_distinto_result() {
+fn typecheck_letexp_functiondec_body_distinto_result() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1367,7 +1459,7 @@ fn test_tipado_letexp_functiondec_body_distinto_result() {
                 vec![Field {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
-                    escape: false
+                    escape: false,
                 }],
                 None,
                 boxed_exp(_Exp::IntExp(2)), // no declarada,
@@ -1378,16 +1470,16 @@ fn test_tipado_letexp_functiondec_body_distinto_result() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
-        Err(..) => panic!("error incorrecto"),
-        Ok(..) => panic!("puedo tipar una funcion con un body que tipa distinto a result")
+        Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
 }
 
 #[test]
-fn test_tipado_letexp_functiondec_params_repetidos() {
+fn typecheck_letexp_functiondec_params_repetidos() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1395,7 +1487,7 @@ fn test_tipado_letexp_functiondec_params_repetidos() {
                 vec![Field {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
-                    escape: false
+                    escape: false,
                 }],
                 None,
                 boxed_exp(_Exp::UnitExp)
@@ -1406,16 +1498,16 @@ fn test_tipado_letexp_functiondec_params_repetidos() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_letexp_functiondec_nombres_repetidos() {
+fn typecheck_letexp_functiondec_nombres_repetidos() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1423,7 +1515,7 @@ fn test_tipado_letexp_functiondec_nombres_repetidos() {
                 vec![Field {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
-                    escape: false
+                    escape: false,
                 }],
                 None,
                 boxed_exp(_Exp::UnitExp)
@@ -1434,16 +1526,16 @@ fn test_tipado_letexp_functiondec_nombres_repetidos() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_letexp_functiondec_recursivas() {
+fn typecheck_letexp_functiondec_recursivas() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1451,7 +1543,7 @@ fn test_tipado_letexp_functiondec_recursivas() {
                 vec![Field {
                     name: Symbol::from("arg"),
                     typ: Ty::Name(Symbol::from("int")),
-                    escape: false
+                    escape: false,
                 }],
                 None,
                 boxed_exp(_Exp::UnitExp)
@@ -1461,16 +1553,16 @@ fn test_tipado_letexp_functiondec_recursivas() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env);
+    let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(Tipo::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn test_tipado_letexp_todas_las_decs_ok() {
+fn typecheck_letexp_todas_las_decs_ok() {
     let exp = possed_exp(_Exp::LetExp {
         decs: vec![
             Dec::TypeDec(vec![(
@@ -1494,7 +1586,7 @@ fn test_tipado_letexp_todas_las_decs_ok() {
                     vec![Field {
                         name: Symbol::from("bar"),
                         typ: Ty::Name(Symbol::from("FooType")),
-                        escape: false
+                        escape: false,
                     }],
                     Some(Symbol::from("FooType")),
                     boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("bar"))))
@@ -1504,12 +1596,12 @@ fn test_tipado_letexp_todas_las_decs_ok() {
         ],
         body: boxed_exp(_Exp::CallExp {
             func: Symbol::from("baaz"),
-            args: vec![boxed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("foo"))))]
+            args: vec![possed_exp(_Exp::VarExp(Var::SimpleVar(Symbol::from("foo"))))]
         })
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = tipar_exp(&exp, &type_env, &value_env)
+    let res = type_exp(&exp, &type_env, &value_env)
         .expect("no puedo tipar un let que usa las declaraciones");
     assert_eq!(res, Tipo::TInt(R::RW))
 }

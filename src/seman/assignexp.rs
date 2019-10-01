@@ -3,17 +3,17 @@ use std::result::Result;
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     use Tipo::*;
-    use super::varexp::tipar_var;
+    use super::varexp::typecheck_var;
     match exp {
         Exp {node: _Exp::AssignExp{var , exp: value_exp}, pos} => {
-            let var_type = match tipar_var(var, *pos, type_env, value_env) {
+            let var_type = match typecheck_var(var, *pos, type_env, value_env) {
                 Ok(TInt(R::RO)) => return Err(TypeError::ReadOnlyAssignment(*pos)),
                 Ok(tipo) => tipo,
                 Err(type_error) => return Err(type_error)
             };
-            let value_type = match tipar_exp(value_exp, type_env, value_env) {
+            let value_type = match type_exp(value_exp, type_env, value_env) {
                 Ok(tipo) => tipo,
                 Err(type_error) => return Err(type_error)
             };
@@ -28,6 +28,6 @@ pub fn tipar(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) 
     }
 }
 
-pub fn traducir(_exp: Exp) -> ExpInterm {
+pub fn translate(_exp: Exp) -> ExpInterm {
     ExpInterm::CONST(0)
 }

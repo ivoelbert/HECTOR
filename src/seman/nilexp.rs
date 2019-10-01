@@ -1,10 +1,10 @@
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn tipar(_exp: &Exp, _type_env: &TypeEnviroment, _value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn typecheck(_exp: &Exp, _type_env: &TypeEnviroment, _value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     Ok(Tipo::TNil)
 }
 
-pub fn traducir(_exp: Exp) -> ExpInterm {
+pub fn translate(_exp: Exp) -> ExpInterm {
     ExpInterm::CONST(0)
 }
