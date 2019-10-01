@@ -1,7 +1,7 @@
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn typecheck<'a>(exp: &Exp, type_env: &'a TypeEnviroment<'a>, value_env: &ValueEnviroment<'a>) -> Result<Tipo<'a>, TypeError> {
+pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     use Tipo::*;
     match exp { Exp {node: _Exp::SeqExp(exps), ..} => {
         let mut seq_type : Tipo = TUnit;

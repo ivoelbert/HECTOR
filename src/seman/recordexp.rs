@@ -1,9 +1,9 @@
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn typecheck<'a>(exp: &Exp, type_env: &'a TypeEnviroment<'a>, value_env: &ValueEnviroment<'a>) ->  Result<Tipo<'a>, TypeError> {
+pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) ->  Result<Tipo, TypeError> {
     use std::collections::HashMap;
-    let tipar_fields = |args: &Vec<(Symbol, Box<Exp>)>| -> HashMap<Symbol, Result<Tipo<'a>, TypeError>> {
+    let tipar_fields = |args: &Vec<(Symbol, Box<Exp>)>| -> HashMap<Symbol, Result<Tipo, TypeError>> {
         args.iter().map(|arg| (arg.0.clone(), type_exp(&*arg.1, type_env, value_env))).rev().collect()
     };
     match exp { Exp {node: _Exp::RecordExp{fields, typ: record_type_string, ..}, pos} => {

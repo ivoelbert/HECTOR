@@ -1,7 +1,7 @@
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn typecheck<'a>(_exp: &Exp, _type_env: &TypeEnviroment, _value_env: &ValueEnviroment) -> Result<Tipo<'a>, TypeError> {
+pub fn typecheck(_exp: &Exp, _type_env: &TypeEnviroment, _value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     Ok(Tipo::TUnit)
 }
 

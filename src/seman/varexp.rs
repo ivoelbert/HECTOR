@@ -3,16 +3,16 @@ use super::tigerseman::*;
 use super::super::ast::position::Pos;
 
 
-fn field_type<'a>(fields: &[(Box<String>, &'a Tipo<'a>, u8)], symbol: &str) -> Option<Tipo<'a>> {
-    for var in fields.iter() {
+fn field_type(fields: &[(Box<String>, Box<Tipo>, u8)], symbol: &str) -> Option<Tipo> {
+    for var in fields {
         if *var.0 == symbol {
-            return Some(var.1.clone());
+            return Some(*var.1.clone());
         }
     }
     None
 }
 
-pub fn typecheck_var<'a>(var: &Var, pos: Pos, type_env: &TypeEnviroment, value_env: &ValueEnviroment<'a>) -> Result<Tipo<'a>, TypeError> {
+pub fn typecheck_var(var: &Var, pos: Pos, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     match var {
         Var::SimpleVar(var_symbol) => match value_env.get(var_symbol) {
             Some(env_entry) => match env_entry {
@@ -62,7 +62,7 @@ pub fn typecheck_var<'a>(var: &Var, pos: Pos, type_env: &TypeEnviroment, value_e
 
 }
 
-pub fn typecheck<'a>(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment<'a>) -> Result<Tipo<'a>, TypeError> {
+pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     use _Exp::*;
 
     match exp {

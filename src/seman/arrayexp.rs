@@ -3,7 +3,7 @@ use std::result::Result;
 use super::super::ast::tigerabs::*;
 use super::tigerseman::*;
 
-pub fn typecheck<'a>(exp: &Exp, type_env: &TypeEnviroment<'a>, value_env: &ValueEnviroment) -> Result<Tipo<'a>, TypeError> {
+pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     // Buscar el tipo del array en el type_env
     // Si el tipo no existe, fallar.
     // Si el tipo existe pero no es un array, fallar.

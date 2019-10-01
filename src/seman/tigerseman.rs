@@ -31,17 +31,17 @@ pub enum R {
 pub type TypeId = uid::Id<u16>;
 
 #[derive(Debug, Clone)]
-pub enum Tipo<'a> {
+pub enum Tipo {
     TUnit,
     TNil,
     TInt(R),
     TString,
-    TArray(Box<Tipo<'a>>, TypeId),
-    TRecord(Vec<(Box<String>, &'a Tipo<'a>, u8)>, TypeId),
+    TArray(Box<Tipo>, TypeId),
+    TRecord(Vec<(Box<String>, Box<Tipo>, u8)>, TypeId),
     TipoInterno(String)
 }
 
-pub fn tipo_real<'a>(t: Tipo<'a>, tenv: &'a TypeEnviroment) -> Tipo<'a> {
+pub fn tipo_real(t: Tipo, tenv: &TypeEnviroment) -> Tipo {
     match &t {
         Tipo::TipoInterno(s) => match tenv.get(s) {
             Some(tipo) => tipo.clone(),
@@ -52,32 +52,32 @@ pub fn tipo_real<'a>(t: Tipo<'a>, tenv: &'a TypeEnviroment) -> Tipo<'a> {
 }
 
 pub fn es_int(t: &Tipo) -> bool {
-    match &t {
+    match *t {
         Tipo::TInt(_) => true,
         _ => false
     }
 }
 
 #[derive(Clone, Debug)]
-pub enum EnvEntry<'a> {
+pub enum EnvEntry {
     Var {
-        ty: Tipo<'a>,
+        ty: Tipo,
         access: Access,
         level: i32,
     },
     Func {
         // level: Level,
         label: Label,
-        formals: Vec<Tipo<'a>>,
-        result: Tipo<'a>,
+        formals: Vec<Tipo>,
+        result: Tipo,
         external: bool
     }
 }
 
-pub type TypeEnviroment<'a> = HashMap<Symbol, Tipo<'a>>;
-pub type ValueEnviroment<'a> = HashMap<Symbol, EnvEntry<'a>>;
+pub type TypeEnviroment = HashMap<Symbol, Tipo>;
+pub type ValueEnviroment = HashMap<Symbol, EnvEntry>;
 
-pub fn initial_type_env<'a>() -> TypeEnviroment<'a> {
+pub fn initial_type_env() -> TypeEnviroment {
     let mut type_env = TypeEnviroment::new();
     type_env.insert(Symbol::from("int"), Tipo::TInt(R::RW));
     type_env.insert(Symbol::from("string"), Tipo::TString);
@@ -85,7 +85,7 @@ pub fn initial_type_env<'a>() -> TypeEnviroment<'a> {
 }
 
 // revisar valores de retorno de estas
-pub fn initial_value_env<'a>() -> ValueEnviroment<'a> {
+pub fn initial_value_env() -> ValueEnviroment {
     use Tipo::*;
     use EnvEntry::*;
     let mut value_env = ValueEnviroment::new();
@@ -178,7 +178,7 @@ pub enum TypeError {
     TypeCycle(Pos),
 }
 
-impl<'a> PartialEq for Tipo<'a> {
+impl PartialEq for Tipo {
     fn eq(&self, other: &Self) -> bool {
         use Tipo::*;
         match (self, other) {
@@ -275,7 +275,7 @@ pub enum Access {
     InReg(Label)
 }
 
-pub fn type_exp<'a>(exp : &Exp, type_env : &'a TypeEnviroment<'a>, value_env: &ValueEnviroment<'a>) -> Result<Tipo<'a>, TypeError> {
+pub fn type_exp(exp : &Exp, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     use _Exp::*;
     match exp {
         Exp {node, ..} => match node {

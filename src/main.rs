@@ -101,7 +101,6 @@ fn main() {
         })
     });
     let escaped_exp = find_escapes(exp);
-    println!("{:?}", escaped_exp);
     if let Exp {node: _Exp::LetExp {decs, ..}, ..} = escaped_exp {
         if let Some((Dec::VarDec(_VarDec{escape, ..}, ..), ..)) = decs.split_first() {
             if *escape {
