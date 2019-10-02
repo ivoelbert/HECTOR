@@ -1,7 +1,8 @@
 use std::result::Result;
 
 use super::super::ast::tigerabs::*;
-use super::tigerseman::*;
+use super::super::tree::translate::{Access};
+use super::typecheck::*;
 
 pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env:& ValueEnviroment) -> Result<Tipo, TypeError> {
     use Tipo::*;
@@ -26,8 +27,4 @@ pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env:& ValueEnvirome
     }
     _ => panic!("delegation panic in forexp::tipar")
     }
-}
-
-pub fn translate(_exp: Exp) -> ExpInterm {
-    ExpInterm::CONST(0)
 }

@@ -2,9 +2,10 @@
 
 use super::super::ast::tigerabs::*;
 use super::super::ast::position::*;
+use super::super::tree::translate::{Access};
 // use super::super::ast::parser::parse;
 
-use super::super::seman::tigerseman::*;
+use super::super::typecheck::typecheck::*;
 
 // #[test]
 // fn test_good() {

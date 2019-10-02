@@ -1,5 +1,5 @@
 use super::super::ast::tigerabs::*;
-use super::tigerseman::*;
+use super::typecheck::*;
 
 pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     match exp { Exp {node: _Exp::WhileExp {test, body}, pos} =>{
@@ -16,6 +16,3 @@ pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnvirome
     }
 }
 
-pub fn translate(_exp: Exp) -> ExpInterm {
-    ExpInterm::CONST(0)
-}

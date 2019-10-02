@@ -2,7 +2,8 @@ use std::convert::TryInto;
 
 use super::super::ast::tigerabs::*;
 use super::super::ast::position::Pos;
-use super::tigerseman::*;
+use super::super::tree::translate::{Access};
+use super::typecheck::*;
 
 use pathfinding::directed::topological_sort;
 
@@ -261,8 +262,4 @@ pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnvirome
         },
         _ => panic!("error de delegacion en letexp::tipar"),
     }
-}
-
-pub fn translate(_exp: Exp) -> ExpInterm {
-    ExpInterm::CONST(0)
 }

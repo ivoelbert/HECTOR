@@ -1,5 +1,5 @@
 use super::super::ast::tigerabs::*;
-use super::tigerseman::*;
+use super::typecheck::*;
 use super::super::ast::position::Pos;
 
 
@@ -71,9 +71,4 @@ pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnvirome
         },
         _ => panic!("le llego algo nada que ver a varexp::tipar")
     }
-}
-
-
-pub fn translate(_exp: Exp) -> ExpInterm {
-    ExpInterm::CONST(0)
 }

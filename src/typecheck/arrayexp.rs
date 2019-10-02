@@ -1,7 +1,7 @@
 use std::result::Result;
 
 use super::super::ast::tigerabs::*;
-use super::tigerseman::*;
+use super::typecheck::*;
 
 pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     // Buscar el tipo del array en el type_env
@@ -32,8 +32,4 @@ pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnvirome
             },
         _ => panic!("le llego algo nada que ver a arrayexp::tipar")
     }
-}
-
-pub fn translate(_exp: Exp) -> ExpInterm {
-    ExpInterm::CONST(0)
 }

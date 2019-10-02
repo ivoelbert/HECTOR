@@ -9,19 +9,20 @@
     clippy::use_debug, // para debuguear el parser
     clippy::print_stdout,
     clippy::needless_pass_by_value, // para tener los translate muertos
+    dead_code,
 )]
 
-#[allow(dead_code)]
 mod ast;
-#[allow(dead_code)] // Estos dead_code hay que sacarlos cuando terminemos estos modulos
-mod seman;
+mod typecheck;
+mod tree;
+
 #[cfg(test)]
 mod test;
 
 use ast::tigerabs::*;
 use ast::position::{Pos};
 
-use seman::escape::find_escapes;
+use tree::escape::find_escapes;
 //extern crate lalrpop_util;
 extern crate pathfinding;
 

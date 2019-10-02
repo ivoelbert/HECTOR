@@ -1,6 +1,6 @@
 use super::super::ast::tigerabs::*;
 use super::super::ast::position::*;
-use super::super::seman::escape::*;
+use super::super::tree::escape::*;
 
 
 fn possed_exp(exp: _Exp) -> Exp {
