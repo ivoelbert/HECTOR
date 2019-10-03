@@ -105,25 +105,24 @@ pub enum TransError {
 
 
 pub fn trans_exp(exp : Exp) -> Result<Tree, TransError> {
-    use _Exp::*;
     match exp {
         Exp {node: exp, pos} => match exp {
-            VarExp(_) => varexp::translate(Exp{node: exp, pos}),
-            UnitExp => unitexp::translate(Exp{node: exp, pos}),
-            NilExp => nilexp::translate(Exp{node: exp, pos}),
-            IntExp(_) =>  intexp::translate(Exp{node: exp, pos}),
-            StringExp(_) => stringexp::translate(Exp{node: exp, pos}),
-            CallExp{..} => callexp::translate(Exp{node: exp, pos}),
-            OpExp{..} => opexp::translate(Exp{node: exp, pos}),
-            AssignExp{..} => assignexp::translate(Exp{node: exp, pos}),
-            RecordExp{..} => recordexp::translate(Exp{node: exp, pos}),
-            SeqExp(_) => seqexp::translate(Exp{node: exp, pos}),
-            IfExp{..} => ifexp::translate(Exp{node: exp, pos}),
-            WhileExp{..} => whileexp::translate(Exp{node: exp, pos}),
-            ForExp{..} => forexp::translate(Exp{node: exp, pos}),
-            LetExp{..} => letexp::translate(Exp{node: exp, pos}),
-            BreakExp => breakexp::translate(Exp{node: exp, pos}),
-            ArrayExp{..} => arrayexp::translate(Exp{node: exp, pos}),
+            _Exp::Var(_) => varexp::translate(Exp{node: exp, pos}),
+            _Exp::Unit => unitexp::translate(Exp{node: exp, pos}),
+            _Exp::Nil => nilexp::translate(Exp{node: exp, pos}),
+            _Exp::Int(_) =>  intexp::translate(Exp{node: exp, pos}),
+            _Exp::String(_) => stringexp::translate(Exp{node: exp, pos}),
+            _Exp::Call{..} => callexp::translate(Exp{node: exp, pos}),
+            _Exp::Op{..} => opexp::translate(Exp{node: exp, pos}),
+            _Exp::Assign{..} => assignexp::translate(Exp{node: exp, pos}),
+            _Exp::Record{..} => recordexp::translate(Exp{node: exp, pos}),
+            _Exp::Seq(_) => seqexp::translate(Exp{node: exp, pos}),
+            _Exp::If{..} => ifexp::translate(Exp{node: exp, pos}),
+            _Exp::While{..} => whileexp::translate(Exp{node: exp, pos}),
+            _Exp::For{..} => forexp::translate(Exp{node: exp, pos}),
+            _Exp::Let{..} => letexp::translate(Exp{node: exp, pos}),
+            _Exp::Break => breakexp::translate(Exp{node: exp, pos}),
+            _Exp::Array{..} => arrayexp::translate(Exp{node: exp, pos}),
         }
     }
 }

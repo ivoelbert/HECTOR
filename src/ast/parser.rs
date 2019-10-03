@@ -12,7 +12,7 @@ pub enum ParseError {
 
 pub fn parse(source : String) -> Result<Exp, ParseError> {
     let str_src: &str = &*source;
-    let box_exp = posed_exp(_Exp::UnitExp, 1, 1);
+    let box_exp = posed_exp(_Exp::Unit, 1, 1);
 
      Ok(*box_exp)
 }

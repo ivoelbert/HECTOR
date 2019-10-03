@@ -5,7 +5,7 @@ pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnvirome
     let tipar_fields = |args: &Vec<(Symbol, Box<Exp>)>| -> HashMap<Symbol, Result<Tipo, TypeError>> {
         args.iter().map(|arg| (arg.0.clone(), type_exp(&*arg.1, type_env, value_env))).rev().collect()
     };
-    match exp { Exp {node: _Exp::RecordExp{fields, typ: record_type_string, ..}, pos} => {
+    match exp { Exp {node: _Exp::Record{fields, typ: record_type_string, ..}, pos} => {
         let mut field_types = tipar_fields(fields);
 
         let record_type = match type_env.get(record_type_string) {

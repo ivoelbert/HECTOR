@@ -12,7 +12,7 @@ fn field_type(fields: &[(Box<String>, Box<Tipo>, u8)], symbol: &str) -> Option<T
 
 pub fn typecheck_var(var: &Var, pos: Pos, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     match var {
-        Var::SimpleVar(var_symbol) => match value_env.get(var_symbol) {
+        Var::Simple(var_symbol) => match value_env.get(var_symbol) {
             Some(env_entry) => match env_entry {
                 EnvEntry::Var {
                     ty: var_type,
@@ -22,10 +22,10 @@ pub fn typecheck_var(var: &Var, pos: Pos, type_env: &TypeEnviroment, value_env: 
             },
             None => Err(TypeError::UndeclaredSimpleVar(pos))
         },
-        Var::SubscriptVar(boxed_var, index) => {
+        Var::Subscript(boxed_var, index) => {
             let subscript_var = boxed_var;
             match &**subscript_var {
-                Var::SimpleVar(s) => match value_env.get(s) {
+                Var::Simple(s) => match value_env.get(s) {
                     Some(env_entry) => match env_entry {
                         EnvEntry::Var {
                             ty: Tipo::TArray(array_of, _),
@@ -39,11 +39,11 @@ pub fn typecheck_var(var: &Var, pos: Pos, type_env: &TypeEnviroment, value_env: 
                     },
                     None => Err(TypeError::UndeclaredSimpleVar(pos))
                 }
-                Var::FieldVar(..) | Var::SubscriptVar(..) => Err(TypeError::NotSimpleVar(pos)),
+                Var::Field(..) | Var::Subscript(..) => Err(TypeError::NotSimpleVar(pos)),
             }
         },
-        Var::FieldVar(subscript_var, field_symbol) =>match &**subscript_var {
-            Var::SimpleVar(record_symbol) => match value_env.get(record_symbol) {
+        Var::Field(subscript_var, field_symbol) =>match &**subscript_var {
+            Var::Simple(record_symbol) => match value_env.get(record_symbol) {
                 Some(env_entry) => match env_entry {
                     EnvEntry::Var {ty: Tipo::TRecord(vars, _), ..}
                         => match field_type(vars, &field_symbol) {
@@ -54,17 +54,15 @@ pub fn typecheck_var(var: &Var, pos: Pos, type_env: &TypeEnviroment, value_env: 
                 },
                 None => Err(TypeError::UndeclaredSimpleVar(pos))
             },
-            Var::FieldVar(..) | Var::SubscriptVar(..) => Err(TypeError::NotSimpleVar(pos)),
+            Var::Field(..) | Var::Subscript(..) => Err(TypeError::NotSimpleVar(pos)),
         },
     }
 
 }
 
 pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
-    use _Exp::*;
-
     match exp {
-        Exp { node: VarExp(var), pos} => {
+        Exp { node: _Exp::Var(var), pos} => {
             typecheck_var(var, *pos, type_env, value_env)
         },
         _ => panic!("le llego algo nada que ver a varexp::tipar")

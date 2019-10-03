@@ -8,10 +8,9 @@ pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnvirome
     // Tipar el size. Si no es int, fallar.
     // Tipar el init. Si no es del mismo tipo del array, fallar.
     // Devolver TArray del tipo que encontramos en la tabla.
-    use _Exp::*;
     use Tipo::*;
     match exp {
-        Exp { node: ArrayExp { typ: array_of_symbol, size: size_exp, init: init_exp}, pos}
+        Exp { node: _Exp::Array { typ: array_of_symbol, size: size_exp, init: init_exp}, pos}
             => match type_env.get(array_of_symbol) {
                 Some(TArray(array_of_type, type_id)) => match type_exp(size_exp, type_env, value_env) {
                     Ok(TInt(_)) => match type_exp(init_exp, type_env, value_env) {

@@ -1,4 +1,3 @@
-#![allow(clippy::pub_enum_variant_names)]
 pub mod position;
 mod token;
 
@@ -10,59 +9,59 @@ pub type Symbol = String;
 #[derive(Debug)]
 #[derive(Clone)]
 pub enum Var {
-    SimpleVar(Symbol),
-    FieldVar(Box<Var>, Symbol),
-    SubscriptVar(Box<Var>, Box<Exp>),
+    Simple(Symbol),
+    Field(Box<Var>, Symbol),
+    Subscript(Box<Var>, Box<Exp>),
 }
 
 #[allow(dead_code)]
 #[derive(Clone)]
 pub enum _Exp {
-    VarExp(Var),
-    UnitExp,
-    NilExp,
-    IntExp(i32),
-    StringExp(String),
-    CallExp {
+    Var(Var),
+    Unit,
+    Nil,
+    Int(i32),
+    String(String),
+    Call {
         func: Symbol,
         args: Vec<Exp>,
     },
-    OpExp {
+    Op {
         left: Box<Exp>,
         oper: Oper,
         right: Box<Exp>,
     },
-    RecordExp {
+    Record {
         fields: Vec<(Symbol, Box<Exp>)>,
         typ: Symbol,
     },
-    SeqExp(Vec<Exp>),
-    AssignExp {
+    Seq(Vec<Exp>),
+    Assign {
         var: Var,
         exp: Box<Exp>,
     },
-    IfExp {
+    If {
         test: Box<Exp>,
         then_: Box<Exp>,
         else_: Option<Box<Exp>>,
     },
-    WhileExp {
+    While {
         test: Box<Exp>,
         body: Box<Exp>,
     },
-    ForExp {
+    For {
         var: Symbol,
         escape: bool,
         lo: Box<Exp>,
         hi: Box<Exp>,
         body: Box<Exp>,
     },
-    LetExp {
+    Let {
         decs: Vec<Dec>,
         body: Box<Exp>,
     },
-    BreakExp,
-    ArrayExp {
+    Break,
+    Array {
         typ: Symbol,
         size: Box<Exp>,
         init: Box<Exp>,
@@ -72,23 +71,23 @@ pub enum _Exp {
 impl Debug for _Exp {
     fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
         match self {
-            _Exp::VarExp(var) => write!(formatter, "Var({:?})", var),
-            _Exp::UnitExp => write!(formatter, "UNIT"),
-            _Exp::NilExp => write!(formatter, "NIL"),
-            _Exp::IntExp(num) => write!(formatter, "Num({:?})", num),
-            _Exp::StringExp(string) => write!(formatter, "Str({:?})", string),
-            _Exp::CallExp {func, args} => write!(formatter, "{:?}({:?})", func, args),
-            _Exp::OpExp {left, oper, right} => write!(formatter, "({:?} {:?} {:?})", left, oper, right),
-            _Exp::RecordExp {fields, typ, ..} => write!(formatter, "(Record({:?}) {{ {:?} }})", typ, fields),
-            _Exp::SeqExp(seq) => write!(formatter, "{:?}", seq),
-            _Exp::AssignExp {var, exp} => write!(formatter, "({:?} := {:?})", var, exp),
-            _Exp::IfExp {test, then_, else_: Some(e)} => write!(formatter, "(if {:?} then {:?} else {:?})", test, then_, e),
-            _Exp::IfExp {test, then_, else_: None} => write!(formatter, "(if {:?} then {:?})", test, then_),
-            _Exp::WhileExp {test, body} => write!(formatter, "(while({:?}) {{ {:?} }})", test, body),
-            _Exp::ForExp {var, lo, hi, body, ..} => write!(formatter, "(for {:?} := {:?} to {:?} {{ {:?} }} )", var, lo, hi, body),
-            _Exp::LetExp {decs, body} => write!(formatter, "(Let {{ {:?} }} in {{ {:?} }})", decs, body),
-            _Exp::BreakExp => write!(formatter, "BREAK"),
-            _Exp::ArrayExp {typ, size, init} => write!(formatter, "(Array({:?}) [{:?} x {:?}])", typ, size, init),
+            _Exp::Var(var) => write!(formatter, "Var({:?})", var),
+            _Exp::Unit => write!(formatter, "UNIT"),
+            _Exp::Nil => write!(formatter, "NIL"),
+            _Exp::Int(num) => write!(formatter, "Num({:?})", num),
+            _Exp::String(string) => write!(formatter, "Str({:?})", string),
+            _Exp::Call {func, args} => write!(formatter, "{:?}({:?})", func, args),
+            _Exp::Op {left, oper, right} => write!(formatter, "({:?} {:?} {:?})", left, oper, right),
+            _Exp::Record {fields, typ, ..} => write!(formatter, "(Record({:?}) {{ {:?} }})", typ, fields),
+            _Exp::Seq(seq) => write!(formatter, "{:?}", seq),
+            _Exp::Assign {var, exp} => write!(formatter, "({:?} := {:?})", var, exp),
+            _Exp::If {test, then_, else_: Some(e)} => write!(formatter, "(if {:?} then {:?} else {:?})", test, then_, e),
+            _Exp::If {test, then_, else_: None} => write!(formatter, "(if {:?} then {:?})", test, then_),
+            _Exp::While {test, body} => write!(formatter, "(while({:?}) {{ {:?} }})", test, body),
+            _Exp::For {var, lo, hi, body, ..} => write!(formatter, "(for {:?} := {:?} to {:?} {{ {:?} }} )", var, lo, hi, body),
+            _Exp::Let {decs, body} => write!(formatter, "(Let {{ {:?} }} in {{ {:?} }})", decs, body),
+            _Exp::Break => write!(formatter, "BREAK"),
+            _Exp::Array {typ, size, init} => write!(formatter, "(Array({:?}) [{:?} x {:?}])", typ, size, init),
         }
     }
 }

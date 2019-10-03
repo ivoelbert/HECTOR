@@ -58,7 +58,7 @@ fn test_parse_number() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: _Exp::IntExp(0),
+            node: _Exp::Int(0),
             ..
         }) => (),
         Ok(..) => panic!("mal parseado"),
@@ -72,7 +72,7 @@ fn test_parse_string() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: _Exp::StringExp(_),
+            node: _Exp::String(_),
             ..
         }) => (),
         Ok(..) => panic!("mal parseado"),
@@ -86,7 +86,7 @@ fn test_parse_breakexp() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: _Exp::BreakExp,
+            node: _Exp::Break,
             ..
         }) => (),
         Ok(..) => panic!("mal parseado"),
@@ -100,7 +100,7 @@ fn test_parse_simplevar() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: _Exp::VarExp(Var::SimpleVar(_)),
+            node: _Exp::Var(Var::Simple(_)),
             ..
         }) => (),
         Ok(..) => panic!("mal parseado"),
@@ -114,7 +114,7 @@ fn test_parse_subscriptvar() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: _Exp::VarExp(Var::SubscriptVar(_, _)),
+            node: _Exp::Var(Var::Subscript(_, _)),
             ..
         }) => (),
         Ok(..) => panic!("mal parseado"),
@@ -128,7 +128,7 @@ fn test_parse_fieldvar() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: _Exp::VarExp(Var::FieldVar(_, _)),
+            node: _Exp::Var(Var::Field(_, _)),
             ..
         }) => (),
         Ok(..) => panic!("mal parseado"),
@@ -142,7 +142,7 @@ fn test_parse_callexp() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: _Exp::CallExp {..},
+            node: _Exp::Call {..},
             ..
         }) => (),
         Ok(..) => panic!("mal parseado"),
@@ -168,7 +168,7 @@ fn test_parse_simple_sum() {
     match parsed {
         Ok(Exp {
             node:
-                _Exp::OpExp {
+                _Exp::Op {
                     oper: Oper::PlusOp,
                     ..
                 },
@@ -186,7 +186,7 @@ fn test_parse_simple_mult() {
     match parsed {
         Ok(Exp {
             node:
-                _Exp::OpExp {
+                _Exp::Op {
                     oper: Oper::TimesOp,
                     ..
                 },
@@ -204,7 +204,7 @@ fn test_parse_simple_comp() {
     match parsed {
         Ok(Exp {
             node:
-                _Exp::OpExp {
+                _Exp::Op {
                     oper: Oper::GeOp,
                     ..
                 },
@@ -221,7 +221,7 @@ fn test_parse_recordexp() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: _Exp::RecordExp {..},
+            node: _Exp::Record {..},
             ..
         }) => (),
         Ok(..) => panic!("mal parseado"),
@@ -235,7 +235,7 @@ fn test_parse_seqexp() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: _Exp::SeqExp(_),
+            node: _Exp::Seq(_),
             ..
         }) => (),
         Ok(..) => panic!("mal parseado"),
@@ -250,8 +250,8 @@ fn test_parse_assignexp() {
     match parsed {
         Ok(Exp {
             node:
-                _Exp::AssignExp {
-                    var: Var::SimpleVar(_),
+                _Exp::Assign {
+                    var: Var::Simple(_),
                     ..
                 },
             ..
@@ -268,7 +268,7 @@ fn test_parse_ifexp() {
     match parsed {
         Ok(Exp {
             node:
-                _Exp::IfExp {
+                _Exp::If {
                     ..
                 },
             ..
@@ -284,7 +284,7 @@ fn test_parse_whileexp() {
     let parsed = parse(input);
     match parsed {
         Ok(Exp {
-            node: _Exp::WhileExp {..},
+            node: _Exp::While {..},
             ..
         }) => (),
         Ok(..) => panic!("mal parseado"),
@@ -299,7 +299,7 @@ fn test_parse_forexp() {
     match parsed {
         Ok(Exp {
             node:
-                _Exp::ForExp {
+                _Exp::For {
                     ..
                 },
             ..
@@ -317,7 +317,7 @@ fn test_parse_letexp_functiondec() {
     match parsed {
         Ok(Exp {
             node:
-                _Exp::LetExp {
+                _Exp::Let {
                     ..
                 },
             ..
@@ -336,7 +336,7 @@ fn test_parse_letexp_typedec_namety() {
     match parsed {
         Ok(Exp {
             node:
-                _Exp::LetExp {
+                _Exp::Let {
                     ..
                 },
             ..
@@ -354,7 +354,7 @@ fn test_parse_letexp_typedec_recordty() {
     match parsed {
         Ok(Exp {
             node:
-                _Exp::LetExp {
+                _Exp::Let {
                     ..
                 },
             ..
@@ -372,7 +372,7 @@ fn test_parse_letexp_typedec_arrayty() {
     match parsed {
         Ok(Exp {
             node:
-                _Exp::LetExp {
+                _Exp::Let {
                     ..
                 },
             ..
@@ -391,7 +391,7 @@ fn test_parse_letexp_arrayexp() {
     match parsed {
         Ok(Exp {
             node:
-                _Exp::ArrayExp {
+                _Exp::Array {
                     ..
                 },
             ..

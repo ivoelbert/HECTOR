@@ -2,7 +2,7 @@ use crate::ast::*;
 use crate::typecheck::*;
 
 pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
-    match exp { Exp {node: _Exp::IfExp{test, then_, else_}, pos} => {
+    match exp { Exp {node: _Exp::If{test, then_, else_}, pos} => {
         if !es_int(&tipo_real(type_exp(&*test, type_env, value_env)?, type_env)) {
             return Err(TypeError::NonIntegerCondition(*pos));
         }

@@ -198,25 +198,24 @@ impl PartialEq for Tipo {
 }
 
 pub fn type_exp(exp : &Exp, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
-    use _Exp::*;
     match exp {
         Exp {node, ..} => match node {
-            VarExp(..) => varexp::typecheck(exp, type_env, value_env),
-            UnitExp => unitexp::typecheck(exp, type_env, value_env),
-            NilExp => nilexp::typecheck(exp, type_env, value_env),
-            IntExp(..) => intexp::typecheck(exp, type_env,&value_env),
-            StringExp(..) => stringexp::typecheck(exp, type_env, value_env),
-            CallExp{..} => callexp::typecheck(exp, type_env, value_env),
-            OpExp{..} => opexp::typecheck(exp,&type_env, value_env),
-            AssignExp{..} => assignexp::typecheck(exp, type_env, value_env),
-            RecordExp{..} => recordexp::typecheck(exp, type_env, value_env),
-            SeqExp(..) => seqexp::typecheck(exp, type_env, value_env),
-            IfExp{..} => ifexp::typecheck(exp, type_env, value_env),
-            WhileExp{..} => whileexp::typecheck(exp, type_env, value_env),
-            ForExp{..} => forexp::typecheck(exp, type_env, value_env),
-            LetExp{..} => letexp::typecheck(exp, type_env, value_env),
-            BreakExp => breakexp::typecheck(exp, type_env, value_env),
-            ArrayExp{..} => arrayexp::typecheck(exp, type_env, value_env),
+            _Exp::Var(..) => varexp::typecheck(exp, type_env, value_env),
+            _Exp::Unit => unitexp::typecheck(exp, type_env, value_env),
+            _Exp::Nil => nilexp::typecheck(exp, type_env, value_env),
+            _Exp::Int(..) => intexp::typecheck(exp, type_env,&value_env),
+            _Exp::String(..) => stringexp::typecheck(exp, type_env, value_env),
+            _Exp::Call{..} => callexp::typecheck(exp, type_env, value_env),
+            _Exp::Op{..} => opexp::typecheck(exp,&type_env, value_env),
+            _Exp::Assign{..} => assignexp::typecheck(exp, type_env, value_env),
+            _Exp::Record{..} => recordexp::typecheck(exp, type_env, value_env),
+            _Exp::Seq(..) => seqexp::typecheck(exp, type_env, value_env),
+            _Exp::If{..} => ifexp::typecheck(exp, type_env, value_env),
+            _Exp::While{..} => whileexp::typecheck(exp, type_env, value_env),
+            _Exp::For{..} => forexp::typecheck(exp, type_env, value_env),
+            _Exp::Let{..} => letexp::typecheck(exp, type_env, value_env),
+            _Exp::Break => breakexp::typecheck(exp, type_env, value_env),
+            _Exp::Array{..} => arrayexp::typecheck(exp, type_env, value_env),
         }
     }
 }

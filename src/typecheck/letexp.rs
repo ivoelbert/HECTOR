@@ -255,7 +255,7 @@ fn typecheck_decs(decs: &[Dec], type_env: &TypeEnviroment, value_env: &ValueEnvi
 
 pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     match exp {
-        Exp {node: _Exp::LetExp {decs, body}, ..} => {
+        Exp {node: _Exp::Let {decs, body}, ..} => {
             let (new_type_env, new_value_env) =  typecheck_decs(decs, type_env, value_env)?;
             type_exp(body, &new_type_env, &new_value_env)
         },

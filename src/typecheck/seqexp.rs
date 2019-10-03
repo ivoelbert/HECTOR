@@ -3,7 +3,7 @@ use crate::typecheck::*;
 
 pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     use Tipo::*;
-    match exp { Exp {node: _Exp::SeqExp(exps), ..} => {
+    match exp { Exp {node: _Exp::Seq(exps), ..} => {
         let mut seq_type : Tipo = TUnit;
         if exps.is_empty() {
             panic!("empty seqexp");

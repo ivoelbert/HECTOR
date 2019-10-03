@@ -5,7 +5,7 @@ pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnvirome
     use Tipo::*;
     use super::varexp::typecheck_var;
     match exp {
-        Exp {node: _Exp::AssignExp{var , exp: value_exp}, pos} => {
+        Exp {node: _Exp::Assign{var , exp: value_exp}, pos} => {
             let var_type = match typecheck_var(var, *pos, type_env, value_env) {
                 Ok(TInt(R::RO)) => return Err(TypeError::ReadOnlyAssignment(*pos)),
                 Ok(tipo) => tipo,

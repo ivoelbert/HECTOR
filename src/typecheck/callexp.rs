@@ -6,7 +6,7 @@ pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnvirome
         args.iter().map(|arg| type_exp(&*arg, type_env, value_env)).rev().collect()
     };
     match exp {
-        Exp {node: _Exp::CallExp {func: function_symbol, args}, pos} => {
+        Exp {node: _Exp::Call {func: function_symbol, args}, pos} => {
             let (formals, return_type) = match value_env.get(function_symbol) {
                 Some(EnvEntry::Func {formals, result, ..}) => (formals, result),
                 Some(EnvEntry::Var {..}) => return Err(TypeError::NotFunctionVar(*pos)),

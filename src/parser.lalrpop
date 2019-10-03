@@ -5,18 +5,18 @@ grammar;
 
 pub Expr: Box<Exp> = {
     <l: Expr> "|" <r: CompExp> => {
-        let no_pos_exp = _Exp::IfExp {
+        let no_pos_exp = _Exp::If {
             test: l,
-            then_: posed_exp(_Exp::IntExp(1), 0, 0),
+            then_: posed_exp(_Exp::Int(1), 0, 0),
             else_: Some(r),
         };
         return posed_exp(no_pos_exp, 0, 0)
     },
     <l: Expr> "&" <r: CompExp> => {
-        let no_pos_exp = _Exp::IfExp {
+        let no_pos_exp = _Exp::If {
             test: l,
             then_: r,
-            else_: Some(posed_exp(_Exp::IntExp(0), 0, 0)),
+            else_: Some(posed_exp(_Exp::Int(0), 0, 0)),
         };
         return posed_exp(no_pos_exp, 0, 0)
     },
@@ -25,7 +25,7 @@ pub Expr: Box<Exp> = {
 
 pub CompExp: Box<Exp> = {
     <l:AddExp> <o:CompOp> <r:AddExp> => {
-        let no_pos_exp = _Exp::OpExp {left: l, oper: o, right: r};
+        let no_pos_exp = _Exp::Op {left: l, oper: o, right: r};
         return posed_exp(no_pos_exp, 0, 0)
     },
     AddExp,
@@ -42,7 +42,7 @@ CompOp: Oper = {
 
 AddExp: Box<Exp> = {
     <l:AddExp> <o:AddOp> <r:MultExp> => {
-        let no_pos_exp = _Exp::OpExp {left: l, oper: o, right: r};
+        let no_pos_exp = _Exp::Op {left: l, oper: o, right: r};
         return posed_exp(no_pos_exp, 0, 0)
     },
     MultExp,
@@ -55,7 +55,7 @@ AddOp: Oper = {
 
 MultExp: Box<Exp> = {
     <l:MultExp> <o:MultOp> <r:Term> => {
-        let no_pos_exp = _Exp::OpExp {left: l, oper: o, right: r};
+        let no_pos_exp = _Exp::Op {left: l, oper: o, right: r};
         return posed_exp(no_pos_exp, 0, 0)
     },
     Term,
@@ -68,7 +68,7 @@ MultOp: Oper = {
 
 Term: Box<Exp> = {
     Num => {
-        let no_pos_exp = _Exp::IntExp(<>);
+        let no_pos_exp = _Exp::Int(<>);
         return posed_exp(no_pos_exp, 0, 0)
     },
     "(" <Expr> ")",

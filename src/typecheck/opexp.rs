@@ -2,7 +2,7 @@ use crate::ast::*;
 use crate::typecheck::*;
 
 pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
-    match exp { Exp {node: _Exp::OpExp{left, right, oper}, pos} => {
+    match exp { Exp {node: _Exp::Op{left, right, oper}, pos} => {
         let left_type = tipo_real(type_exp(&*left, type_env, value_env)?, type_env);
         let right_type = tipo_real(type_exp(&*right, type_env, value_env)?, type_env);
         match oper {
