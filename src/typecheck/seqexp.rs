@@ -1,10 +1,10 @@
 use crate::ast::*;
 use crate::typecheck::*;
 
-pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
-    use Tipo::*;
+pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<TigerType, TypeError> {
+    use TigerType::*;
     match exp { Exp {node: _Exp::Seq(exps), ..} => {
-        let mut seq_type : Tipo = TUnit;
+        let mut seq_type : TigerType = TUnit;
         if exps.is_empty() {
             panic!("empty seqexp");
         }

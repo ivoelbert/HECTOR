@@ -2,8 +2,8 @@ use crate::ast::*;
 use crate::typecheck::*;
 use crate::tree::Access;
 
-pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env:& ValueEnviroment) -> Result<Tipo, TypeError> {
-    use Tipo::*;
+pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env:& ValueEnviroment) -> Result<TigerType, TypeError> {
+    use TigerType::*;
     match exp { Exp {node: _Exp::For {var, lo, hi, body, ..}, pos} => {
         let lo_type = tipo_real(type_exp(&*lo, type_env, value_env)?, type_env);
         let hi_type = tipo_real(type_exp(&*hi, type_env, value_env)?, type_env);

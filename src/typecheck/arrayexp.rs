@@ -1,14 +1,14 @@
 use crate::ast::*;
 use crate::typecheck::*;
 
-pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<TigerType, TypeError> {
     // Buscar el tipo del array en el type_env
     // Si el tipo no existe, fallar.
     // Si el tipo existe pero no es un array, fallar.
     // Tipar el size. Si no es int, fallar.
     // Tipar el init. Si no es del mismo tipo del array, fallar.
     // Devolver TArray del tipo que encontramos en la tabla.
-    use Tipo::*;
+    use TigerType::*;
     match exp {
         Exp { node: _Exp::Array { typ: array_of_symbol, size: size_exp, init: init_exp}, pos}
             => match type_env.get(array_of_symbol) {

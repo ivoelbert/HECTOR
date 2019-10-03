@@ -1,8 +1,8 @@
 use crate::ast::*;
 use crate::typecheck::*;
 
-pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
-    use Tipo::*;
+pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<TigerType, TypeError> {
+    use TigerType::*;
     use super::varexp::typecheck_var;
     match exp {
         Exp {node: _Exp::Assign{var , exp: value_exp}, pos} => {

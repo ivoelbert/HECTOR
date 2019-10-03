@@ -31,19 +31,19 @@ pub enum R {
 pub type TypeId = uid::Id<u16>;
 
 #[derive(Debug, Clone)]
-pub enum Tipo {
+pub enum TigerType {
     TUnit,
     TNil,
     TInt(R),
     TString,
-    TArray(Box<Tipo>, TypeId),
-    TRecord(Vec<(Box<String>, Box<Tipo>, u8)>, TypeId),
+    TArray(Box<TigerType>, TypeId),
+    TRecord(Vec<(Box<String>, Box<TigerType>, u8)>, TypeId),
     TipoInterno(String)
 }
 
-pub fn tipo_real(t: Tipo, tenv: &TypeEnviroment) -> Tipo {
+pub fn tipo_real(t: TigerType, tenv: &TypeEnviroment) -> TigerType {
     match &t {
-        Tipo::TipoInterno(s) => match tenv.get(s) {
+        TigerType::TipoInterno(s) => match tenv.get(s) {
             Some(tipo) => tipo.clone(),
             None => panic!("at the tipo")
         },
@@ -51,9 +51,9 @@ pub fn tipo_real(t: Tipo, tenv: &TypeEnviroment) -> Tipo {
     }
 }
 
-pub fn es_int(t: &Tipo) -> bool {
+pub fn es_int(t: &TigerType) -> bool {
     match *t {
-        Tipo::TInt(_) => true,
+        TigerType::TInt(_) => true,
         _ => false
     }
 }
@@ -61,32 +61,32 @@ pub fn es_int(t: &Tipo) -> bool {
 #[derive(Clone, Debug)]
 pub enum EnvEntry {
     Var {
-        ty: Tipo,
+        ty: TigerType,
         access: Access,
         level: i32,
     },
     Func {
         // level: Level,
         label: Label,
-        formals: Vec<Tipo>,
-        result: Tipo,
+        formals: Vec<TigerType>,
+        result: TigerType,
         external: bool
     }
 }
 
-pub type TypeEnviroment = HashMap<Symbol, Tipo>;
+pub type TypeEnviroment = HashMap<Symbol, TigerType>;
 pub type ValueEnviroment = HashMap<Symbol, EnvEntry>;
 
 pub fn initial_type_env() -> TypeEnviroment {
     let mut type_env = TypeEnviroment::new();
-    type_env.insert(Symbol::from("int"), Tipo::TInt(R::RW));
-    type_env.insert(Symbol::from("string"), Tipo::TString);
+    type_env.insert(Symbol::from("int"), TigerType::TInt(R::RW));
+    type_env.insert(Symbol::from("string"), TigerType::TString);
     type_env
 }
 
 // revisar valores de retorno de estas
 pub fn initial_value_env() -> ValueEnviroment {
-    use Tipo::*;
+    use TigerType::*;
     use EnvEntry::*;
     let mut value_env = ValueEnviroment::new();
     value_env.insert(Symbol::from("print"), Func {
@@ -178,9 +178,9 @@ pub enum TypeError {
     TypeCycle(Pos),
 }
 
-impl PartialEq for Tipo {
+impl PartialEq for TigerType {
     fn eq(&self, other: &Self) -> bool {
-        use Tipo::*;
+        use TigerType::*;
         match (self, other) {
             (TUnit, TUnit)
             | (TString, TString)
@@ -190,14 +190,14 @@ impl PartialEq for Tipo {
             (TRecord(_, uid1), TRecord(_, uid2 ))
             | (TArray(_, uid1), TArray(_, uid2)) => uid1 == uid2,
             (TipoInterno(s), TipoInterno(t)) => s == t,
-            (TipoInterno(_), _) => panic!("Estamos comparando un TipoInterno"), 
+            (TipoInterno(_), _) => panic!("Estamos comparando un TipoInterno"),
             (_, TipoInterno(_)) => panic!("Estamos comparando un TipoInterno"),
             (_, _) => false,
         }
     }
 }
 
-pub fn type_exp(exp : &Exp, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn type_exp(exp : &Exp, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<TigerType, TypeError> {
     match exp {
         Exp {node, ..} => match node {
             _Exp::Var(..) => varexp::typecheck(exp, type_env, value_env),

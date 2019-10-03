@@ -1,7 +1,7 @@
 use crate::ast::*;
 use crate::typecheck::*;
 
-pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<TigerType, TypeError> {
     match exp { Exp {node: _Exp::If{test, then_, else_}, pos} => {
         if !es_int(&tipo_real(type_exp(&*test, type_env, value_env)?, type_env)) {
             return Err(TypeError::NonIntegerCondition(*pos));
@@ -17,8 +17,8 @@ pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnvirome
                 }
                 Err(type_error) => Err(type_error)
             }
-            None => if then_type == Tipo::TUnit {
-                Ok(Tipo::TUnit)
+            None => if then_type == TigerType::TUnit {
+                Ok(TigerType::TUnit)
             } else {
                 Err(TypeError::NonUnitBody(*pos))
             }

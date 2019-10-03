@@ -28,24 +28,24 @@ fn typecheck_vardec(_VarDec {name, typ, init, ..}: &_VarDec, type_env: &TypeEnvi
     Ok(value_env)
 }
 
-fn typecheck_ty(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<Tipo, TypeError> {
+fn typecheck_ty(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<TigerType, TypeError> {
     match ty {
         Ty::Name(symbol) => match type_env.get(symbol) {
             Some(tipo) => Ok(tipo.clone()),
             None => Err(TypeError::UndeclaredType(pos))
         },
         Ty::Array(symbol) => match type_env.get(symbol) {
-            Some(tipo) => Ok(Tipo::TArray(Box::new(tipo.clone()), uid::Id::new())),
+            Some(tipo) => Ok(TigerType::TArray(Box::new(tipo.clone()), uid::Id::new())),
             None => Err(TypeError::UndeclaredType(pos))
         },
         Ty::Record(fields_vector) => {
-            let mut record : Vec<(Box<String>, Box<Tipo>, u8)> = vec![];
+            let mut record : Vec<(Box<String>, Box<TigerType>, u8)> = vec![];
             let mut field_type;
             for (i, Field {name, typ : field_ty, ..}) in fields_vector.iter().enumerate()  {
                 field_type = typecheck_ty(field_ty, type_env, pos)?;
                 record.push((Box::new(name.clone()), Box::new(field_type), i.try_into().expect("too many fields!")));
             }
-            Ok(Tipo::TRecord(record, uid::Id::new()))
+            Ok(TigerType::TRecord(record, uid::Id::new()))
         }
     }
 }
@@ -53,7 +53,7 @@ fn typecheck_ty(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<Tipo, Ty
 fn add_prototype_to_env(_FunctionDec {name, params, result, ..}: &_FunctionDec, mut value_env: ValueEnviroment, type_env: &TypeEnviroment, pos: Pos) -> Result<ValueEnviroment, TypeError> {
     // Lookup result type in env
     let result_type = match result {
-        None => Tipo::TUnit,
+        None => TigerType::TUnit,
         Some(result_name) => match type_env.get(result_name) {
             Some(result_table_type) => result_table_type.clone(),
             None => return Err(TypeError::UndeclaredType(pos))
@@ -61,10 +61,10 @@ fn add_prototype_to_env(_FunctionDec {name, params, result, ..}: &_FunctionDec, 
     };
     // Check that argument names are not repeated
     // TODO
-    let formals: Vec<Tipo> = params
+    let formals: Vec<TigerType> = params
         .iter()
-        .map(|Field {typ, ..}: &Field| -> Result<Tipo, TypeError> {typecheck_ty(typ, type_env, pos)})
-        .collect::<Result<Vec<Tipo>, TypeError>>()?;
+        .map(|Field {typ, ..}: &Field| -> Result<TigerType, TypeError> {typecheck_ty(typ, type_env, pos)})
+        .collect::<Result<Vec<TigerType>, TypeError>>()?;
     value_env.insert(name.clone(), EnvEntry::Func {
         label: name.clone(),
         formals,
@@ -77,7 +77,7 @@ fn add_prototype_to_env(_FunctionDec {name, params, result, ..}: &_FunctionDec, 
 fn typecheck_functiondec(_FunctionDec {params, result, body, ..}: &_FunctionDec,  value_env: &ValueEnviroment, type_env: &TypeEnviroment, pos: Pos) -> Result<(), TypeError> {
     // Lookup result type in env
     let result_type = match result {
-        None => Tipo::TUnit,
+        None => TigerType::TUnit,
         Some(result_name) => match type_env.get(result_name) {
             Some(result_table_type) => result_table_type.clone(),
             None => return Err(TypeError::UndeclaredType(pos))
@@ -216,7 +216,7 @@ fn typecheck_typedec_block(decs: &[(_TypeDec, Pos)], mut type_env: TypeEnviromen
     // Insert placeholders for recursive records in TypeEnviroment
     recursive_records
         .iter()
-        .for_each(|(_TypeDec {name, ..}, _)| {type_env.insert(name.clone(), Tipo::TipoInterno(name.clone()));});
+        .for_each(|(_TypeDec {name, ..}, _)| {type_env.insert(name.clone(), TigerType::TipoInterno(name.clone()));});
     // Insert recursive records.
     for (_TypeDec {name, ty, ..}, pos) in recursive_records {
         type_env.insert(name.clone(), typecheck_ty(&ty, &type_env, *pos)?);
@@ -253,7 +253,7 @@ fn typecheck_decs(decs: &[Dec], type_env: &TypeEnviroment, value_env: &ValueEnvi
     Ok((new_type_env, new_value_env))
 }
 
-pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
+pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<TigerType, TypeError> {
     match exp {
         Exp {node: _Exp::Let {decs, body}, ..} => {
             let (new_type_env, new_value_env) =  typecheck_decs(decs, type_env, value_env)?;

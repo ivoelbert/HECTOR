@@ -60,7 +60,7 @@ fn typecheck_unitexp() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TUnit) => (),
+        Ok(TigerType::TUnit) => (),
         Ok(..) => panic!("resultado incorrecto"),
         Err(..) => panic!("Unit tipa mal")
     }
@@ -79,7 +79,7 @@ fn typecheck_nilexp() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TNil) => (),
+        Ok(TigerType::TNil) => (),
         Ok(..) => panic!("resultado incorrecto"),
         Err(..) => panic!("Nil tipa mal")
     }
@@ -92,7 +92,7 @@ fn typecheck_breakexp() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TUnit) => (),
+        Ok(TigerType::TUnit) => (),
         Ok(..) => panic!("resultado incorrecto"),
         Err(..) => panic!("breakexp tipa mal")
     }
@@ -111,7 +111,7 @@ fn typecheck_intexp() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(TigerType::TInt(R::RW)) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -130,7 +130,7 @@ fn typecheck_stringexp() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TString) => (),
+        Ok(TigerType::TString) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -147,10 +147,10 @@ fn typecheck_varexp_simplevar_ok() {
     };
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    value_env.insert(Symbol::from("foo"), EnvEntry::Var{ty: Tipo::TInt(R::RW), access: Access::InFrame(1), level: 1});
+    value_env.insert(Symbol::from("foo"), EnvEntry::Var{ty: TigerType::TInt(R::RW), access: Access::InFrame(1), level: 1});
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(TigerType::TInt(R::RW)) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -189,7 +189,7 @@ fn typecheck_varexp_simplevar_no_es_simple() {
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
         label: String::from("f"),
         formals: vec![],
-        result: Tipo::TUnit,
+        result: TigerType::TUnit,
         // level: 0,
         external: false,
     });
@@ -212,9 +212,9 @@ fn typecheck_varexp_fieldvar_ok() {
     };
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    let foo_type = Tipo::TRecord(
+    let foo_type = TigerType::TRecord(
             vec![(Box::new(String::from("bar")),
-                Box::new(Tipo::TInt(R::RW)),
+                Box::new(TigerType::TInt(R::RW)),
                 0)], TypeId::new());
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
@@ -224,7 +224,7 @@ fn typecheck_varexp_fieldvar_ok() {
     });
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(TigerType::TInt(R::RW)) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -241,10 +241,10 @@ fn typecheck_varexp_fieldvar_field_inexistente() {
     };
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    let foo_type = Tipo::TRecord(
+    let foo_type = TigerType::TRecord(
             vec![(
                 Box::new(String::from("bar")),
-                Box::new(Tipo::TInt(R::RW)),
+                Box::new(TigerType::TInt(R::RW)),
                 0
             )],
             TypeId::new(),
@@ -274,7 +274,7 @@ fn typecheck_varexp_fieldvar_sobre_tipo_no_record() {
     };
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    let foo_type = Tipo::TInt(R::RW);
+    let foo_type = TigerType::TInt(R::RW);
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         access: Access::InFrame(0),
@@ -307,8 +307,8 @@ fn typecheck_varexp_subscriptvar_ok() {
     };
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    let foo_type = Tipo::TArray(
-        Box::new(Tipo::TInt(R::RW)),
+    let foo_type = TigerType::TArray(
+        Box::new(TigerType::TInt(R::RW)),
         TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
@@ -319,7 +319,7 @@ fn typecheck_varexp_subscriptvar_ok() {
     });
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(TigerType::TInt(R::RW)) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -343,8 +343,8 @@ fn typecheck_varexp_subscriptvar_indice_no_entero() {
     };
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    let foo_type = Tipo::TArray(
-        Box::new(Tipo::TInt(R::RW)),
+    let foo_type = TigerType::TArray(
+        Box::new(TigerType::TInt(R::RW)),
         TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
@@ -379,7 +379,7 @@ fn typecheck_varexp_subscriptvar_no_array() {
     };
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    let foo_type = Tipo::TInt(R::RW);
+    let foo_type = TigerType::TInt(R::RW);
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         access: Access::InFrame(0),
@@ -411,13 +411,13 @@ fn typecheck_callexp_ok() {
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
         label: String::from("f"),
         formals: vec![],
-        result: Tipo::TUnit,
+        result: TigerType::TUnit,
         // level: 0,
         external: false,
     });
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TUnit) => (),
+        Ok(TigerType::TUnit) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -440,7 +440,7 @@ fn typecheck_callexp_args_de_mas() {
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
         label: String::from("f"),
         formals: vec![],
-        result: Tipo::TUnit,
+        result: TigerType::TUnit,
         // level: 0,
         external: true,
     });
@@ -465,8 +465,8 @@ fn typecheck_callexp_args_de_menos() {
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
         label: String::from("f"),
-        formals: vec![Tipo::TInt(R::RW)],
-        result: Tipo::TUnit,
+        formals: vec![TigerType::TInt(R::RW)],
+        result: TigerType::TUnit,
         // level: 0,
         external: true,
     });
@@ -514,7 +514,7 @@ fn typecheck_opexp_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(TigerType::TInt(R::RW)) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -551,9 +551,9 @@ fn typecheck_recordexp_ok() {
     };
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
-    let foo_type = Tipo::TRecord(
+    let foo_type = TigerType::TRecord(
             vec![(Box::new(String::from("baz")),
-                Box::new(Tipo::TInt(R::RW)),
+                Box::new(TigerType::TInt(R::RW)),
                 0)], TypeId::new());
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     let res = type_exp(&exp, &type_env, &value_env);
@@ -593,7 +593,7 @@ fn typecheck_recordexp_con_tipo_no_record() {
     };
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
-    type_env.insert(Symbol::from("FooType"), Tipo::TInt(R::RW));
+    type_env.insert(Symbol::from("FooType"), TigerType::TInt(R::RW));
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotRecordType(_)) => (),
@@ -611,8 +611,8 @@ fn typecheck_arrayexp_ok() {
     }, pos: Pos {line: 0, column: 0}};
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
-    let foo_type = Tipo::TArray(
-        Box::new(Tipo::TInt(R::RW)),
+    let foo_type = TigerType::TArray(
+        Box::new(TigerType::TInt(R::RW)),
         TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
@@ -632,8 +632,8 @@ fn typecheck_arrayexp_size_no_int() {
     }, pos: Pos {line: 0, column: 0}};
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
-    let foo_type = Tipo::TArray(
-        Box::new(Tipo::TInt(R::RW)),
+    let foo_type = TigerType::TArray(
+        Box::new(TigerType::TInt(R::RW)),
         TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), foo_type);
@@ -654,8 +654,8 @@ fn typecheck_arrayexp_tipos_distintos() {
     }, pos: Pos {line: 0, column: 0}};
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
-    let foo_type = Tipo::TArray(
-        Box::new(Tipo::TInt(R::RW)),
+    let foo_type = TigerType::TArray(
+        Box::new(TigerType::TInt(R::RW)),
         TypeId::new(),
     );
     type_env.insert(Symbol::from("FooType"), foo_type);
@@ -676,7 +676,7 @@ fn typecheck_arrayexp_tipo_no_array() {
     }, pos: Pos {line: 0, column: 0}};
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
-    let foo_type = Tipo::TInt(R::RW);
+    let foo_type = TigerType::TInt(R::RW);
     type_env.insert(Symbol::from("FooType"), foo_type);
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
@@ -716,7 +716,7 @@ fn typecheck_seqexp_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(TigerType::TInt(R::RW)) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -732,14 +732,14 @@ fn typecheck_assignexp_ok() {
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let env_entry = EnvEntry::Var{
-        ty: Tipo::TInt(R::RW),
+        ty: TigerType::TInt(R::RW),
         access: Access::InFrame(1),
         level: 1,
     };
     value_env.insert(Symbol::from("foo"), env_entry);
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TUnit) => (),
+        Ok(TigerType::TUnit) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -770,7 +770,7 @@ fn typecheck_assignexp_tipos_distintos() {
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let env_entry = EnvEntry::Var{
-        ty: Tipo::TInt(R::RW),
+        ty: TigerType::TInt(R::RW),
         access: Access::InFrame(1),
         level: 1,
     };
@@ -792,7 +792,7 @@ fn typecheck_assignexp_variable_read_only() {
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let env_entry = EnvEntry::Var{
-        ty: Tipo::TInt(R::RO),
+        ty: TigerType::TInt(R::RO),
         access: Access::InFrame(1),
         level: 1,
     };
@@ -817,7 +817,7 @@ fn typecheck_ifexp_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TInt(_)) => (),
+        Ok(TigerType::TInt(_)) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -887,7 +887,7 @@ fn typecheck_whileexp_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TUnit) => (),
+        Ok(TigerType::TUnit) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -922,7 +922,7 @@ fn typecheck_forexp_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TUnit) => (),
+        Ok(TigerType::TUnit) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -941,7 +941,7 @@ fn typecheck_forexp_iterador_es_usable() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TUnit) => (),
+        Ok(TigerType::TUnit) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1021,7 +1021,7 @@ fn typecheck_letexp_vardec_sin_tipo_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(TigerType::TInt(R::RW)) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1045,7 +1045,7 @@ fn typecheck_letexp_vardec_con_tipo_ok() {
 
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(TigerType::TInt(R::RW)) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1123,7 +1123,7 @@ fn typecheck_letexp_typedec_name_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(TigerType::TInt(R::RW)) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1164,7 +1164,7 @@ fn typecheck_letexp_typedec_array_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(TigerType::TInt(R::RW)) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1209,7 +1209,7 @@ fn typecheck_letexp_typedec_record_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(TigerType::TInt(R::RW)) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1247,7 +1247,7 @@ fn test_typecheck_recursive_typecheck_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TUnit) => (),
+        Ok(TigerType::TUnit) => (),
         Ok(..) => panic!("wrong type"),
         Err(..) => panic!("type error"),
     }
@@ -1340,7 +1340,7 @@ fn typecheck_record_type_cycle_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(TigerType::TInt(R::RW)) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1368,7 +1368,7 @@ fn typecheck_letexp_functiondec_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TUnit) => (),
+        Ok(TigerType::TUnit) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1417,7 +1417,7 @@ fn typecheck_letexp_functiondec_llamada_en_bloque_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TInt(R::RW)) => (),
+        Ok(TigerType::TInt(R::RW)) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1501,7 +1501,7 @@ fn typecheck_letexp_functiondec_params_repetidos() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TUnit) => (),
+        Ok(TigerType::TUnit) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1529,7 +1529,7 @@ fn typecheck_letexp_functiondec_nombres_repetidos() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TUnit) => (),
+        Ok(TigerType::TUnit) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1556,7 +1556,7 @@ fn typecheck_letexp_functiondec_recursivas() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(Tipo::TUnit) => (),
+        Ok(TigerType::TUnit) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1604,5 +1604,5 @@ fn typecheck_letexp_todas_las_decs_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env)
         .expect("no puedo tipar un let que usa las declaraciones");
-    assert_eq!(res, Tipo::TInt(R::RW))
+    assert_eq!(res, TigerType::TInt(R::RW))
 }
