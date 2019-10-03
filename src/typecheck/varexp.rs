@@ -1,7 +1,5 @@
-use super::super::ast::tigerabs::*;
-use super::typecheck::*;
-use super::super::ast::position::Pos;
-
+use crate::ast::*;
+use crate::typecheck::*;
 
 fn field_type(fields: &[(Box<String>, Box<Tipo>, u8)], symbol: &str) -> Option<Tipo> {
     for var in fields {

@@ -1,4 +1,4 @@
-use super::super::ast::tigerabs::*;
+use super::super::ast::*;
 use super::super::ast::position::*;
 use super::super::tree::escape::*;
 

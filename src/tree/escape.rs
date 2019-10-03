@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use super::super::ast::tigerabs::*;
+use crate::ast::*;
 
 type EscapeTable = HashMap<Symbol, (u32, bool)>;
 

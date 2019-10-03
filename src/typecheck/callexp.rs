@@ -1,6 +1,5 @@
-#![allow(clippy::vec_box)]
-use super::super::ast::tigerabs::*;
-use super::typecheck::*;
+use crate::ast::*;
+use crate::typecheck::*;
 
 pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Tipo, TypeError> {
     let tipar_args = |args: &Vec<Exp>| -> Vec<Result<Tipo, TypeError>> {

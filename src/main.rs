@@ -19,9 +19,7 @@ mod tree;
 #[cfg(test)]
 mod test;
 
-use ast::tigerabs::*;
-use ast::position::{Pos};
-
+use ast::*;
 use tree::escape::find_escapes;
 //extern crate lalrpop_util;
 extern crate pathfinding;

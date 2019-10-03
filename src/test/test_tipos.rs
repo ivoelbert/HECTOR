@@ -1,11 +1,11 @@
 // use std::fs::{read_dir, read_to_string};
 
-use super::super::ast::tigerabs::*;
+use super::super::ast::*;
 use super::super::ast::position::*;
-use super::super::tree::translate::{Access};
+use super::super::tree::{Access};
 // use super::super::ast::parser::parse;
 
-use super::super::typecheck::typecheck::*;
+use super::super::typecheck::*;
 
 // #[test]
 // fn test_good() {

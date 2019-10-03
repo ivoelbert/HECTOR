@@ -2,7 +2,7 @@ use std::fs::{read_dir, read_to_string};
 
 use super::super::ast::parser::{parse};
 use super::super::ast::position::Pos;
-use super::super::ast::tigerabs::*;
+use super::super::ast::*;
 
 #[test]
 fn test_good() {

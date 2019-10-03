@@ -1,9 +1,8 @@
 use std::convert::TryInto;
 
-use super::super::ast::tigerabs::*;
-use super::super::ast::position::Pos;
-use super::super::tree::translate::{Access};
-use super::typecheck::*;
+use crate::ast::*;
+use crate::typecheck::*;
+use crate::tree::Access;
 
 use pathfinding::directed::topological_sort;
 

@@ -1,8 +1,7 @@
-use super::super::ast::tigerabs::*;
-use super::typecheck::*;
+use crate::ast::*;
+use crate::typecheck::*;
 
 pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) ->  Result<Tipo, TypeError> {
-    use std::collections::HashMap;
     let tipar_fields = |args: &Vec<(Symbol, Box<Exp>)>| -> HashMap<Symbol, Result<Tipo, TypeError>> {
         args.iter().map(|arg| (arg.0.clone(), type_exp(&*arg.1, type_env, value_env))).rev().collect()
     };
