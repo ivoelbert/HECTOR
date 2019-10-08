@@ -5,6 +5,38 @@ use crate::ast::position::*;
 grammar;
 
 pub Expr: Box<Exp> = {
+    "let" <decs:DecsEx> "in" "end" => {
+        let unit = posed_exp(_Exp::UnitExp, 0, 0);
+
+        let no_pos_exp = _Exp::LetExp {
+            decs,
+            body: unit,
+        };
+
+        return posed_exp(no_pos_exp, 0, 0);
+    },
+    "let" <decs: DecsEx> "in" <body: Expr> "end" => {
+        let no_pos_exp = _Exp::LetExp {
+            decs,
+            body,
+        };
+
+        return posed_exp(no_pos_exp, 0, 0);
+    },
+    "let" <decs: DecsEx> "in" <list: ExpList> "end" => {
+        let seq = _Exp::SeqExp(list);
+
+        let no_pos_exp = _Exp::LetExp {
+            decs,
+            body: posed_exp(seq, 0, 0),
+        };
+
+        return posed_exp(no_pos_exp, 0, 0);
+    },
+    LoopExp,
+}
+
+LoopExp: Box<Exp> = {
     "for" <var:Sym> ":=" <lo:IfThenExp> "to" <hi:IfThenExp> "do" <body: Expr> => {
         let no_pos_exp = _Exp::ForExp {
             var,
@@ -15,7 +47,7 @@ pub Expr: Box<Exp> = {
         };
         return posed_exp(no_pos_exp, 0, 0);
     },
-    "while" <test:Expr> "do" <body:Expr> => {
+    "while" <test:LoopExp> "do" <body:Expr> => {
         let no_pos_exp = _Exp::WhileExp {
             test,
             body,
@@ -27,10 +59,25 @@ pub Expr: Box<Exp> = {
 }
 
 AssExp: Box<Exp> = {
-    <v:VarEx> ":=" <e:IfThenExp> => {
+    <v:VarEx> ":=" <e:ArrExp> => {
         let no_pos_exp = _Exp::AssignExp {var: v, exp: e};
         return posed_exp(no_pos_exp, 0, 0);
     },
+    ArrExp,
+}
+
+ArrExp: Box<Exp> = {
+    // svar parses a VarEx which can only be a SimpleVar. Crazy hack brought from the yacc/bison parser
+    <svar: VarEx> "[" <size: Expr> "]" "of" <init: IfThenExp> => {
+        let no_pos_exp = _Exp::ArrayExp {
+            typ: var_name(svar),
+            size,
+            init,
+        };
+
+        return posed_exp(no_pos_exp, 0, 0);
+    },
+
     IfThenExp,
 }
 
@@ -147,7 +194,7 @@ Term: Box<Exp> = {
         let no_pos_exp = _Exp::VarExp(<>);
         return posed_exp(no_pos_exp, 0, 0);
     },
-    <s:Sym> "()" => {
+    <s:Sym> "(" ")" => {
         let no_pos_exp = _Exp::CallExp {
             func: s,
             args: vec![],
@@ -161,8 +208,66 @@ Term: Box<Exp> = {
         };
         return posed_exp(no_pos_exp, 0, 0);
     },
+    <typ: Sym> "{" "}" => {
+        let no_pos_exp = _Exp::RecordExp {
+            fields: vec![],
+            typ,
+        };
+        return posed_exp(no_pos_exp, 0, 0);
+    },
+    <typ: Sym> "{" <fields: RecFields> "}" => {
+        let no_pos_exp = _Exp::RecordExp {
+            fields,
+            typ,
+        };
+        return posed_exp(no_pos_exp, 0, 0);
+    },
+    "(" <list: ExpList> ")" => {
+        let no_pos_exp = _Exp::SeqExp(list);
+        return posed_exp(no_pos_exp, 0, 0);
+    },
     "(" <Expr> ")",
 };
+
+ExpList: Vec<Box<Exp>> = {
+    <e: Expr> ";" <list: ExpMaybeList> => {
+        let mut explist = vec![e];
+        for ex in list {
+            explist.push(ex);
+        }
+
+        return explist;
+    },
+}
+
+ExpMaybeList: Vec<Box<Exp>> = {
+    ExpList,
+    Expr => {
+        vec![<>]
+    }
+}
+
+RecFields: Vec<(Symbol, Box<Exp>)> = {
+    <f: RecField> "," <fields: RecFields> => {
+        let mut flds = vec![f];
+
+        for fld in fields {
+            flds.push(fld);
+        }
+
+        return flds;
+    },
+
+    RecField => {
+        vec![<>]
+    },
+}
+
+RecField: (Symbol, Box<Exp>) = {
+    <s: Sym> "=" <e: Expr> => {
+        (s, e)
+    },
+}
 
 CallFields: Vec<Box<Exp>> = {
     <e: Expr> "," <f: CallFields> => {
@@ -205,41 +310,70 @@ Str: String = {
     r#""(?:[^\\"\\\\]*(?:\.[^\\"\\\\]*)*)""# => String::from_str(<>).unwrap()
 }
 
+DecsEx: Vec<Dec> = {
+    <new: DecEx> <others: DecsEx> => {
+        append_dec(new, others)
+    },
+    DecEx => {
+        vec![<>]
+    },
+}
+
 DecEx: Dec = {
     "type" <name:Sym> "=" <ty:TyEx> => {
-        TypeDec(vec![])
-    }
+        Dec::TypeDec(vec![_TypeDec::new(name, ty)])
+    },
+    VardecEx,
+    FundecEx,
+}
+
+FundecEx: Dec = {
+    "function" <name: Sym> "(" <params: TyFieldsEx> ")" "=" <body: Expr> => {
+        Dec::FunctionDec(vec![_FunctionDec::new(name, params, None, body)])
+    },
+    "function" <name: Sym> "(" <params: TyFieldsEx> ")" ":" <result: Sym> "=" <body: Expr> => {
+        Dec::FunctionDec(vec![_FunctionDec::new(name, params, Some(result), body)])
+    },
+}
+
+VardecEx: Dec = {
+    "var" <name: Sym> ":=" <init: Expr> => {
+        Dec::VarDec(_VarDec::new(name, None, init))
+    },
+    "var" <name: Sym> ":" <typ: Sym> ":=" <init: Expr> => {
+        Dec::VarDec(_VarDec::new(name, Some(typ), init))
+    },
 }
 
 TyEx: Ty = {
-    Sym => NameTy(<>)
+    Sym => Ty::NameTy(<>),
 
-    "{" <tyfields: TyFieldsEx> "}" => RecordTy(tyfields),
-    "{" "}" => RecordTy(vec![]),
+    "{" <tyfields: TyFieldsEx> "}" => Ty::RecordTy(tyfields),
+    "{" "}" => Ty::RecordTy(vec![]),
 
-    "array" "of" <s: Sym> => ArrayTy(s),
+    "array" "of" <s: Sym> => Ty::ArrayTy(s),
 }
 
-TyFieldsEx: Vec<Box<Field>> = {
+TyFieldsEx: Vec<Field> = {
     <new:TyFieldEx> "," <fields:TyFieldsEx> => {
-        let mut tys = vec![Box::new(new)];
+        let mut tys = vec![new];
 
-        for ex in f {
-            exps.push(ex);
+        for field in fields {
+            tys.push(field);
         }
         return tys;
     },
     TyFieldEx => {
-        vec![Box::new(<>)]
+        vec![<>]
     }
 }
 
-TyFieldEx: Field {
-    <name: Sym> ":" <tyName: Sym> => {
+TyFieldEx: Field = {
+    <name: Sym> ":" <ty_name: Sym> => {
         Field {
             name,
             escape: false,
-            ytp: NameTy(tyName),
+            typ: Ty::NameTy(ty_name),
         }
     }
 }

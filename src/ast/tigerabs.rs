@@ -5,6 +5,7 @@ use super::position::{Pos, WithPos};
 pub type Symbol = String;
 
 #[allow(dead_code)]
+#[derive(Clone)]
 pub enum Var {
     SimpleVar(Symbol),
     FieldVar(Box<Var>, Symbol),
@@ -23,6 +24,7 @@ impl Debug for Var {
 }
 
 #[allow(dead_code)]
+#[derive(Clone)]
 pub enum _Exp {
     VarExp(Var),
     UnitExp,
@@ -91,7 +93,7 @@ impl Debug for _Exp {
             _Exp::IfExp {test, then_, else_: Some(e)} => write!(formatter, "(if {:?} then {:?} else {:?})", test, then_, e),
             _Exp::IfExp {test, then_, else_: None} => write!(formatter, "(if {:?} then {:?})", test, then_),
             _Exp::WhileExp {test, body} => write!(formatter, "(while({:?}) {{ {:?} }})", test, body),
-            _Exp::ForExp {var, escape: _, lo, hi, body} => write!(formatter, "(for {:?} := {:?} to {:?} {{ {:?} }} )", var, lo, hi, body),
+            _Exp::ForExp {var, lo, hi, body, ..} => write!(formatter, "(for {:?} := {:?} to {:?} {{ {:?} }} )", var, lo, hi, body),
             _Exp::LetExp {decs, body} => write!(formatter, "(Let {{ {:?} }} in {{ {:?} }})", decs, body),
             _Exp::BreakExp => write!(formatter, "BREAK"),
             _Exp::ArrayExp {typ, size, init} => write!(formatter, "(Array({:?}) [{:?} x {:?}])", typ, size, init),
@@ -106,7 +108,7 @@ impl Debug for Exp {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct _FunctionDec {
     name: Symbol,
     params: Vec<Field>,
@@ -114,7 +116,7 @@ pub struct _FunctionDec {
     body: Box<Exp>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct _VarDec {
     name: Symbol,
     pub escape: bool,
@@ -122,27 +124,78 @@ pub struct _VarDec {
     init: Box<Exp>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct _TypeDec {
     name: Symbol,
     ty: Ty,
 }
 
 #[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Dec {
     FunctionDec(Vec<_FunctionDec>),
     VarDec(_VarDec),
     TypeDec(Vec<_TypeDec>),
 }
 
+pub fn append_dec(new_dec: Dec, decs: Vec<Dec>) -> Vec<Dec> {
+    let cloned_decs = decs.clone();
+    let first_dec = cloned_decs[0].clone();
+    let cloned_new_dec = new_dec.clone();
+
+    match (new_dec, first_dec) {
+        (Dec::FunctionDec(new_fd), Dec::FunctionDec(fds)) => {
+            // return the same decs, with the new_fd pushed into fds
+            let mut new_decs: Vec<Dec> = vec![];
+            for dec in cloned_decs {
+                new_decs.push(dec);
+            }
+
+            let mut new_fds = vec![new_fd[0].clone()];
+            for fd in fds {
+                new_fds.push(fd);
+            }
+
+            new_decs[0] = Dec::FunctionDec(new_fds);
+
+            new_decs
+        },
+        (Dec::TypeDec(new_td), Dec::TypeDec(tds)) => {
+            // return the same decs, with the new_td pushed into tds
+            let mut new_decs: Vec<Dec> = vec![];
+            for dec in cloned_decs {
+                new_decs.push(dec);
+            }
+
+            let mut new_tds = vec![new_td[0].clone()];
+            for td in tds {
+                new_tds.push(td);
+            }
+
+            new_decs[0] = Dec::TypeDec(new_tds);
+
+            new_decs
+        },
+        (_, _) => {
+            // return [new_dec, ...decs]
+            let mut new_decs: Vec<Dec> = vec![cloned_new_dec];
+
+            for dec in cloned_decs {
+                new_decs.push(dec);
+            }
+
+            new_decs
+        }
+    }
+}
+
 impl _FunctionDec {
     pub fn new(name: Symbol, params: Vec<Field>, result: Option<Symbol>, body: Box<Exp>) -> _FunctionDec {
         _FunctionDec {
-            name: name,
-            params: params,
-            result: result,
-            body: body
+            name,
+            params,
+            result,
+            body,
         }
     }
 }
@@ -150,10 +203,10 @@ impl _FunctionDec {
 impl _VarDec {
     pub fn new(name: Symbol, typ: Option<Symbol>, init: Box<Exp>) -> _VarDec {
         _VarDec {
-            name: name,
+            name,
             escape: false,
-            typ: typ,
-            init: init
+            typ,
+            init,
         }
     }
 }
@@ -161,26 +214,27 @@ impl _VarDec {
 impl _TypeDec {
     pub fn new(name: Symbol, ty: Ty) -> _TypeDec {
         _TypeDec {
-            name: name,
-            ty: ty
+            name,
+            ty,
         }
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Ty {
     NameTy(Symbol),
-    RecordTy(Vec<Box<Field>>),
+    RecordTy(Vec<Field>),
     ArrayTy(Symbol),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Field {
-    name: Symbol,
-    escape: bool,
-    typ: Ty,
+    pub name: Symbol,
+    pub escape: bool,
+    pub typ: Ty,
 }
 
+#[derive(Clone)]
 pub enum Oper {
     PlusOp,
     MinusOp,
@@ -215,5 +269,13 @@ pub fn posed_exp(exp: _Exp, line: u32, column: u32) -> Box<Exp> {
     let pos = Pos::new(line, column);
     let pos_exp = WithPos::new(exp, pos);
 
-    return Box::new(pos_exp);
+    Box::new(pos_exp)
+}
+
+// Crazy hack brought from the yacc/bison parser
+pub fn var_name(var: Var) -> Symbol {
+    match var {
+        Var::SimpleVar(n) => n,
+        _ => panic!("Crazy hack to catch array names was intersected by crappy code!"),
+    }
 }

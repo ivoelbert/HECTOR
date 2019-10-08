@@ -154,7 +154,17 @@ fn test_parse_callexp() {
 
 #[test]
 fn test_parse_custom() {
-    let input = String::from(r#" "alto perro" "#);
+    let input = String::from(r#"
+        let
+            var N := 8
+
+            type intArray = array of int
+
+            var row := intArray [ N ]
+        in
+            0
+        end
+    "#);
     let parsed = parse(input);
 
     match parsed {
