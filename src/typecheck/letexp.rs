@@ -66,7 +66,7 @@ fn add_prototype_to_env(_FunctionDec {name, params, result, ..}: &_FunctionDec, 
         .map(|Field {typ, ..}: &Field| -> Result<TigerType, TypeError> {typecheck_ty(typ, type_env, pos)})
         .collect::<Result<Vec<TigerType>, TypeError>>()?;
     value_env.insert(name.clone(), EnvEntry::Func {
-        label: name.clone(),
+        label: name.clone(),  // Should be a newLabel
         formals,
         result: result_type,
         external: false
@@ -108,6 +108,7 @@ fn typecheck_functiondec(_FunctionDec {params, result, body, ..}: &_FunctionDec,
 
 fn typecheck_functiondec_batch(decs: &[(_FunctionDec, Pos)], type_env: &TypeEnviroment, mut value_env: ValueEnviroment) -> Result<ValueEnviroment, TypeError> {
     // Check for repeated function names
+    // TODO
 
     // Add prototypes to ValueEnviroment
     for (dec, pos) in decs {

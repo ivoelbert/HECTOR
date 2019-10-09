@@ -3,7 +3,8 @@ extern crate uid;
 use std::collections::HashMap;
 
 use crate::ast::*;
-use crate::tree::{Access, Label};
+use crate::tree::Access;
+use crate::tree::temp::Label;
 
 mod intexp;
 mod opexp;
