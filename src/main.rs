@@ -1,5 +1,4 @@
 #![warn(
-     clippy::all,
      clippy::restriction,
      clippy::pedantic,
 )]
@@ -8,6 +7,7 @@
     clippy::use_debug, // para debuguear el parser
     clippy::print_stdout,
     clippy::needless_pass_by_value, // para tener los translate muertos
+    clippy::enum_variant_names,
 )]
 
 #[allow(dead_code)]
@@ -21,12 +21,10 @@ use ast::tigerabs::*;
 use ast::tigerabs::_Exp::*;
 use ast::position::{Pos, WithPos};
 
-
-
 use seman::tigerseman::*;
 
-#[macro_use]
-extern crate lalrpop_util;
+//#[macro_use]
+//extern crate lalrpop_util;
 
 fn main() {
     let exp: Exp = WithPos {
