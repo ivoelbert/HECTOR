@@ -1,15 +1,19 @@
 use crate::ast::*;
 use super::*;
-use ExpInterm::*;
 use Tree::Stm::*;
 use super::varexp::trans_var;
 
-pub fn translate(Exp{node, ..}: Exp) -> Result<ExpInterm, TransError> {
+pub fn trans_stm(
+    Exp { node, .. }: &Exp,
+    value_env: &ValueEnviroment,
+    breaks_stack: Vec<Option<Label>>,
+    prev_frags: Vec<Fragment>,
+) -> Result<(Tree::Stm, Vec<Fragment>), TransError> {
     match node {
         _Exp::Assign{var, exp} => {
-            let v = un_ex(trans_var(var)?);
-            let e = un_ex(trans_exp(*exp)?);
-            Ok(Nx(MOVE(Box::new(v), Box::new(e))))
+            let (v, var_frags) = trans_var(var, value_env, breaks_stack.clone(), prev_frags)?;
+            let (e, exp_frags) = trans_exp(exp, value_env, breaks_stack, var_frags)?;
+            Ok((MOVE(Box::new(v), Box::new(e)), exp_frags))
         },
         _ => panic!()
     }

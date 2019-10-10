@@ -21,6 +21,8 @@ pub enum Stm {
     LABEL(Label)
 }
 
+pub type Cond = Box<dyn Fn(Label, Label) -> Stm>;
+
 #[derive(Debug, Clone)]
 pub enum BinOp {
     PLUS,

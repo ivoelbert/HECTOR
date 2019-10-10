@@ -3,7 +3,6 @@ extern crate uid;
 use std::collections::HashMap;
 
 use crate::ast::*;
-use crate::tree::Access;
 use crate::tree::temp::Label;
 
 mod intexp;
@@ -63,11 +62,8 @@ pub fn es_int(t: &TigerType) -> bool {
 pub enum EnvEntry {
     Var {
         ty: TigerType,
-        access: Access,
-        level: i32,
     },
     Func {
-        // level: Level,
         label: Label,
         formals: Vec<TigerType>,
         result: TigerType,

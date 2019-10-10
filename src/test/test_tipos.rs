@@ -147,7 +147,7 @@ fn typecheck_varexp_simplevar_ok() {
     };
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    value_env.insert(Symbol::from("foo"), EnvEntry::Var{ty: TigerType::TInt(R::RW), access: Access::InFrame(1), level: 1});
+    value_env.insert(Symbol::from("foo"), EnvEntry::Var{ty: TigerType::TInt(R::RW),});
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(TigerType::TInt(R::RW)) => (),
@@ -218,8 +218,6 @@ fn typecheck_varexp_fieldvar_ok() {
                 0)], TypeId::new());
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
-        access: Access::InFrame(0),
-        level: 0,
         ty: foo_type,
     });
     let res = type_exp(&exp, &type_env, &value_env);
@@ -251,8 +249,6 @@ fn typecheck_varexp_fieldvar_field_inexistente() {
         );
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
-        access: Access::InFrame(0),
-        level: 0,
         ty: foo_type,
     });
     let res = type_exp(&exp, &type_env, &value_env);
@@ -277,8 +273,6 @@ fn typecheck_varexp_fieldvar_sobre_tipo_no_record() {
     let foo_type = TigerType::TInt(R::RW);
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
-        access: Access::InFrame(0),
-        level: 0,
         ty: foo_type,
     });
     let res = type_exp(&exp, &type_env, &value_env);
@@ -313,8 +307,6 @@ fn typecheck_varexp_subscriptvar_ok() {
     );
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
-        access: Access::InFrame(0),
-        level: 0,
         ty: foo_type,
     });
     let res = type_exp(&exp, &type_env, &value_env);
@@ -349,8 +341,6 @@ fn typecheck_varexp_subscriptvar_indice_no_entero() {
     );
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
-        access: Access::InFrame(0),
-        level: 0,
         ty: foo_type,
     });
     let res = type_exp(&exp, &type_env, &value_env);
@@ -382,8 +372,6 @@ fn typecheck_varexp_subscriptvar_no_array() {
     let foo_type = TigerType::TInt(R::RW);
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
-        access: Access::InFrame(0),
-        level: 0,
         ty: foo_type,
     });
     let res = type_exp(&exp, &type_env, &value_env);
@@ -733,8 +721,6 @@ fn typecheck_assignexp_ok() {
     let mut value_env = initial_value_env();
     let env_entry = EnvEntry::Var{
         ty: TigerType::TInt(R::RW),
-        access: Access::InFrame(1),
-        level: 1,
     };
     value_env.insert(Symbol::from("foo"), env_entry);
     let res = type_exp(&exp, &type_env, &value_env);
@@ -771,8 +757,6 @@ fn typecheck_assignexp_tipos_distintos() {
     let mut value_env = initial_value_env();
     let env_entry = EnvEntry::Var{
         ty: TigerType::TInt(R::RW),
-        access: Access::InFrame(1),
-        level: 1,
     };
     value_env.insert(Symbol::from("foo"), env_entry);
     let res = type_exp(&exp, &type_env, &value_env);
@@ -793,8 +777,6 @@ fn typecheck_assignexp_variable_read_only() {
     let mut value_env = initial_value_env();
     let env_entry = EnvEntry::Var{
         ty: TigerType::TInt(R::RO),
-        access: Access::InFrame(1),
-        level: 1,
     };
     value_env.insert(Symbol::from("i"), env_entry);
     let res = type_exp(&exp, &type_env, &value_env);

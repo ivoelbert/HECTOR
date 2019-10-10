@@ -4,7 +4,7 @@
 use super::{Label};
 use crate::tree::*;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Frame {
     name: String,
     formals: Vec<bool>,

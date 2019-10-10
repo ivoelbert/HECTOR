@@ -1,97 +1,85 @@
 use crate::ast::*;
 use crate::tree::*;
 
+mod arrayexp;
+mod assignexp;
+mod breakexp;
+mod callexp;
+mod forexp;
+mod ifexp;
 mod intexp;
+mod letexp;
+mod nilexp;
 mod opexp;
 mod recordexp;
 mod seqexp;
-mod assignexp;
-mod ifexp;
-mod whileexp;
-mod forexp;
-mod letexp;
-mod arrayexp;
-mod varexp;
-mod nilexp;
-mod unitexp;
 mod stringexp;
-mod callexp;
-mod breakexp;
+mod unitexp;
+mod varexp;
+mod whileexp;
 
 pub fn seq(mut stms: Vec<Tree::Stm>) -> Tree::Stm {
     let maybe_stm = stms.pop();
-        match maybe_stm {
-            Some(s) => {
-                SEQ(Box::new(s), Box::new(seq(stms)))
-            }
-            None => EXP(Box::new(CONST(0))),
-        }
-}
-
-pub fn un_ex(exp: ExpInterm) -> Tree::Exp {
-    match exp {
-        Ex(e) => e,
-        Nx(s) => ESEQ(Box::new(s), Box::new(CONST(0))),
-        Cx(genstm) => {
-            let r = newtemp();
-            let t = newlabel();
-            let f = newlabel();
-            ESEQ(Box::new(seq(vec![
-                MOVE(Box::new(TEMP(r.clone())), Box::new(CONST(1))),
-                genstm(t.clone(), f.clone()),
-                LABEL(f.clone()),
-                MOVE(Box::new(TEMP(r.clone())), Box::new(CONST(0))),
-                LABEL(f),
-            ])), Box::new(TEMP(r)))
-        }
+    match maybe_stm {
+        Some(s) => SEQ(Box::new(s), Box::new(seq(stms))),
+        None => EXP(Box::new(CONST(0))),
     }
 }
 
-pub fn un_nx(exp: ExpInterm) -> Tree::Stm {
+fn trans_exp(
+    exp: &Exp,
+    value_env: &ValueEnviroment,
+    breaks_stack: Vec<Option<Label>>,
+    prev_frags: Vec<Fragment>,
+) -> Result<(Tree::Exp, Vec<Fragment>), TransError> {
     match exp {
-        Ex(e) => EXP(Box::new(e)),
-        Nx(s) => s,
-        Cx(cf) => {
-            let t = newlabel();
-            let f = newlabel();
-            seq(vec![
-                cf(t.clone(), f.clone()),
-                LABEL(t),
-                LABEL(f)
-            ])
-        }
+        Exp { node, .. } => match node {
+            _Exp::Var(var) => varexp::trans_var(var, value_env, breaks_stack, prev_frags),
+            _Exp::Unit => unitexp::trans_exp(exp, value_env, breaks_stack, prev_frags),
+            _Exp::Nil => nilexp::trans_exp(exp, value_env, breaks_stack, prev_frags),
+            _Exp::Int(_) => intexp::trans_exp(exp, value_env, breaks_stack, prev_frags),
+            _Exp::String(_) => stringexp::trans_exp(exp, value_env, breaks_stack, prev_frags),
+            _Exp::Call { .. } => callexp::trans_exp(exp, value_env, breaks_stack, prev_frags),
+            _Exp::Op { .. } => opexp::trans_exp(exp, value_env, breaks_stack, prev_frags),
+            _Exp::Record { .. } => recordexp::trans_exp(exp, value_env, breaks_stack, prev_frags),
+            _Exp::If { .. } => ifexp::trans_exp(exp, value_env, breaks_stack, prev_frags),
+            _Exp::Let { .. } => letexp::trans_exp(exp, value_env, breaks_stack, prev_frags),
+            _Exp::Array { .. } => arrayexp::trans_exp(exp, value_env, breaks_stack, prev_frags),
+            _ => panic!()
+        },
     }
 }
 
-pub fn un_cx(exp: ExpInterm) -> Box<dyn Fn(Label, Label) -> Tree::Stm> {
+fn trans_stm(
+    exp: &Exp,
+    value_env: &ValueEnviroment,
+    breaks_stack: Vec<Option<Label>>,
+    prev_frags: Vec<Fragment>,
+) -> Result<(Tree::Stm, Vec<Fragment>), TransError> {
     match exp {
-        Ex(CONST(0)) => Box::new(|_, f| JUMP(NAME(f.clone()), vec![f])),
-        Ex(CONST(_)) => Box::new(|t, _| JUMP(NAME(t.clone()), vec![t])),
-        Ex(e) => Box::new(move |t, f| CJUMP(Tree::RelOp::NE, e.clone(), CONST(0), t, f)),
-        Nx(..) => panic!("Erorr un_cx(NX(..))"),
-        Cx(cf) => cf
+        Exp { node, .. } => match node {
+            _Exp::Break => breakexp::trans_stm(exp, value_env, breaks_stack, prev_frags),
+            _Exp::Call { .. } => callexp::trans_stm(exp, value_env, breaks_stack, prev_frags),
+            _Exp::Assign { .. } => assignexp::trans_stm(exp, value_env, breaks_stack, prev_frags),
+            _Exp::Seq(_) => seqexp::trans_stm(exp, value_env, breaks_stack, prev_frags),
+            _Exp::If { .. } => ifexp::trans_stm(exp, value_env, breaks_stack, prev_frags),
+            _Exp::While { .. } => whileexp::trans_stm(exp, value_env, breaks_stack, prev_frags),
+            _Exp::For { .. } => forexp::trans_stm(exp, value_env, breaks_stack, prev_frags),
+            _ => panic!()
+        },
     }
 }
 
-pub fn trans_exp(exp : Exp) -> Result<ExpInterm, TransError> {
+fn trans_cond(
+    exp: &Exp,
+    value_env: &ValueEnviroment,
+    breaks_stack: Vec<Option<Label>>,
+    prev_frags: Vec<Fragment>,
+) -> Result<(Tree::Cond, Vec<Fragment>), TransError> {
     match exp {
-        Exp {node: exp, pos} => match exp {
-            _Exp::Var(_) => varexp::translate(Exp{node: exp, pos}),
-            _Exp::Unit => unitexp::translate(Exp{node: exp, pos}),
-            _Exp::Nil => nilexp::translate(Exp{node: exp, pos}),
-            _Exp::Int(_) =>  intexp::translate(Exp{node: exp, pos}),
-            _Exp::String(_) => stringexp::translate(Exp{node: exp, pos}),
-            _Exp::Call{..} => callexp::translate(Exp{node: exp, pos}),
-            _Exp::Op{..} => opexp::translate(Exp{node: exp, pos}),
-            _Exp::Assign{..} => assignexp::translate(Exp{node: exp, pos}),
-            _Exp::Record{..} => recordexp::translate(Exp{node: exp, pos}),
-            _Exp::Seq(_) => seqexp::translate(Exp{node: exp, pos}),
-            _Exp::If{..} => ifexp::translate(Exp{node: exp, pos}),
-            _Exp::While{..} => whileexp::translate(Exp{node: exp, pos}),
-            _Exp::For{..} => forexp::translate(Exp{node: exp, pos}),
-            _Exp::Let{..} => letexp::translate(Exp{node: exp, pos}),
-            _Exp::Break => breakexp::translate(Exp{node: exp, pos}),
-            _Exp::Array{..} => arrayexp::translate(Exp{node: exp, pos}),
-        }
+        Exp { node, .. } => match node {
+            _Exp::Op { .. } => opexp::trans_cond(exp, value_env, breaks_stack, prev_frags),
+            _ => panic!()
+        },
     }
 }

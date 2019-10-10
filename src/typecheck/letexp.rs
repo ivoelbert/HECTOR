@@ -2,7 +2,6 @@ use std::convert::TryInto;
 
 use crate::ast::*;
 use crate::typecheck::*;
-use crate::tree::Access;
 
 use pathfinding::directed::topological_sort;
 
@@ -22,8 +21,6 @@ fn typecheck_vardec(_VarDec {name, typ, init, ..}: &_VarDec, type_env: &TypeEnvi
     };
     value_env.insert(name.clone(), EnvEntry::Var {
         ty: dec_type,
-        access: Access::InFrame(0),
-        level: 0
     });
     Ok(value_env)
 }
@@ -90,8 +87,6 @@ fn typecheck_functiondec(_FunctionDec {params, result, body, ..}: &_FunctionDec,
         .try_fold(value_env.clone(), |mut prev : ValueEnviroment, Field {name, typ, ..}: &Field| -> Result<ValueEnviroment, TypeError> {
             prev.insert(name.clone(), EnvEntry::Var{
                 ty: typecheck_ty(typ, type_env, pos)?,
-                access: Access::InReg(name.clone()),
-                level: 0
             });
             Ok(prev)
         })?;

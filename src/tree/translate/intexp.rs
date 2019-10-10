@@ -1,11 +1,14 @@
 use crate::ast::*;
 use crate::tree::*;
-use ExpInterm::*;
-use Tree::Exp::*;
 
-pub fn translate(Exp{node, ..}: Exp) -> Result<ExpInterm, TransError> {
+pub fn trans_exp(
+    Exp { node, .. }: &Exp,
+    _value_env: &ValueEnviroment,
+    _breaks_stack: Vec<Option<Label>>,
+    prev_frags: Vec<Fragment>,
+) -> Result<(Tree::Exp, Vec<Fragment>), TransError> {
     match node {
-        _Exp::Int(i) => Ok(Ex(CONST(i))),
+        _Exp::Int(i) => Ok((CONST(*i), prev_frags)),
         _ => panic!()
     }
 }

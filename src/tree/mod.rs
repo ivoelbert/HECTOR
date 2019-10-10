@@ -8,16 +8,29 @@ pub mod temp;
 
 pub use temp::*;
 pub use frame::{Frame};
+use crate::ast::position::Pos;
 
-pub enum ExpInterm {
-    Ex(Tree::Exp),
-    Nx(Tree::Stm),
-    Cx(Box<dyn Fn(Label, Label) -> Tree::Stm>)
-}
 pub enum TransError {
-    BreakError,
-    DivByZero
+    BreakError(Pos),
+    DivByZero(Pos),
 }
+
+#[derive(Clone, Debug)]
+pub enum EnvEntry {
+    Var {
+        access: Access,
+        level: i64,
+    },
+    Func {
+        label: Label,
+        level: Level,
+        external: bool
+    }
+}
+
+use std::collections::HashMap;
+use crate::ast::Symbol;
+pub type ValueEnviroment = HashMap<Symbol, EnvEntry>;
 
 static mut ACTUAL_LEVEL : i64 = 0;
 
@@ -40,15 +53,14 @@ fn new_level(parent_level: Level, name: Label, formals: Vec<bool>) -> Level {
     }
 }
 
-use ExpInterm::*;
 use Tree::Exp::*;
 use Tree::Stm::*;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Level {
     parent: Option<Frame>,
     pub frame: Frame,
     pub nesting_level: i64
 }
 pub type Access = frame::Access;
-pub type Frag = frame::Frag;
+pub type Fragment = frame::Frag;

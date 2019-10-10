@@ -1,6 +1,5 @@
 use crate::ast::*;
 use crate::typecheck::*;
-use crate::tree::Access;
 
 pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env:& ValueEnviroment) -> Result<TigerType, TypeError> {
     use TigerType::*;
@@ -13,8 +12,6 @@ pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env:& ValueEnvirome
         let mut new_value_env = value_env.clone();
         new_value_env.insert(var.clone(), EnvEntry::Var {
             ty: TInt(R::RO),
-            access: Access::InFrame(0),
-            level: 0
         });
         match type_exp(&*body, type_env, &new_value_env) {
             Ok(TUnit) => (),
