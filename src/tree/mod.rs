@@ -32,6 +32,64 @@ use std::collections::HashMap;
 use crate::ast::Symbol;
 pub type ValueEnviroment = HashMap<Symbol, EnvEntry>;
 
+
+// revisar valores de retorno de estas
+pub fn initial_value_env() -> ValueEnviroment {
+    use EnvEntry::*;
+    let mut value_env = ValueEnviroment::new();
+    value_env.insert(Symbol::from("print"), Func {
+        label: Label::from("print"),
+        level: outermost(),
+        external: true
+    });
+    value_env.insert(Symbol::from("flush"), Func {
+        label: Label::from("flush"),
+        level: outermost(),
+        external: true
+    });
+    value_env.insert(Symbol::from("getchar"), Func {
+        label: Label::from("getchar"),
+        level: outermost(),
+        external: true
+    });
+    value_env.insert(Symbol::from("ord"), Func {
+        label: Label::from("ord"),
+        level: outermost(),
+        external: true
+    });
+    value_env.insert(Symbol::from("chr"), Func {
+        label: Label::from("chr"),
+        level: outermost(),
+        external: true
+    });
+    value_env.insert(Symbol::from("size"), Func {
+        label: Label::from("size"),
+        level: outermost(),
+        external: true
+    });
+    value_env.insert(Symbol::from("substring"), Func {
+        label: Label::from("substring"),
+        level: outermost(),
+        external: true
+    });
+    value_env.insert(Symbol::from("concat"), Func {
+        label: Label::from("concat"),
+        level: outermost(),
+        external: true
+    });
+    value_env.insert(Symbol::from("not"), Func {
+        label: Label::from("not"),
+        level: outermost(),
+        external: true
+    });
+    value_env.insert(Symbol::from("exit"), Func {
+        label: Label::from("exit"),
+        level: outermost(),
+        external: true
+    });
+    value_env
+}
+
 static mut ACTUAL_LEVEL : i64 = 0;
 
 fn outermost() -> Level {
@@ -65,3 +123,5 @@ pub struct Level {
 }
 pub type Access = frame::Access;
 pub type Fragment = frame::Frag;
+
+pub use translate::tranlate;

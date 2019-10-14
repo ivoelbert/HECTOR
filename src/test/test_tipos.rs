@@ -1,11 +1,10 @@
 // use std::fs::{read_dir, read_to_string};
 
-use super::super::ast::*;
-use super::super::ast::position::*;
-use super::super::tree::{Access};
+use crate::ast::*;
+use crate::ast::position::*;
 // use super::super::ast::parser::parse;
 
-use super::super::typecheck::*;
+use crate::typecheck::*;
 
 // #[test]
 // fn test_good() {
@@ -41,10 +40,6 @@ use super::super::typecheck::*;
 
 fn possed_exp(exp: _Exp) -> Exp {
     Exp {node: exp, pos: Pos {line: 0, column: 0}}
-}
-
-fn boxed_exp(exp: _Exp) -> Box<Exp> {
-    Box::new(Exp {node: exp, pos: Pos {line: 0, column: 0}})
 }
 
 #[test]

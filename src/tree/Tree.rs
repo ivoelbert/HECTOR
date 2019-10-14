@@ -1,6 +1,6 @@
 use super::Label;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Exp {
     CONST(i32),
     NAME(Label),
@@ -11,7 +11,7 @@ pub enum Exp {
     ESEQ(Box<Stm>, Box<Exp>)
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Stm {
     EXP(Box<Exp>),
     MOVE(Box<Exp>, Box<Exp>),
@@ -23,7 +23,7 @@ pub enum Stm {
 
 pub type Cond = Box<dyn Fn(Label, Label) -> Stm>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BinOp {
     PLUS,
     MINUS,
@@ -37,7 +37,7 @@ pub enum BinOp {
     XOR
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RelOp {
     EQ,
     NE,

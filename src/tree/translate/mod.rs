@@ -18,7 +18,7 @@ mod unitexp;
 mod varexp;
 mod whileexp;
 
-fn trans_exp(
+pub fn trans_exp(
     exp: &Exp,
     value_env: &ValueEnviroment,
     breaks_stack: Vec<Option<Label>>,
@@ -58,11 +58,15 @@ fn trans_stm(
             _Exp::If { .. } => ifexp::trans_stm(exp, value_env, breaks_stack, prev_frags),
             _Exp::While { .. } => whileexp::trans_stm(exp, value_env, breaks_stack, prev_frags),
             _Exp::For { .. } => forexp::trans_stm(exp, value_env, breaks_stack, prev_frags),
-            _ => panic!("cannot translate as stm!")
+            _ => {
+                let (exp, frags) = trans_exp(exp, value_env, breaks_stack, prev_frags)?;
+                Ok((Tree::Stm::EXP(Box::new(exp)), frags))
+            }
         },
     }
 }
 
+// TODO: nuke this
 fn trans_cond(
     exp: &Exp,
     value_env: &ValueEnviroment,
@@ -75,4 +79,17 @@ fn trans_cond(
             _ => panic!("cannot translate as cond!")
         },
     }
+}
+
+pub fn tranlate(exp: Exp) -> Result<(Tree::Exp, Vec<Fragment>), TransError> {
+    let tiger_main = boxed_exp(_Exp::Let {
+            decs: vec![Dec::FunctionDec(vec![(_FunctionDec{
+                name: Label::from("_tigermain"),
+                params: vec![],
+                body: Box::new(exp),
+                result: None,
+            }, Pos{line: 0, column: 0})])],
+            body: boxed_exp(_Exp::Unit)
+        });
+    trans_exp(&tiger_main, &initial_value_env(), vec![], vec![])
 }

@@ -10,9 +10,6 @@ pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnvirome
         }
         for exp in exps {
             seq_type = type_exp(exp, &type_env, value_env)?;
-            if seq_type != TUnit {
-                return Err(TypeError::NonUnitSeq(exp.pos))
-            }
         }
         Ok(seq_type)
     }

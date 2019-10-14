@@ -211,3 +211,7 @@ pub fn posed_exp(exp: _Exp, line: u32, column: u32) -> Box<Exp> {
 
     Box::new(pos_exp)
 }
+
+pub fn boxed_exp(exp: _Exp) -> Box<Exp> {
+    Box::new(Exp {node: exp, pos: Pos {line: 0, column: 0}})
+}
