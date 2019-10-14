@@ -173,6 +173,7 @@ pub enum TypeError {
     MissingRecordField(Pos),
     NonIntegerOperand(Pos),
     TypeCycle(Pos),
+    NonUnitSeq(Pos),
 }
 
 impl PartialEq for TigerType {

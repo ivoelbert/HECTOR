@@ -66,3 +66,11 @@ pub fn not_rel(ro : &RelOp) -> RelOp {
 	    UGT => ULE,
     }
 }
+
+pub fn seq(mut stms: Vec<Stm>) -> Stm {
+    let maybe_stm = stms.pop();
+    match maybe_stm {
+        Some(s) => Stm::SEQ(Box::new(s), Box::new(seq(stms))),
+        None => Stm::EXP(Box::new(Exp::CONST(0))),
+    }
+}

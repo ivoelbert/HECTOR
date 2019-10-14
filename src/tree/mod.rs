@@ -6,9 +6,9 @@ pub mod Tree;
 mod translate;
 pub mod temp;
 
+use crate::ast::position::Pos;
 pub use temp::*;
 pub use frame::{Frame};
-use crate::ast::position::Pos;
 
 pub enum TransError {
     BreakError(Pos),
@@ -55,6 +55,7 @@ fn new_level(parent_level: Level, name: Label, formals: Vec<bool>) -> Level {
 
 use Tree::Exp::*;
 use Tree::Stm::*;
+use Tree::seq;
 
 #[derive(Clone, Debug)]
 pub struct Level {

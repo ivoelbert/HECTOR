@@ -18,14 +18,6 @@ mod unitexp;
 mod varexp;
 mod whileexp;
 
-pub fn seq(mut stms: Vec<Tree::Stm>) -> Tree::Stm {
-    let maybe_stm = stms.pop();
-    match maybe_stm {
-        Some(s) => SEQ(Box::new(s), Box::new(seq(stms))),
-        None => EXP(Box::new(CONST(0))),
-    }
-}
-
 fn trans_exp(
     exp: &Exp,
     value_env: &ValueEnviroment,
@@ -45,7 +37,8 @@ fn trans_exp(
             _Exp::If { .. } => ifexp::trans_exp(exp, value_env, breaks_stack, prev_frags),
             _Exp::Let { .. } => letexp::trans_exp(exp, value_env, breaks_stack, prev_frags),
             _Exp::Array { .. } => arrayexp::trans_exp(exp, value_env, breaks_stack, prev_frags),
-            _ => panic!()
+            _Exp::Seq(_) => seqexp::trans_exp(exp, value_env, breaks_stack, prev_frags),
+            _ => panic!("cannot translate as exp!")
         },
     }
 }
@@ -65,7 +58,7 @@ fn trans_stm(
             _Exp::If { .. } => ifexp::trans_stm(exp, value_env, breaks_stack, prev_frags),
             _Exp::While { .. } => whileexp::trans_stm(exp, value_env, breaks_stack, prev_frags),
             _Exp::For { .. } => forexp::trans_stm(exp, value_env, breaks_stack, prev_frags),
-            _ => panic!()
+            _ => panic!("cannot translate as stm!")
         },
     }
 }
@@ -79,7 +72,7 @@ fn trans_cond(
     match exp {
         Exp { node, .. } => match node {
             _Exp::Op { .. } => opexp::trans_cond(exp, value_env, breaks_stack, prev_frags),
-            _ => panic!()
+            _ => panic!("cannot translate as cond!")
         },
     }
 }

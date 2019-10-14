@@ -24,6 +24,7 @@ pub enum Access {
     InReg(Label)
 }
 
+#[derive(Clone)]
 pub enum Frag {
     Proc {
         body: Tree::Stm,
