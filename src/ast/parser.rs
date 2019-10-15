@@ -11,8 +11,10 @@ pub enum ParseError {
     UnexpectedToken(Pos),
 }
 
+
 pub fn parse(source : String) -> Result<Exp, ParseError> {
-    let str_src: &str = &*source;
+    Err(ParseError::UnexpectedToken(Pos::new(0, 0)))
+    //let str_src: &str = &*source;
     //let box_exp = parser::ExprParser::new().parse(str_src).unwrap();
 
     //return Ok(*box_exp)

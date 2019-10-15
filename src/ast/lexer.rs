@@ -1,6 +1,16 @@
 
+#![allow(
+    clippy::missing_docs_in_private_items,
+    clippy::use_debug,
+    clippy::print_stdout,
+    clippy::needless_pass_by_value,
+    clippy::enum_variant_names,
+    clippy::cognitive_complexity,
+    clippy::trivial_regex,
+)]
+
 use regex::Regex;
-use std::str::{Lines, SplitWhitespace};
+use std::str::{Lines, SplitWhitespace, Chars};
 
 // An OK result means (Column, Token, Line). It's a weird hack to work with LALRPOP's way of doing things
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
@@ -78,7 +88,7 @@ fn get_token(string_token: String) -> Option<Tok> {
         Some(Tok::OpenBracket)
     } else if Regex::new(r"^\]$").unwrap().is_match(&string_token) {
         Some(Tok::CloseBracket)
-    } else if Regex::new(r"^{$").unwrap().is_match(&string_token) {
+    } else if Regex::new(r"^\{$").unwrap().is_match(&string_token) {
         Some(Tok::OpenBraces)
     } else if Regex::new(r"^}$").unwrap().is_match(&string_token) {
         Some(Tok::CloseBraces)
@@ -157,61 +167,158 @@ fn get_token(string_token: String) -> Option<Tok> {
     }
 }
 
-enum LexerState {
+#[derive(PartialEq, Eq, Clone)]
+pub enum LexerState {
     LexingTokens,
     LexingLineComment,
     LexingBlockComment(i64),
     LexingString(String),
 }
 
+struct Consumpion {
+    token: Option<Tok>,
+    state_transition: LexerState,
+}
+
+impl Consumpion {
+    pub fn new(t: Option<Tok>, new_state: LexerState) -> Self {
+        Consumpion {
+            token: t,
+            state_transition: new_state,
+        }
+    }
+}
+
+/* Lex a program */
 pub struct Lexer<'input> {
     lines: Lines<'input>,
+    line_lexer: LineLexer<'input>,
     state: LexerState,
 }
 
 impl<'input> Lexer<'input> {
-    pub fn new(input: String) -> Self {
+    pub fn new(mut line_iterator: Lines<'input>) -> Self {
+        let current: &'input str = line_iterator.next().unwrap_or_else(|| "");
+
         Lexer {
-            lines: input.lines(),
+            lines: line_iterator,
+            line_lexer: LineLexer::new(current.split_whitespace(), LexerState::LexingTokens),
             state: LexerState::LexingTokens,
         }
+    }
+
+    pub fn transition(&mut self, new_state: LexerState) {
+        self.state = new_state.clone();
+        self.line_lexer.transition(new_state.clone());
     }
 }
 
 impl<'input> Iterator for Lexer<'input> {
-    type Item = Spanned<Tok, usize, LexicalError>;
+    type Item = Result<Tok, LexicalError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            match self.lines.next() {
+            match self.line_lexer.next() {
+                Some(Ok(Consumpion { token: Some(t), state_transition })) => {
+                    // Remember to transition before returning that token!
+                    self.transition(state_transition);
+                    return Some(Ok(t))
+                },
+                Some(Ok(Consumpion { token: None, state_transition })) => {
+                    // Remember to transition, but keep on lexing lines, nothing to yield.
+                    self.state = state_transition;
+                    continue;
+                },
+                Some(Err(e)) => {
+                    return Some(Err(e))
+                },
+                None => {
+                    // Finished lexing this line!
+                    match self.lines.next() {
+                        Some(line) => {
+                            // Handle state changes, if we're Lexing a line comment, go back to token mode. If not, keep the state.
+                            self.state = if self.state == LexerState::LexingLineComment { LexerState::LexingTokens } else { self.state.clone() };
 
-                _ => LexicalError::LexError
-            };
+                            // Create the lexer for the next line
+                            self.line_lexer = LineLexer::new(line.split_whitespace(), self.state.clone());
+
+                            // Go keep consuming lines...
+                            continue;
+                        },
+                        None => return None,
+                    }
+                }
+            }
         }
     }
 }
 
+/* Lex each individual line */
 struct LineLexer<'input> {
     words: SplitWhitespace<'input>,
+    char_lexer: CharLexer<'input>,
+    state: LexerState,
 }
 
 impl<'input> LineLexer<'input> {
-    pub fn new(input: String) -> Self {
+    pub fn new(mut words_iter: SplitWhitespace<'input>, state: LexerState) -> Self {
+        let current: &'input str = words_iter.next().unwrap_or_else(|| "");
+        let initial_state: LexerState = state.clone();
+
         LineLexer {
-            words: input.split_whitespace(),
+            words: words_iter,
+            char_lexer: CharLexer::new(current.chars(), state),
+            state: initial_state,
         }
+    }
+
+    pub fn transition(&mut self, new_state: LexerState) {
+        let char_lexer_state: LexerState = new_state.clone();
+
+        self.state = new_state;
+        self.char_lexer.transition(char_lexer_state);
     }
 }
 
 impl<'input> Iterator for LineLexer<'input> {
-    type Item = Spanned<Tok, usize, LexicalError>;
+    type Item = Result<Consumpion, LexicalError>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        loop {
-            match self.words.next() {
-                Some(word) => LexicalError::LexError,
-                _ => break,
-            };
+        match self.words.next() {
+            Some(_word) => {
+                Some(Err(LexicalError::LexError))
+            },
+            _ => None,
+        }
+    }
+}
+
+/* Try lexing tokens from each individual char */
+struct CharLexer<'input> {
+    chars: Chars<'input>,
+    state: LexerState,
+}
+
+impl<'input> CharLexer<'input> {
+    pub fn new(chars_iter: Chars<'input>, state: LexerState) -> Self {
+        CharLexer {
+            chars: chars_iter,
+            state,
+        }
+    }
+
+    pub fn transition(&mut self, new_state: LexerState) {
+        self.state = new_state;
+    }
+}
+
+impl<'input> Iterator for CharLexer<'input> {
+    type Item = Result<Consumpion, LexicalError>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.chars.next() {
+            Some(_word) => Some(Err(LexicalError::LexError)),
+            _ => None,
         }
     }
 }

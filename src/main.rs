@@ -1,14 +1,3 @@
-#![warn(
-     clippy::restriction,
-     clippy::pedantic,
-)]
-#![allow(
-    clippy::missing_docs_in_private_items, // esto es una verdadera paja
-    clippy::use_debug, // para debuguear el parser
-    clippy::print_stdout,
-    clippy::needless_pass_by_value, // para tener los translate muertos
-    clippy::enum_variant_names,
-)]
 
 #[allow(dead_code)]
 mod ast;
