@@ -182,11 +182,8 @@ fn typecheck_varexp_simplevar_no_es_simple() {
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
-        label: String::from("f"),
         formals: vec![],
         result: TigerType::TUnit,
-        // level: 0,
-        external: false,
     });
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
@@ -392,11 +389,8 @@ fn typecheck_callexp_ok() {
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
-        label: String::from("f"),
         formals: vec![],
         result: TigerType::TUnit,
-        // level: 0,
-        external: false,
     });
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
@@ -421,11 +415,8 @@ fn typecheck_callexp_args_de_mas() {
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
-        label: String::from("f"),
         formals: vec![],
         result: TigerType::TUnit,
-        // level: 0,
-        external: true,
     });
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
@@ -447,11 +438,8 @@ fn typecheck_callexp_args_de_menos() {
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
-        label: String::from("f"),
         formals: vec![TigerType::TInt(R::RW)],
         result: TigerType::TUnit,
-        // level: 0,
-        external: true,
     });
     let res = type_exp(&exp, &type_env, &value_env);
     match res {

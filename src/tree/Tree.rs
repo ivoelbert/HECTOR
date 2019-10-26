@@ -1,10 +1,10 @@
-use super::Label;
+use super::level::{Label, Temp};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Exp {
-    CONST(i32),
+    CONST(i64),
     NAME(Label),
-    TEMP(Label),
+    TEMP(Temp),
     BINOP(BinOp, Box<Exp>, Box<Exp>),
     MEM(Box<Exp>),
     CALL(Box<Exp>, Vec<Exp>),
@@ -20,8 +20,6 @@ pub enum Stm {
     SEQ(Box<Stm>, Box<Stm>),
     LABEL(Label)
 }
-
-pub type Cond = Box<dyn Fn(Label, Label) -> Stm>;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum BinOp {
@@ -73,4 +71,13 @@ pub fn seq(mut stms: Vec<Stm>) -> Stm {
         Some(s) => Stm::SEQ(Box::new(s), Box::new(seq(stms))),
         None => Stm::EXP(Box::new(Exp::CONST(0))),
     }
+}
+
+
+macro_rules! plus {
+    ( $x:expr, $y:expr ) => (BINOP(PLUS, Box::new($x), Box::new($y)));
+}
+
+macro_rules! Move {
+    ( $x:expr, $y:expr ) => (MOVE(Box::new($x), Box::new($y)));
 }

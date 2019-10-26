@@ -3,7 +3,6 @@ extern crate uid;
 use std::collections::HashMap;
 
 use crate::ast::*;
-use crate::tree::temp::Label;
 
 mod intexp;
 mod opexp;
@@ -64,10 +63,8 @@ pub enum EnvEntry {
         ty: TigerType,
     },
     Func {
-        label: Label,
         formals: Vec<TigerType>,
         result: TigerType,
-        external: bool
     }
 }
 
@@ -87,64 +84,44 @@ pub fn initial_value_env() -> ValueEnviroment {
     use EnvEntry::*;
     let mut value_env = ValueEnviroment::new();
     value_env.insert(Symbol::from("print"), Func {
-        label: Label::from("print"),
         formals: vec![TString],
         result: TUnit,
-        external: true
     });
     value_env.insert(Symbol::from("flush"), Func {
-        label: Label::from("flush"),
         formals: vec![TString],
         result: TUnit,
-        external: true
     });
     value_env.insert(Symbol::from("getchar"), Func {
-        label: Label::from("getchar"),
         formals: vec![TString],
         result: TUnit,
-        external: true
     });
     value_env.insert(Symbol::from("ord"), Func {
-        label: Label::from("ord"),
         formals: vec![TString],
         result: TUnit,
-        external: true
     });
     value_env.insert(Symbol::from("chr"), Func {
-        label: Label::from("chr"),
         formals: vec![TString],
         result: TUnit,
-        external: true
     });
     value_env.insert(Symbol::from("size"), Func {
-        label: Label::from("size"),
         formals: vec![TString],
         result: TUnit,
-        external: true
     });
     value_env.insert(Symbol::from("substring"), Func {
-        label: Label::from("substring"),
         formals: vec![TString],
         result: TUnit,
-        external: true
     });
     value_env.insert(Symbol::from("concat"), Func {
-        label: Label::from("concat"),
         formals: vec![TString],
         result: TUnit,
-        external: true
     });
     value_env.insert(Symbol::from("not"), Func {
-        label: Label::from("not"),
         formals: vec![TString],
         result: TUnit,
-        external: true
     });
     value_env.insert(Symbol::from("exit"), Func {
-        label: Label::from("exit"),
         formals: vec![TString],
         result: TUnit,
-        external: true
     });
     value_env
 }

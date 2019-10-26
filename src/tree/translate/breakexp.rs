@@ -1,19 +1,23 @@
 use crate::ast::*;
 use crate::tree::*;
 
-pub fn trans_stm(
+pub fn trans_stm<'a>(
     Exp { node, pos }: &Exp,
-    _value_env: &ValueEnviroment,
+    _levels: Vec<Level>,
+    _value_env: ValueEnviroment,
     mut breaks_stack: Vec<Option<Label>>,
-    prev_frags: Vec<Fragment>,
+    frags: Vec<Fragment>,
 ) -> Result<(Tree::Stm, Vec<Fragment>), TransError> {
     match node {
         _Exp::Break => {
             let loop_end_label = match breaks_stack.pop() {
                 Some(Some(l)) => l,
-                _ => return Err(TransError::BreakError(*pos))
+                _ => return Err(TransError::BreakError(*pos)),
             };
-            Ok((JUMP(NAME(loop_end_label.clone()), vec![loop_end_label]), prev_frags))
+            Ok((
+                JUMP(NAME(loop_end_label.clone()), vec![loop_end_label]),
+                frags,
+            ))
         }
         _ => panic!(),
     }
@@ -21,9 +25,18 @@ pub fn trans_stm(
 
 #[test]
 fn no_labels_error() {
-    let exp = Exp {node: _Exp::Break, pos: Pos {line: 0, column: 0}};
-    let value_env = initial_value_env();
-    let res = trans_stm(&exp, &value_env, vec![], vec![]);
+    let exp = Exp {
+        node: _Exp::Break,
+        pos: Pos { line: 0, column: 0 },
+    };
+    let level = Level::outermost();
+    let res = trans_stm(
+        &exp,
+        vec![level.clone()],
+        initial_value_env(level),
+        vec![],
+        vec![],
+    );
     match res {
         Err(TransError::BreakError(_)) => (),
         Err(..) => panic!("wrong error"),
@@ -33,9 +46,18 @@ fn no_labels_error() {
 
 #[test]
 fn none_label_error() {
-    let exp = Exp {node: _Exp::Break, pos: Pos {line: 0, column: 0}};
-    let value_env = initial_value_env();
-    let res = trans_stm(&exp, &value_env, vec![None], vec![]);
+    let exp = Exp {
+        node: _Exp::Break,
+        pos: Pos { line: 0, column: 0 },
+    };
+    let level = Level::outermost();
+    let res = trans_stm(
+        &exp,
+        vec![level.clone()],
+        initial_value_env(level),
+        vec![],
+        vec![],
+    );
     match res {
         Err(TransError::BreakError(_)) => (),
         Err(..) => panic!("wrong error"),
@@ -45,14 +67,23 @@ fn none_label_error() {
 
 #[test]
 fn ok() {
-    let exp = Exp {node: _Exp::Break, pos: Pos {line: 0, column: 0}};
-    let value_env = initial_value_env();
-    let res = trans_stm(&exp, &value_env, vec![Some(Label::from("done"))], vec![]);
+    let exp = Exp {
+        node: _Exp::Break,
+        pos: Pos { line: 0, column: 0 },
+    };
+    let level = Level::outermost();
+    let res = trans_stm(
+        &exp,
+        vec![level.clone()],
+        initial_value_env(level),
+        vec![],
+        vec![],
+    );
     match res {
-        Ok((tree, fragments)) => {
-            assert_eq!(tree, JUMP(NAME(Label::from("done")), vec![Label::from("done")]));
+        Ok((JUMP(NAME(_), _), fragments)) => {
             assert!(fragments.is_empty());
-        },
+        }
+        Ok(..) => panic!("wrong translation"),
         Err(..) => panic!("should translate"),
     }
 }

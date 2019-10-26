@@ -6,7 +6,7 @@ use crate::tree::*;
 
 #[derive(Clone, Debug)]
 pub struct Frame {
-    name: String,
+    name: Label,
     formals: Vec<bool>,
     locals: Vec<bool>,
     actual_arg: i64,
@@ -14,14 +14,13 @@ pub struct Frame {
     actual_reg: i64
 }
 
-static LOCAL_GAP: i64 = 4;
-
-pub type Register = String;
+pub static LOCAL_GAP: i64 = 4;
+pub static STATIC_LINK_OFFSET: i64 = 1337; // TODO
 
 #[derive(Clone, Debug)]
 pub enum Access {
     InFrame(i64),
-    InReg(Label)
+    InReg(Temp)
 }
 
 #[derive(Clone)]
@@ -34,7 +33,7 @@ pub enum Frag {
 }
 
 impl Frame {
-    pub fn new(name: String, formals: Vec<bool>) -> Self {
+    pub fn new(name: Label, formals: Vec<bool>) -> Self {
         Frame {
             name,
             formals,
@@ -44,17 +43,22 @@ impl Frame {
             actual_reg: 1,
         }
     }
-    pub fn alloc_local(frame: &mut Self, escape: bool) -> Access {
+    pub fn alloc_local(self: &mut Self, escape: bool) -> Access {
         match escape {
             true => {
-                let r = Access::InFrame(frame.actual_local + LOCAL_GAP);
-                frame.actual_local = frame.actual_local -1;
+                let r = Access::InFrame(self.actual_local + LOCAL_GAP);
+                self.actual_local = self.actual_local -1;
                 r
             }
             false => Access::InReg(newtemp())
         }
     }
-    pub fn external_call(proc_name: String, args: Vec<Tree::Exp>) -> Tree::Exp {
-        CALL(Box::new(NAME(proc_name)), args)
+    pub fn alloc_arg(self: &mut Self, escape: bool) -> Access {
+        // TODO: alloc_arg
+        Access::InReg(newtemp())
+    }
+    // proc_name could be an str
+    pub fn external_call(proc_label: Label, args: Vec<Tree::Exp>) -> Tree::Exp {
+        CALL(Box::new(NAME(proc_label)), args)
     }
 }

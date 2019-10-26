@@ -3,59 +3,76 @@ use crate::tree::*;
 
 fn trans_seq(
     exps: &[Exp],
-    value_env: &ValueEnviroment,
+    levels: Vec<Level>,
+    value_env: ValueEnviroment,
     breaks_stack: Vec<Option<Label>>,
-    prev_frags: Vec<Fragment>,
+    frags: Vec<Fragment>,
 ) -> Result<(Tree::Stm, Vec<Fragment>), TransError> {
-    let  (statements, fragments) : (Vec<Tree::Stm>, Vec<Vec<Fragment>>) = exps
-        .iter()
-        // This could be much faster if we avoided the clonings
-        .map(|exp| trans_stm(exp, value_env, breaks_stack.clone(), prev_frags.clone()))
-        .collect::<Result<Vec<(Tree::Stm, Vec<Fragment>)>, TransError>>()?
-        .iter()
-        .cloned()
-        .unzip();
-    Ok((seq(statements), fragments.concat()))
+    exps.iter().try_fold(
+        (EXP(Box::new(CONST(0))), frags),
+        |(prev_tree, frags), exp| -> Result<(Tree::Stm, Vec<Fragment>), TransError> {
+            let (tree, frags) = super::trans_stm(
+                exp,
+                levels.clone(),
+                value_env.clone(),
+                breaks_stack.clone(),
+                frags,
+            )?;
+            Ok((SEQ(Box::new(prev_tree), Box::new(tree)), frags))
+        },
+    )
 }
 
-pub fn trans_exp(
+pub fn trans_exp<'a>(
     Exp { node, .. }: &Exp,
-    value_env: &ValueEnviroment,
+    levels: Vec<Level>,
+    value_env: ValueEnviroment,
     breaks_stack: Vec<Option<Label>>,
-    prev_frags: Vec<Fragment>,
+    frags: Vec<Fragment>,
 ) -> Result<(Tree::Exp, Vec<Fragment>), TransError> {
     match node {
-        _Exp::Seq(exps) => {
-            match exps.split_last() {
-                Some((last, rest)) => {
-                    let (prev_stms, seq_frags) = trans_seq(rest, value_env, breaks_stack.clone(), prev_frags)?;
-                    let (last, last_frags) = trans_exp(last, value_env, breaks_stack, seq_frags)?;
-                    Ok((ESEQ(Box::new(prev_stms), Box::new(last)), last_frags))
-                }
-                None => panic!("empty seq")
+        _Exp::Seq(exps) => match exps.split_last() {
+            Some((last, rest)) => {
+                let (prev_stms, prev_frags) = trans_seq(
+                    rest,
+                    levels.clone(),
+                    value_env.clone(),
+                    breaks_stack.clone(),
+                    frags,
+                )?;
+                let (last, last_frags) =
+                    super::trans_exp(last, levels, value_env, breaks_stack, prev_frags)?;
+                Ok((ESEQ(Box::new(prev_stms), Box::new(last)), last_frags))
             }
+            None => panic!("empty seq"),
         },
-        _ => panic!()
+        _ => panic!(),
     }
 }
 
-pub fn trans_stm(
+pub fn trans_stm<'a>(
     Exp { node, .. }: &Exp,
-    value_env: &ValueEnviroment,
+    levels: Vec<Level>,
+    value_env: ValueEnviroment,
     breaks_stack: Vec<Option<Label>>,
-    prev_frags: Vec<Fragment>,
+    frags: Vec<Fragment>,
 ) -> Result<(Tree::Stm, Vec<Fragment>), TransError> {
     match node {
-        _Exp::Seq(exps) => {
-            match exps.split_last() {
-                Some((last, rest)) => {
-                    let (prev_stms, seq_frags) = trans_seq(rest, value_env, breaks_stack.clone(), prev_frags)?;
-                    let (last, last_frags) = trans_stm(last, value_env, breaks_stack, seq_frags)?;
-                    Ok((SEQ(Box::new(prev_stms), Box::new(last)), last_frags))
-                }
-                None => panic!("empty seq")
+        _Exp::Seq(exps) => match exps.split_last() {
+            Some((last, rest)) => {
+                let (prev_stms, seq_frags) = trans_seq(
+                    rest,
+                    levels.clone(),
+                    value_env.clone(),
+                    breaks_stack.clone(),
+                    frags,
+                )?;
+                let (last, last_frags) =
+                    trans_stm(last, levels, value_env, breaks_stack, seq_frags)?;
+                Ok((SEQ(Box::new(prev_stms), Box::new(last)), last_frags))
             }
+            None => panic!("empty seq"),
         },
-        _ => panic!()
+        _ => panic!(),
     }
 }

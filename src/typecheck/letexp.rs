@@ -63,10 +63,8 @@ fn add_prototype_to_env(_FunctionDec {name, params, result, ..}: &_FunctionDec, 
         .map(|Field {typ, ..}: &Field| -> Result<TigerType, TypeError> {typecheck_ty(typ, type_env, pos)})
         .collect::<Result<Vec<TigerType>, TypeError>>()?;
     value_env.insert(name.clone(), EnvEntry::Func {
-        label: name.clone(),  // Should be a newLabel
         formals,
         result: result_type,
-        external: false
     });
     Ok(value_env)
 }
