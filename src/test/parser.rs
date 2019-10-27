@@ -11,10 +11,10 @@ fn good() {
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
-        let parsed = parse(contents);
-        match parsed {
+        let res = parse(contents.clone());
+        match res {
             Ok(..) => (),
-            Err(..) => panic!("{:?} should parse, but fails", path),
+            Err(error) => panic!("Source {:?}\n Error: {:?}", contents, error),
         }
     }
 }
@@ -26,13 +26,10 @@ fn bad_type() {
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
-        let parsed = parse(contents);
-        match parsed {
-            Ok(..) => (),
-            Err(..) => panic!(
-                "{:?} should parse, but fails",
-                path
-            ),
+        let res = parse(contents.clone());
+        match res {
+            Err(..) => (),
+            Ok(ast) => panic!("Source: {:?}\n AST: {:?}", contents, ast),
         }
     }
 }

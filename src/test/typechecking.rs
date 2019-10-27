@@ -1,49 +1,53 @@
-// use std::fs::{read_dir, read_to_string};
+use std::fs::{read_dir, read_to_string};
 
 use crate::ast::*;
 use crate::ast::position::*;
-// use super::super::ast::parser::parse;
+use super::super::ast::parser::parse;
 
 use crate::typecheck::*;
 
-// #[test]
-// fn test_good() {
-//     let good_path = "./tiger_sources/good/";
-//     let source_files = read_dir(good_path).expect("read_dir");
-//     for direntry in source_files {
-//         let path = direntry.expect("direntry").path();
-//         let contents = read_to_string(&path).expect("read_to_string");
-//         let exp = parse(contents).expect("falla el parser");
-//         let type_env = TypeEnviroment::new();
-//         let value_env = ValueEnviroment::new();
-//         type_exp(&exp , &type_env, &value_env).expect("{:?} deberia tipar bien pero falla"/*, path*/);
-//     }
-// }
+#[test]
+fn good() {
+    let good_path = "./tiger_sources/good/";
+    let source_files = read_dir(good_path).expect("read_dir");
+    for direntry in source_files {
+        let path = direntry.expect("direntry").path();
+        let contents = read_to_string(&path).expect("read_to_string");
+        let exp = parse(contents).expect("parser error");
+        let type_env = TypeEnviroment::new();
+        let value_env = ValueEnviroment::new();
+        let res = type_exp(&exp , &type_env, &value_env);
+        match res {
+            Ok(..) => (),
+            Err(type_error) => panic!("Expresion: {:?}\n Type Error: {:?}", exp, type_error)
+        }
+    }
+}
 
-// #[test]
-// fn test_type() {
-//     let syntax_path = "./tiger_sources/type/";
-//     let source_files = read_dir(syntax_path).expect("read_dir");
-//     for direntry in source_files {
-//         let path = direntry.expect("direntry").path();
-//         let contents = read_to_string(&path).expect("read_to_string");
-//         let exp = parse(contents).expect("falla el parser");
-//         let type_env = TypeEnviroment::new();
-//         let value_env = ValueEnviroment::new();
-//         let typed = type_exp(&exp , &type_env, &value_env);
-//         match typed {
-//             Err(_) => (),
-//             Ok(_) => panic!("{:?} deberia fallar pero tipa bien", path),
-//         }
-//     }
-// }
+#[test]
+fn bad_type() {
+    let syntax_path = "./tiger_sources/type/";
+    let source_files = read_dir(syntax_path).expect("read_dir");
+    for direntry in source_files {
+        let path = direntry.expect("direntry").path();
+        let contents = read_to_string(&path).expect("read_to_string");
+        let exp = parse(contents).expect("falla el parser");
+        let type_env = TypeEnviroment::new();
+        let value_env = ValueEnviroment::new();
+        let res = type_exp(&exp , &type_env, &value_env);
+        match res {
+            Err(..) => (),
+            Ok(tiger_type) => panic!("Expresion: {:?}\n Type: {:?}", exp, tiger_type),
+        }
+    }
+}
 
 fn possed_exp(exp: _Exp) -> Exp {
     Exp {node: exp, pos: Pos {line: 0, column: 0}}
 }
 
 #[test]
-fn typecheck_unitexp() {
+fn unitexp() {
     let exp = Exp {
         node: _Exp::Unit,
         pos: Pos {
@@ -56,13 +60,13 @@ fn typecheck_unitexp() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(TigerType::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("Unit tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn typecheck_nilexp() {
+fn nilexp() {
     let exp = Exp {
         node: _Exp::Nil,
         pos: Pos {
@@ -75,26 +79,26 @@ fn typecheck_nilexp() {
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(TigerType::TNil) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("Nil tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn typecheck_breakexp() {
+fn breakexp() {
     let exp = Exp {node: _Exp::Break, pos: Pos {line: 0, column: 0}};
     let type_env = initial_type_env();
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Ok(TigerType::TUnit) => (),
-        Ok(..) => panic!("resultado incorrecto"),
-        Err(..) => panic!("breakexp tipa mal")
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
-fn typecheck_intexp() {
+fn intexp() {
     let exp = Exp {
         node: _Exp::Int(1),
         pos: Pos {
@@ -113,7 +117,7 @@ fn typecheck_intexp() {
 }
 
 #[test]
-fn typecheck_stringexp() {
+fn stringexp() {
     let exp = Exp {
         node: _Exp::String(String::from("lorem ipsum")),
         pos: Pos {
@@ -132,7 +136,7 @@ fn typecheck_stringexp() {
 }
 
 #[test]
-fn typecheck_varexp_simplevar_ok() {
+fn varexp_simplevar_ok() {
     let exp = Exp {
         node: _Exp::Var(Var::Simple(Symbol::from("foo"))),
         pos: Pos {
@@ -152,7 +156,7 @@ fn typecheck_varexp_simplevar_ok() {
 }
 
 #[test]
-fn typecheck_varexp_simplevar_no_declarada() {
+fn varexp_simplevar_no_declarada() {
     let exp = Exp {
         node: _Exp::Var(Var::Simple(Symbol::from("foo"))),
         pos: Pos {
@@ -171,7 +175,7 @@ fn typecheck_varexp_simplevar_no_declarada() {
 }
 
 #[test]
-fn typecheck_varexp_simplevar_no_es_simple() {
+fn varexp_simplevar_no_es_simple() {
     let exp = Exp {
         node: _Exp::Var(Var::Simple(Symbol::from("f"))),
         pos: Pos {
@@ -194,7 +198,7 @@ fn typecheck_varexp_simplevar_no_es_simple() {
 }
 
 #[test]
-fn typecheck_varexp_fieldvar_ok() {
+fn varexp_fieldvar_ok() {
     let exp = Exp {
         node: _Exp::Var(Var::Field(Box::new(Var::Simple(Symbol::from("foo"))),Symbol::from("bar"))),
         pos: Pos {
@@ -221,7 +225,7 @@ fn typecheck_varexp_fieldvar_ok() {
 }
 
 #[test]
-fn typecheck_varexp_fieldvar_field_inexistente() {
+fn varexp_fieldvar_field_inexistente() {
     let exp = Exp {
         node: _Exp::Var(Var::Field(Box::new(Var::Simple(Symbol::from("foo"))),Symbol::from("perro"))),
         pos: Pos {
@@ -252,7 +256,7 @@ fn typecheck_varexp_fieldvar_field_inexistente() {
 }
 
 #[test]
-fn typecheck_varexp_fieldvar_sobre_tipo_no_record() {
+fn varexp_fieldvar_sobre_tipo_no_record() {
     let exp = Exp {
         node: _Exp::Var(Var::Field(Box::new(Var::Simple(Symbol::from("foo"))),Symbol::from("bar"))),
         pos: Pos {
@@ -276,7 +280,7 @@ fn typecheck_varexp_fieldvar_sobre_tipo_no_record() {
 }
 
 #[test]
-fn typecheck_varexp_subscriptvar_ok() {
+fn varexp_subscriptvar_ok() {
     let exp = Exp {
         node: _Exp::Var(
             Var::Subscript(Box::new(Var::Simple(Symbol::from("foo"))),
@@ -310,7 +314,7 @@ fn typecheck_varexp_subscriptvar_ok() {
 }
 
 #[test]
-fn typecheck_varexp_subscriptvar_indice_no_entero() {
+fn varexp_subscriptvar_indice_no_entero() {
     let exp = Exp {
         node: _Exp::Var(
             Var::Subscript(Box::new(Var::Simple(Symbol::from("foo"))),
@@ -344,7 +348,7 @@ fn typecheck_varexp_subscriptvar_indice_no_entero() {
 }
 
 #[test]
-fn typecheck_varexp_subscriptvar_no_array() {
+fn varexp_subscriptvar_no_array() {
     let exp = Exp {
         node: _Exp::Var(
             Var::Subscript(Box::new(Var::Simple(Symbol::from("foo"))),
@@ -375,7 +379,7 @@ fn typecheck_varexp_subscriptvar_no_array() {
 }
 
 #[test]
-fn typecheck_callexp_ok() {
+fn callexp_ok() {
     let exp = Exp {
         node: _Exp::Call {
             func: Symbol::from("f"),
@@ -401,7 +405,7 @@ fn typecheck_callexp_ok() {
 }
 
 #[test]
-fn typecheck_callexp_args_de_mas() {
+fn callexp_args_de_mas() {
     let exp = Exp {
         node: _Exp::Call {
             func: Symbol::from("f"),
@@ -427,7 +431,7 @@ fn typecheck_callexp_args_de_mas() {
 }
 
 #[test]
-fn typecheck_callexp_args_de_menos() {
+fn callexp_args_de_menos() {
     let exp = Exp {
         node: _Exp::Call {
             func: Symbol::from("f"),
@@ -450,7 +454,7 @@ fn typecheck_callexp_args_de_menos() {
 }
 
 #[test]
-fn typecheck_callexp_funcion_no_declarada() {
+fn callexp_funcion_no_declarada() {
     let exp = Exp {
         node: _Exp::Call {
             func: Symbol::from("f"),
@@ -472,7 +476,7 @@ fn typecheck_callexp_funcion_no_declarada() {
 }
 
 #[test]
-fn typecheck_opexp_ok() {
+fn opexp_ok() {
     let exp = Exp {
         node: _Exp::Op {
             left: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
@@ -492,7 +496,7 @@ fn typecheck_opexp_ok() {
 }
 
 #[test]
-fn typecheck_opexp_tipos_distintos() {
+fn opexp_tipos_distintos() {
     let exp = Exp {
         node: _Exp::Op {
             left: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
@@ -512,7 +516,7 @@ fn typecheck_opexp_tipos_distintos() {
 }
 
 #[test]
-fn typecheck_recordexp_ok() {
+fn recordexp_ok() {
     let exp = Exp {
         node: _Exp::Record {
             fields: vec![(Symbol::from("baz"), Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}))],
@@ -535,7 +539,7 @@ fn typecheck_recordexp_ok() {
 }
 
 #[test]
-fn typecheck_recordexp_tipo_inexistente() {
+fn recordexp_tipo_inexistente() {
     let exp = Exp {
         node: _Exp::Record {
             fields: vec![(Symbol::from("baz"), Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}))],
@@ -554,7 +558,7 @@ fn typecheck_recordexp_tipo_inexistente() {
 }
 
 #[test]
-fn typecheck_recordexp_con_tipo_no_record() {
+fn recordexp_con_tipo_no_record() {
     let exp = Exp {
         node: _Exp::Record {
             fields: vec![(Symbol::from("baz"), Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}))],
@@ -574,7 +578,7 @@ fn typecheck_recordexp_con_tipo_no_record() {
 }
 
 #[test]
-fn typecheck_arrayexp_ok() {
+fn arrayexp_ok() {
     let exp = Exp {node: _Exp::Array {
         typ: Symbol::from("FooType"),
         size: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
@@ -595,7 +599,7 @@ fn typecheck_arrayexp_ok() {
 }
 
 #[test]
-fn typecheck_arrayexp_size_no_int() {
+fn arrayexp_size_no_int() {
     let exp = Exp {node: _Exp::Array {
         typ: Symbol::from("FooType"),
         size: Box::new(Exp {node: _Exp::String(String::from("perro")), pos: Pos {line: 0, column: 0}}),
@@ -617,7 +621,7 @@ fn typecheck_arrayexp_size_no_int() {
 }
 
 #[test]
-fn typecheck_arrayexp_tipos_distintos() {
+fn arrayexp_tipos_distintos() {
     let exp = Exp {node: _Exp::Array {
         typ: Symbol::from("FooType"),
         size: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
@@ -639,7 +643,7 @@ fn typecheck_arrayexp_tipos_distintos() {
 }
 
 #[test]
-fn typecheck_arrayexp_tipo_no_array() {
+fn arrayexp_tipo_no_array() {
     let exp = Exp {node: _Exp::Array {
         typ: Symbol::from("FooType"),
         size: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
@@ -658,7 +662,7 @@ fn typecheck_arrayexp_tipo_no_array() {
 }
 
 #[test]
-fn typecheck_arrayexp_tipo_no_existe() {
+fn arrayexp_tipo_no_existe() {
     let exp = Exp {node: _Exp::Array {
         typ: Symbol::from("FooType"),
         size: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
@@ -675,7 +679,7 @@ fn typecheck_arrayexp_tipo_no_existe() {
 }
 
 #[test]
-fn typecheck_seqexp_ok() {
+fn seqexp_ok() {
     let exp = Exp {
         node: _Exp::Seq(vec![
             Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}},
@@ -695,7 +699,7 @@ fn typecheck_seqexp_ok() {
 // Se puede testear algo mas de _Exp::Seq? Hay alguna condicion del ultimo tipo?
 
 #[test]
-fn typecheck_assignexp_ok() {
+fn assignexp_ok() {
     let exp = Exp {node: _Exp::Assign{
         var: Var::Simple(Symbol::from("foo")),
         exp: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
@@ -715,7 +719,7 @@ fn typecheck_assignexp_ok() {
 }
 
 #[test]
-fn typecheck_assignexp_variable_no_existe() {
+fn assignexp_variable_no_existe() {
     let exp = Exp {node: _Exp::Assign{
         var: Var::Simple(Symbol::from("foo")),
         exp: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
@@ -731,7 +735,7 @@ fn typecheck_assignexp_variable_no_existe() {
 }
 
 #[test]
-fn typecheck_assignexp_tipos_distintos() {
+fn assignexp_tipos_distintos() {
     let exp = Exp {node: _Exp::Assign{
         var: Var::Simple(Symbol::from("foo")),
         exp: Box::new(Exp {node: _Exp::String(String::from("perro")), pos: Pos {line: 0, column: 0}}),
@@ -751,7 +755,7 @@ fn typecheck_assignexp_tipos_distintos() {
 }
 
 #[test]
-fn typecheck_assignexp_variable_read_only() {
+fn assignexp_variable_read_only() {
     let exp = Exp {node: _Exp::Assign{
         var: Var::Simple(Symbol::from("i")),
         exp: Box::new(Exp {node: _Exp::Int(2), pos: Pos {line: 0, column: 0}}),
@@ -771,7 +775,7 @@ fn typecheck_assignexp_variable_read_only() {
 }
 
 #[test]
-fn typecheck_ifexp_ok() {
+fn ifexp_ok() {
     let exp = Exp {node: _Exp::If {
         test: Box::new(Exp {node: _Exp::Int(0), pos: Pos {line: 0, column: 0}}),
         then_: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
@@ -789,7 +793,7 @@ fn typecheck_ifexp_ok() {
 }
 
 #[test]
-fn typecheck_ifexp_test_no_entero() {
+fn ifexp_test_no_entero() {
     let exp = Exp {node: _Exp::If {
         test: Box::new(Exp {node: _Exp::String(String::from("perro")), pos: Pos {line: 0, column: 0}}),
         then_: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
@@ -807,7 +811,7 @@ fn typecheck_ifexp_test_no_entero() {
 }
 
 #[test]
-fn typecheck_ifexp_tipos_then_else_distintos() {
+fn ifexp_tipos_then_else_distintos() {
     let exp = Exp {node: _Exp::If {
         test: Box::new(Exp {node: _Exp::Int(0), pos: Pos {line: 0, column: 0}}),
         then_: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
@@ -825,7 +829,7 @@ fn typecheck_ifexp_tipos_then_else_distintos() {
 }
 
 #[test]
-fn typecheck_ifexp_sin_else_no_unit() {
+fn ifexp_sin_else_no_unit() {
     let exp = Exp {node: _Exp::If {
         test: Box::new(Exp {node: _Exp::Int(0), pos: Pos {line: 0, column: 0}}),
         then_: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
@@ -843,7 +847,7 @@ fn typecheck_ifexp_sin_else_no_unit() {
 }
 
 #[test]
-fn typecheck_whileexp_ok() {
+fn whileexp_ok() {
     let exp = Exp {node: _Exp::While {
         test: Box::new(Exp {node: _Exp::Int(0), pos: Pos {line: 0, column: 0}}),
         body: Box::new(Exp {node: _Exp::Unit, pos: Pos {line: 0, column: 0}}),
@@ -859,7 +863,7 @@ fn typecheck_whileexp_ok() {
 }
 
 #[test]
-fn typecheck_whileexp_condicion_no_entera() {
+fn whileexp_condicion_no_entera() {
     let exp = Exp {node: _Exp::While {
         test: Box::new(Exp {node: _Exp::Unit, pos: Pos {line: 0, column: 0}}),
         body: Box::new(Exp {node: _Exp::Unit, pos: Pos {line: 0, column: 0}}),
@@ -875,7 +879,7 @@ fn typecheck_whileexp_condicion_no_entera() {
 }
 
 #[test]
-fn typecheck_forexp_ok() {
+fn forexp_ok() {
     let exp = Exp {node: _Exp::For {
         var: Symbol::from("i"),
         escape: false,
@@ -894,7 +898,7 @@ fn typecheck_forexp_ok() {
 }
 
 #[test]
-fn typecheck_forexp_iterador_es_usable() {
+fn forexp_iterador_es_usable() {
     let exp = Exp {node: _Exp::For {
         var: Symbol::from("i"),
         escape: false,
@@ -913,7 +917,7 @@ fn typecheck_forexp_iterador_es_usable() {
 }
 
 #[test]
-fn typecheck_forexp_body_no_es_unit() {
+fn forexp_body_no_es_unit() {
     let exp = Exp {node: _Exp::For {
         var: Symbol::from("i"),
         escape: false,
@@ -932,7 +936,7 @@ fn typecheck_forexp_body_no_es_unit() {
 }
 
 #[test]
-fn typecheck_forexp_lo_no_es_int() {
+fn forexp_lo_no_es_int() {
     let exp = Exp {node: _Exp::For {
         var: Symbol::from("i"),
         escape: false,
@@ -951,7 +955,7 @@ fn typecheck_forexp_lo_no_es_int() {
 }
 
 #[test]
-fn typecheck_forexp_hi_no_es_int() {
+fn forexp_hi_no_es_int() {
     let exp = Exp {node: _Exp::For {
         var: Symbol::from("i"),
         escape: false,
@@ -970,7 +974,7 @@ fn typecheck_forexp_hi_no_es_int() {
 }
 
 #[test]
-fn typecheck_letexp_vardec_sin_tipo_ok() {
+fn letexp_vardec_sin_tipo_ok() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![Dec::VarDec(
             _VarDec::new(
@@ -993,7 +997,7 @@ fn typecheck_letexp_vardec_sin_tipo_ok() {
 }
 
 #[test]
-fn typecheck_letexp_vardec_con_tipo_ok() {
+fn letexp_vardec_con_tipo_ok() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![Dec::VarDec(
             _VarDec::new(
@@ -1017,7 +1021,7 @@ fn typecheck_letexp_vardec_con_tipo_ok() {
 }
 
 #[test]
-fn typecheck_letexp_vardec_tipo_no_esta_declarado() {
+fn letexp_vardec_tipo_no_esta_declarado() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![Dec::VarDec(
             _VarDec::new(
@@ -1040,7 +1044,7 @@ fn typecheck_letexp_vardec_tipo_no_esta_declarado() {
 }
 
 #[test]
-fn typecheck_letexp_vardec_tipos_distintos() {
+fn letexp_vardec_tipos_distintos() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![Dec::VarDec(
             _VarDec::new(
@@ -1063,7 +1067,7 @@ fn typecheck_letexp_vardec_tipos_distintos() {
 }
 
 #[test]
-fn typecheck_letexp_typedec_name_ok() {
+fn letexp_typedec_name_ok() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![
             Dec::TypeDec(vec![(
@@ -1095,7 +1099,7 @@ fn typecheck_letexp_typedec_name_ok() {
 }
 
 #[test]
-fn typecheck_letexp_typedec_array_ok() {
+fn letexp_typedec_array_ok() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![
             Dec::TypeDec(vec![(
@@ -1136,7 +1140,7 @@ fn typecheck_letexp_typedec_array_ok() {
 }
 
 #[test]
-fn typecheck_letexp_typedec_record_ok() {
+fn letexp_typedec_record_ok() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![
             Dec::TypeDec(vec![(
@@ -1181,7 +1185,7 @@ fn typecheck_letexp_typedec_record_ok() {
 }
 
 #[test]
-fn typecheck_letexp_typedec_recursion_infinita() {
+fn letexp_typedec_recursion_infinita() {
    let exp = possed_exp(_Exp::Let {
         decs: vec![Dec::TypeDec(vec![
             (_TypeDec::new(Symbol::from("FooType"), Ty::Name(Symbol::from("BaazType"))), Pos{line: 0, column: 0}),
@@ -1199,7 +1203,7 @@ fn typecheck_letexp_typedec_recursion_infinita() {
     }
 }
 #[test]
-fn test_typecheck_recursive_typecheck_ok() {
+fn test_recursive_ok() {
    let exp = possed_exp(_Exp::Let {
         decs: vec![Dec::TypeDec(vec![
             (_TypeDec::new(Symbol::from("C"), Ty::Name(Symbol::from("B"))), Pos{line: 0, column: 0}),
@@ -1219,7 +1223,7 @@ fn test_typecheck_recursive_typecheck_ok() {
 }
 
 #[test]
-fn typecheck_letexp_typedec_referencia_tipo_inexistente() {
+fn letexp_typedec_referencia_tipo_inexistente() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![Dec::TypeDec(vec![(
             _TypeDec::new(
@@ -1241,7 +1245,7 @@ fn typecheck_letexp_typedec_referencia_tipo_inexistente() {
 }
 
 #[test]
-fn typecheck_record_type_cycle_ok() {
+fn record_type_cycle_ok() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![
             Dec::TypeDec(vec![(
@@ -1312,7 +1316,7 @@ fn typecheck_record_type_cycle_ok() {
 }
 
 #[test]
-fn typecheck_letexp_functiondec_ok() {
+fn letexp_functiondec_ok() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1340,7 +1344,7 @@ fn typecheck_letexp_functiondec_ok() {
 }
 
 #[test]
-fn typecheck_letexp_functiondec_llamada_en_bloque_ok() {
+fn letexp_functiondec_llamada_en_bloque_ok() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![
             Dec::FunctionDec(vec![(
@@ -1389,7 +1393,7 @@ fn typecheck_letexp_functiondec_llamada_en_bloque_ok() {
 }
 
 #[test]
-fn typecheck_letexp_functiondec_body_no_tipa() {
+fn letexp_functiondec_body_no_tipa() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1400,7 +1404,7 @@ fn typecheck_letexp_functiondec_body_no_tipa() {
                     escape: false,
                 }],
                 None,
-                boxed_exp(_Exp::Var(Var::Simple(Symbol::from("baaz")))), // no declarada,
+                boxed_exp(_Exp::Var(Var::Simple(Symbol::from("baaz")))), // undeclared
             ),
             Pos{line: 0, column: 0}
         )])],
@@ -1417,7 +1421,7 @@ fn typecheck_letexp_functiondec_body_no_tipa() {
 }
 
 #[test]
-fn typecheck_letexp_functiondec_body_distinto_result() {
+fn letexp_functiondec_body_distinto_result() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1428,7 +1432,7 @@ fn typecheck_letexp_functiondec_body_distinto_result() {
                     escape: false,
                 }],
                 None,
-                boxed_exp(_Exp::Int(2)), // no declarada,
+                boxed_exp(_Exp::Int(2)),
             ),
             Pos{line: 0, column: 0}
         )])],
@@ -1445,7 +1449,7 @@ fn typecheck_letexp_functiondec_body_distinto_result() {
 }
 
 #[test]
-fn typecheck_letexp_functiondec_params_repetidos() {
+fn letexp_functiondec_params_repetidos() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1473,7 +1477,7 @@ fn typecheck_letexp_functiondec_params_repetidos() {
 }
 
 #[test]
-fn typecheck_letexp_functiondec_nombres_repetidos() {
+fn letexp_functiondec_nombres_repetidos() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1501,7 +1505,7 @@ fn typecheck_letexp_functiondec_nombres_repetidos() {
 }
 
 #[test]
-fn typecheck_letexp_functiondec_recursivas() {
+fn letexp_functiondec_recursivas() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
@@ -1528,7 +1532,7 @@ fn typecheck_letexp_functiondec_recursivas() {
 }
 
 #[test]
-fn typecheck_letexp_todas_las_decs_ok() {
+fn letexp_todas_las_decs_ok() {
     let exp = possed_exp(_Exp::Let {
         decs: vec![
             Dec::TypeDec(vec![(
@@ -1567,7 +1571,10 @@ fn typecheck_letexp_todas_las_decs_ok() {
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env)
-        .expect("no puedo tipar un let que usa las declaraciones");
-    assert_eq!(res, TigerType::TInt(R::RW))
+    let res = type_exp(&exp, &type_env, &value_env);
+    match res {
+        Ok(TigerType::TInt(R::RW)) => (),
+        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Err(type_error) => panic!("type error: {:?}", type_error)
+    }
 }
