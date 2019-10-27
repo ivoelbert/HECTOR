@@ -1,4 +1,4 @@
-use super::tigerabs::{Exp, posed_exp, _Exp};
+use super::{Exp, posed_exp, _Exp};
 use super::position::{Pos};
 use lalrpop_util::lalrpop_mod;
 

@@ -1,5 +1,7 @@
 pub mod position;
+pub mod parser;
 mod token;
+
 
 use std::fmt::{self, Debug, Formatter};
 pub use position::{Pos, WithPos};

@@ -5,7 +5,7 @@ use super::super::ast::position::Pos;
 use super::super::ast::*;
 
 #[test]
-fn test_good() {
+fn good() {
     let good_path = "./tiger_sources/good/";
     let source_files = read_dir(good_path).expect("read_dir");
     for direntry in source_files {
@@ -14,13 +14,13 @@ fn test_good() {
         let parsed = parse(contents);
         match parsed {
             Ok(..) => (),
-            Err(..) => panic!("{:?} deberia parsear bien pero falla", path),
+            Err(..) => panic!("{:?} should parse, but fails", path),
         }
     }
 }
 
 #[test]
-fn test_type() {
+fn bad_type() {
     let type_path = "./tiger_sources/type/";
     let source_files = read_dir(type_path).expect("read_dir");
     for direntry in source_files {
@@ -30,7 +30,7 @@ fn test_type() {
         match parsed {
             Ok(..) => (),
             Err(..) => panic!(
-                "{:?} deberia parsear bien (aunque despues no tipa) pero falla",
+                "{:?} should parse, but fails",
                 path
             ),
         }
@@ -38,7 +38,7 @@ fn test_type() {
 }
 
 #[test]
-fn test_syntax() {
+fn bad_syntax() {
     let syntax_path = "./tiger_sources/syntax/";
     let source_files = read_dir(syntax_path).expect("read_dir");
     for direntry in source_files {
@@ -47,13 +47,13 @@ fn test_syntax() {
         let parsed = parse(contents);
         match parsed {
             Err(..) => (),
-            Ok(..) => panic!("{:?} deberia fallar pero parsea bien", path),
+            Ok(..) => panic!("{:?} should fail, but parses ok", path),
         }
     }
 }
 
 #[test]
-fn test_parse_number() {
+fn number() {
     let input = String::from("0");
     let parsed = parse(input);
     match parsed {
@@ -61,13 +61,13 @@ fn test_parse_number() {
             node: _Exp::Int(0),
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well formed expression"),
     }
 }
 
 #[test]
-fn test_parse_string() {
+fn string() {
     let input = String::from("\"perro\"");
     let parsed = parse(input);
     match parsed {
@@ -75,13 +75,13 @@ fn test_parse_string() {
             node: _Exp::String(_),
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well formed expression"),
     }
 }
 
 #[test]
-fn test_parse_breakexp() {
+fn breakexp() {
     let input = String::from("break");
     let parsed = parse(input);
     match parsed {
@@ -89,13 +89,13 @@ fn test_parse_breakexp() {
             node: _Exp::Break,
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well formed expression"),
     }
 }
 
 #[test]
-fn test_parse_simplevar() {
+fn simplevar() {
     let input = String::from("foo");
     let parsed = parse(input);
     match parsed {
@@ -103,13 +103,13 @@ fn test_parse_simplevar() {
             node: _Exp::Var(Var::Simple(_)),
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well formed expression"),
     }
 }
 
 #[test]
-fn test_parse_subscriptvar() {
+fn subscriptvar() {
     let input = String::from("foo[0]");
     let parsed = parse(input);
     match parsed {
@@ -117,13 +117,13 @@ fn test_parse_subscriptvar() {
             node: _Exp::Var(Var::Subscript(_, _)),
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well formed expression"),
     }
 }
 
 #[test]
-fn test_parse_fieldvar() {
+fn fieldvar() {
     let input = String::from("foo.baz");
     let parsed = parse(input);
     match parsed {
@@ -131,13 +131,13 @@ fn test_parse_fieldvar() {
             node: _Exp::Var(Var::Field(_, _)),
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well formed expression"),
     }
 }
 
 #[test]
-fn test_parse_callexp() {
+fn callexp() {
     let input = String::from("foo(1, \"perro\", baz)");
     let parsed = parse(input);
     match parsed {
@@ -145,24 +145,24 @@ fn test_parse_callexp() {
             node: _Exp::Call {..},
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well formed expression"),
     }
 }
 
 #[test]
-fn test_parse_custom() {
+fn custom() {
     let input = String::from("(2 * 2 = 2 + 2) & 2 - 2 <> 2 + 2");
     let parsed = parse(input);
 
     match parsed {
         Ok(exp) => println!("Parsed expresion:\n\n{:?}\n\n", exp),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Err(..) => panic!("parser fails in a well-formed expression"),
     }
 }
 
 #[test]
-fn test_parse_simple_sum() {
+fn simple_sum() {
     let input = String::from("2 + 2");
     let parsed = parse(input);
     match parsed {
@@ -174,13 +174,13 @@ fn test_parse_simple_sum() {
                 },
             pos: Pos { line: 0, column: 0 },
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well-formed expression"),
     }
 }
 
 #[test]
-fn test_parse_simple_mult() {
+fn simple_mult() {
     let input = String::from("2 * 2");
     let parsed = parse(input);
     match parsed {
@@ -192,13 +192,13 @@ fn test_parse_simple_mult() {
                 },
             pos: Pos { line: 0, column: 0 },
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well-formed expression"),
     }
 }
 
 #[test]
-fn test_parse_simple_comp() {
+fn simple_comp() {
     let input = String::from("2 >= 2");
     let parsed = parse(input);
     match parsed {
@@ -210,13 +210,13 @@ fn test_parse_simple_comp() {
                 },
             pos: Pos { line: 0, column: 0 },
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well-formed expression"),
     }
 }
 
 #[test]
-fn test_parse_recordexp() {
+fn recordexp() {
     let input = String::from("{first_name: \"Jhon\", last_name: \"doe\", age: 42}");
     let parsed = parse(input);
     match parsed {
@@ -224,13 +224,13 @@ fn test_parse_recordexp() {
             node: _Exp::Record {..},
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well-formed expression"),
     }
 }
 
 #[test]
-fn test_parse_seqexp() {
+fn seqexp() {
     let input = String::from("(1;2)");
     let parsed = parse(input);
     match parsed {
@@ -238,13 +238,13 @@ fn test_parse_seqexp() {
             node: _Exp::Seq(_),
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well-formed expression"),
     }
 }
 
 #[test]
-fn test_parse_assignexp() {
+fn assignexp() {
     let input = String::from("foo = 42");
     let parsed = parse(input);
     match parsed {
@@ -256,13 +256,13 @@ fn test_parse_assignexp() {
                 },
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well-formed expression"),
     }
 }
 
 #[test]
-fn test_parse_ifexp() {
+fn ifexp() {
     let input = String::from("if 1 then 2 else 3");
     let parsed = parse(input);
     match parsed {
@@ -273,13 +273,13 @@ fn test_parse_ifexp() {
                 },
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well-formed expression"),
     }
 }
 
 #[test]
-fn test_parse_whileexp() {
+fn whileexp() {
     let input = String::from("for i :=0 to 100 do 1");
     let parsed = parse(input);
     match parsed {
@@ -287,13 +287,13 @@ fn test_parse_whileexp() {
             node: _Exp::While {..},
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well-formed expression"),
     }
 }
 
 #[test]
-fn test_parse_forexp() {
+fn forexp() {
     let input = String::from("for i :=0 to 100 do 1");
     let parsed = parse(input);
     match parsed {
@@ -304,14 +304,13 @@ fn test_parse_forexp() {
                 },
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well-formed expression"),
     }
 }
 
 #[test]
-fn test_parse_letexp_functiondec() {
-    // Este test se podria mejorar checkeando mas en profundidad el ast.
+fn letexp_functiondec() {
     let input = String::from("let function foo() = 1 in 2 ");
     let parsed = parse(input);
     match parsed {
@@ -322,15 +321,14 @@ fn test_parse_letexp_functiondec() {
                 },
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well-formed expression"),
     }
 }
 
 
 #[test]
-fn test_parse_letexp_typedec_namety() {
-    // Este test se podria mejorar checkeando mas en profundidad el ast.
+fn letexp_typedec_namety() {
     let input = String::from("let type numeritos = int in 2 ");
     let parsed = parse(input);
     match parsed {
@@ -341,14 +339,13 @@ fn test_parse_letexp_typedec_namety() {
                 },
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well-formed expression"),
     }
 }
 
 #[test]
-fn test_parse_letexp_typedec_recordty() {
-    // Este test se podria mejorar checkeando mas en profundidad el ast.
+fn letexp_typedec_recordty() {
     let input = String::from("let type name = {first_name: string, last_name: string} in 2 ");
     let parsed = parse(input);
     match parsed {
@@ -359,14 +356,13 @@ fn test_parse_letexp_typedec_recordty() {
                 },
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well-formed expression"),
     }
 }
 
 #[test]
-fn test_parse_letexp_typedec_arrayty() {
-    // Este test se podria mejorar checkeando mas en profundidad el ast.
+fn letexp_typedec_arrayty() {
     let input = String::from("let type intArray = array of int in 2 ");
     let parsed = parse(input);
     match parsed {
@@ -377,15 +373,14 @@ fn test_parse_letexp_typedec_arrayty() {
                 },
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well-formed expression"),
     }
 }
 
 
 #[test]
-fn test_parse_letexp_arrayexp() {
-    // Este test se podria mejorar checkeando mas en profundidad el ast.
+fn letexp_arrayexp() {
     let input = String::from("arrtype [10] of 0");
     let parsed = parse(input);
     match parsed {
@@ -396,7 +391,7 @@ fn test_parse_letexp_arrayexp() {
                 },
             ..
         }) => (),
-        Ok(..) => panic!("mal parseado"),
-        Err(..) => panic!("el parser falla en una expresion bien formada"),
+        Ok(..) => panic!("wrong parsing"),
+        Err(..) => panic!("parser fails in a well-formed expression"),
     }
 }
