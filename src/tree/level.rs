@@ -1,5 +1,7 @@
-pub use super::frame::{Frame};
 extern crate uid;
+
+pub use super::frame::{Frame};
+pub use super::Access;
 pub type Label = uid::Id<u16>;
 type LocalTemp = uid::Id<u16>;
 
@@ -29,4 +31,33 @@ pub struct Level {
     pub frame: Frame,
     pub nesting_depth: i64,
     pub id: LevelId,
+}
+
+impl Level {
+    pub fn outermost() -> Level {
+        Level {
+            frame: Frame::new(
+                Label::new(),
+                vec![],
+            ),
+            nesting_depth: -1,
+            id: LevelId::new(),
+        }
+    }
+
+    pub fn new(parent_level: Level, name: Label, formals: Vec<bool>) -> Level {
+        Level {
+            frame: Frame::new(name, formals),
+            nesting_depth: parent_level.nesting_depth + 1,
+            id: LevelId::new(),
+        }
+    }
+
+    pub fn alloc_arg(self: &mut Self, escape: bool) -> Access {
+        self.frame.alloc_arg(escape)
+    }
+
+    pub fn alloc_local(self: &mut Self, escape: bool)  -> Access {
+        self.frame.alloc_local(escape)
+    }
 }

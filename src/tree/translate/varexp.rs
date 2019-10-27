@@ -28,10 +28,9 @@ pub fn simplevar(access: Access, nesting_depth: i64, top_level: &Level) -> Tree:
         }
         Access::InFrame(offset) => {
             // We assume all InFrame escape
-            MEM(Box::new(BINOP(
-                PLUS,
-                Box::new(generate_static_link(delta_depth)),
-                Box::new(CONST(offset)),
+            MEM(Box::new(plus!(
+                generate_static_link(delta_depth),
+                CONST(offset)
             )))
         }
     }

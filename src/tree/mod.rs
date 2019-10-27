@@ -93,37 +93,6 @@ pub fn initial_value_env(level: Level) -> ValueEnviroment {
     value_env
 }
 
-static mut ACTUAL_LEVEL : i64 = 0;
-
-impl Level {
-    fn outermost() -> Level {
-        Level {
-            frame: Frame::new(
-                Label::new(),
-                vec![],
-            ),
-            nesting_depth: -1,
-            id: LevelId::new(),
-        }
-    }
-
-    fn new(parent_level: Level, name: Label, formals: Vec<bool>) -> Level {
-        Level {
-            frame: Frame::new(name, formals),
-            nesting_depth: parent_level.nesting_depth + 1,
-            id: LevelId::new(),
-        }
-    }
-
-    fn alloc_arg(self: &mut Self, escape: bool) -> Access {
-        self.frame.alloc_arg(escape)
-    }
-
-    fn alloc_local(self: &mut Self, escape: bool)  -> Access {
-        self.frame.alloc_local(escape)
-    }
-}
-
 use Tree::Exp::*;
 use Tree::Stm::*;
 use Tree::BinOp::*;
