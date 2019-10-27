@@ -6,7 +6,8 @@
     clippy::needless_pass_by_value,
     clippy::enum_variant_names,
     clippy::cognitive_complexity,
-    clippy::trivial_regex
+    clippy::trivial_regex,
+    clippy::single_match
 )]
 
 use regex::Regex;
@@ -17,7 +18,7 @@ use std::str::{Chars, Lines, SplitWhitespace};
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Tok {
     Point,          // .
     Colon,          // :
@@ -239,7 +240,7 @@ impl<'input> Iterator for Lexer<'input> {
                     state_transition,
                 })) => {
                     // Remember to transition, but keep on lexing lines, nothing to yield.
-                    self.state = state_transition;
+                    self.transition(state_transition);
                     continue;
                 }
                 Some(Err(e)) => return Some(Err(e)),
@@ -248,11 +249,13 @@ impl<'input> Iterator for Lexer<'input> {
                     match self.lines.next() {
                         Some(line) => {
                             // Handle state changes, if we're Lexing a line comment, go back to token mode. If not, keep the state.
-                            self.state = if self.state == LexerState::LexingLineComment {
+                            let new_state = if self.state == LexerState::LexingLineComment {
                                 LexerState::LexingTokens
                             } else {
                                 self.state.clone()
                             };
+
+                            self.transition(new_state);
 
                             // Create the lexer for the next line
                             self.line_lexer =
@@ -302,35 +305,41 @@ impl<'input> Iterator for LineLexer<'input> {
     type Item = Result<Consumpion, LexicalError>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        loop {
-            match get_token(String::from(self.current_word)) {
-                Some(tok) => {
-                    // We should check if this token is yieldable! Probably we should just transition
-                    // For now we'll just yield and keep the state
-                    self.current_word = self.words.next().unwrap_or_else(|| "");
-                    self.char_lexer = CharLexer::new(self.current_word.chars(), self.state.clone());
+        if self.state == LexerState::LexingLineComment {
+            return None
+        }
 
-                    return Some(Ok(Consumpion::new(Some(tok), self.state.clone())));
+        loop {
+            if let Some(tok) = get_token(String::from(self.current_word)) {
+                // We should check if this token is yieldable! Probably we should just transition
+                // For now we'll just yield and keep the state
+                self.current_word = self.words.next().unwrap_or_else(|| "");
+                self.char_lexer = CharLexer::new(self.current_word.chars(), self.state.clone());
+
+                // If the token is // just transition to LexingLineComment
+                if tok == Tok::LineComen {
+                    return Some(Ok(Consumpion::new(None, LexerState::LexingLineComment)));
                 }
-                None => {
-                    match self.char_lexer.next() {
-                        Some(Ok(Consumpion {
-                            token,
-                            state_transition,
-                        })) => {
-                            // We don't need to transition explicitly, just lift the new state.
-                            return Some(Ok(Consumpion::new(token, state_transition)));
-                        }
-                        Some(Err(e)) => return Some(Err(e)),
-                        None => {
-                            match self.words.next() {
-                                Some(word) => {
-                                    // No more tokens to get from this word, move to the next one
-                                    self.current_word = word;
-                                    continue;
-                                }
-                                None => return None,
-                            }
+
+                return Some(Ok(Consumpion::new(Some(tok), self.state.clone())));
+            } else {
+                match self.char_lexer.next() {
+                    Some(Ok(Consumpion {
+                        token,
+                        state_transition,
+                    })) => {
+                        // We don't need to transition explicitly, just lift the new state.
+                        return Some(Ok(Consumpion::new(token, state_transition)));
+                    }
+                    Some(Err(e)) => return Some(Err(e)),
+                    None => {
+                        if let Some(word) = self.words.next() {
+                            // No more tokens to get from this word, move to the next one
+                            self.current_word = word;
+                            self.char_lexer = CharLexer::new(word.chars(), self.state.clone());
+                            continue;
+                        } else {
+                            return None;
                         }
                     }
                 }
@@ -364,11 +373,43 @@ impl<'input> Iterator for CharLexer<'input> {
     type Item = Result<Consumpion, LexicalError>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        match self.chars.next() {
-            Some(current_char) => {
-                Some(Err(LexicalError::LexError))
-            },
-            _ => None,
+        loop {
+            if let Some(current_char) = self.chars.next() {
+                // There are more chars, are we still building a token?
+                let mut new_string: String = self.current_string.clone();
+                new_string.push(current_char);
+
+                if let Some(_token) = get_token(new_string.clone()) {
+                    // Yeah, we're still building...
+                    self.current_string = new_string;
+                    continue;
+                } else {
+                    // NO! nice, yield this token (if yieldable) and transition if needed.
+                    if let Some(prev_token) = get_token(self.current_string.clone()) {
+                        self.current_string = String::from("");
+                        self.current_string.push(current_char);
+
+                        // If the token is // just transition to LexingLineComment
+                        if prev_token == Tok::LineComen {
+                            return Some(Ok(Consumpion::new(None, LexerState::LexingLineComment)));
+                        }
+
+                        return Some(Ok(Consumpion::new(Some(prev_token), self.state.clone())));
+                    } else {
+                        return Some(Err(LexicalError::LexError));
+                    }
+                }
+            } else if self.current_string.is_empty() {
+                // No chars and current_string is empty, nothing to yield here, we're done.
+                return None;
+            } else if let Some(prev_token) = get_token(self.current_string.clone()) {
+                // No more chars, but there's a current_string. We should have a token to yield.
+                self.current_string = String::from("");
+                return Some(Ok(Consumpion::new(Some(prev_token), self.state.clone())));
+            } else {
+                // We didn't have a token??? Error!
+                return Some(Err(LexicalError::LexError));
+            }
         }
     }
 }

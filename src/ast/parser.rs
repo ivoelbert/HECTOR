@@ -28,7 +28,11 @@ fn basic_full_tokens() {
     let lexed = Lexer::new(contents.lines());
 
     for tok in lexed {
-        println!("{:?}", tok);
+        if let Ok(token) = tok {
+            println!("{:?}", token);
+        } else {
+            panic!("Lex error!");
+        }
     }
 }
 
@@ -39,6 +43,40 @@ fn basic_compound_tokens() {
     let lexed = Lexer::new(contents.lines());
 
     for tok in lexed {
-        println!("{:?}", tok);
+        if let Ok(token) = tok {
+            println!("{:?}", token);
+        } else {
+            panic!("Lex error!");
+        }
+    }
+}
+
+#[test]
+fn complex_compound_tokens() {
+    let good_path = "./tiger_sources/lexer/complex_compound.tig";
+    let contents: String = read_to_string(&good_path).unwrap();
+    let lexed = Lexer::new(contents.lines());
+
+    for tok in lexed {
+        if let Ok(token) = tok {
+            println!("{:?}", token);
+        } else {
+            panic!("Lex error!");
+        }
+    }
+}
+
+#[test]
+fn simple_line_comments() {
+    let good_path = "./tiger_sources/lexer/simple_line_comments.tig";
+    let contents: String = read_to_string(&good_path).unwrap();
+    let lexed = Lexer::new(contents.lines());
+
+    for tok in lexed {
+        if let Ok(token) = tok {
+            println!("{:?}", token);
+        } else {
+            panic!("Lex error!");
+        }
     }
 }

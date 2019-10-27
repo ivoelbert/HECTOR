@@ -1,0 +1,5 @@
+let
+    var N:=8 // Assing 8 to N
+in
+    N  // Return N
+end // Finish
