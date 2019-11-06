@@ -77,7 +77,16 @@ fn add_prototype_to_env(
         },
     };
     // Check that argument names are not repeated
-    // TODO
+    let names : Vec<&String> = params
+        .iter()
+        .map(|Field { name, .. }: &Field| name)
+        .collect();
+
+    if (1..names.len()).any(|i| names[i..].contains(&names[i - 1])) {
+        return Err(TypeError::DuplicatedDefinitions(pos))
+    }
+
+    // get parameter types
     let formals: Vec<Arc<TigerType>> = params
         .iter()
         .map(
@@ -86,6 +95,7 @@ fn add_prototype_to_env(
             },
         )
         .collect::<Result<Vec<Arc<TigerType>>, TypeError>>()?;
+    // Insert in env
     value_env.insert(
         name.clone(),
         EnvEntry::Func {
@@ -146,11 +156,13 @@ fn typecheck_functiondec_batch(
     type_env: &TypeEnviroment,
     mut value_env: ValueEnviroment,
 ) -> Result<ValueEnviroment, TypeError> {
-    // Check for repeated function names
-    // TODO
 
     // Add prototypes to ValueEnviroment
     for (dec, pos) in decs {
+        // Check for repeated names
+        if value_env.get(&dec.name).is_some() {
+            return Err(TypeError::DuplicatedDefinitions(*pos))
+        }
         value_env = add_prototype_to_env(dec, value_env, type_env, *pos)?;
     }
 
@@ -254,7 +266,7 @@ fn sort_type_decs(decs: &[(_TypeDec, Pos)]) -> Result<(Vec<&(_TypeDec, Pos)>, Ve
     Ok(sort_decs(decs, order, records))
 }
 
-fn typecheck_typedec_block(
+fn typecheck_typedec_batch(
     decs: &[(_TypeDec, Pos)],
     mut type_env: TypeEnviroment,
 ) -> Result<TypeEnviroment, TypeError> {
@@ -272,15 +284,17 @@ fn typecheck_typedec_block(
         }
     };
     // Insert placeholders for recursive records in TypeEnviroment
-    records
-        .iter()
-        .for_each(|(_TypeDec { name, .. }, _)| {
-            type_env.insert(name.clone(), Arc::new(TigerType::TRecord(vec![], TypeId::new())));
-        });
+    for (_TypeDec { name, .. }, pos) in &records {
+        if type_env.get(name).is_some() {
+            return Err(TypeError::DuplicatedDefinitions(*pos))
+        }
+        type_env.insert(name.clone(), Arc::new(TigerType::TRecord(vec![], TypeId::new())));
+    }
     // Insert declarations, except recursive records.
-    // Problem: Record types have boxes on fields.
-    // There is no posible representation of recursive records with this AST
     for (_TypeDec { name, ty, .. }, pos) in sorted_decs {
+        if type_env.get(name).is_some() {
+            return Err(TypeError::DuplicatedDefinitions(*pos))
+        }
         type_env.insert(name.clone(), ty_to_tigertype(&ty, &type_env, *pos)?);
     }
 
@@ -328,7 +342,7 @@ fn typecheck_decs(
                     Err(type_error) => return Err(type_error),
                 }
             }
-            Dec::TypeDec(td) => match typecheck_typedec_block(td, new_type_env) {
+            Dec::TypeDec(td) => match typecheck_typedec_batch(td, new_type_env) {
                 Ok(tenv) => new_type_env = tenv,
                 Err(type_error) => return Err(type_error),
             },

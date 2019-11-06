@@ -82,7 +82,6 @@ pub fn initial_type_env() -> TypeEnviroment {
     .collect()
 }
 
-// TODO: return values for this functions
 pub fn initial_value_env() -> ValueEnviroment {
     use TigerType::*;
     use EnvEntry::*;
@@ -92,39 +91,39 @@ pub fn initial_value_env() -> ValueEnviroment {
         result: Arc::new(TUnit),
     });
     value_env.insert(Symbol::from("flush"), Func {
-        formals: vec![Arc::new(TString)],
+        formals: vec![],
         result: Arc::new(TUnit),
     });
     value_env.insert(Symbol::from("getchar"), Func {
-        formals: vec![Arc::new(TString)],
-        result: Arc::new(TUnit),
+        formals: vec![],
+        result: Arc::new(TString),
     });
     value_env.insert(Symbol::from("ord"), Func {
         formals: vec![Arc::new(TString)],
-        result: Arc::new(TUnit),
+        result: Arc::new(TInt(R::RW)),
     });
     value_env.insert(Symbol::from("chr"), Func {
-        formals: vec![Arc::new(TString)],
-        result: Arc::new(TUnit),
+        formals: vec![Arc::new(TInt(R::RW))],
+        result: Arc::new(TString),
     });
     value_env.insert(Symbol::from("size"), Func {
         formals: vec![Arc::new(TString)],
-        result: Arc::new(TUnit),
+        result: Arc::new(TInt(R::RW)),
     });
     value_env.insert(Symbol::from("substring"), Func {
         formals: vec![Arc::new(TString)],
-        result: Arc::new(TUnit),
+        result: Arc::new(TString),
     });
     value_env.insert(Symbol::from("concat"), Func {
-        formals: vec![Arc::new(TString)],
-        result: Arc::new(TUnit),
+        formals: vec![Arc::new(TString), Arc::new(TInt(R::RW)), Arc::new(TInt(R::RW))],
+        result: Arc::new(TString),
     });
     value_env.insert(Symbol::from("not"), Func {
-        formals: vec![Arc::new(TString)],
-        result: Arc::new(TUnit),
+        formals: vec![Arc::new(TInt(R::RW))],
+        result: Arc::new(TInt(R::RW)),
     });
     value_env.insert(Symbol::from("exit"), Func {
-        formals: vec![Arc::new(TString)],
+        formals: vec![Arc::new(TInt(R::RW))],
         result: Arc::new(TUnit),
     });
     value_env
@@ -140,7 +139,7 @@ pub enum TypeError {
     NotFunctionVar(Pos),
     NotRecordType(Pos),
     NotArrayType(Pos),
-    SunscriptNotInteger(Pos),
+    SubscriptNotInteger(Pos),
     TooManyArguments(Pos),
     TooFewArguments(Pos),
     TypeMismatch(Pos),
@@ -154,6 +153,7 @@ pub enum TypeError {
     MissingRecordField(Pos),
     NonIntegerOperand(Pos),
     TypeCycle(Pos),
+    DuplicatedDefinitions(Pos),
 }
 
 impl PartialEq for TigerType {

@@ -33,7 +33,7 @@ pub fn typecheck_var(
                             TigerType::TArray(array_of, _) => {
                                 match *type_exp(&*index, type_env, value_env)? {
                                     TigerType::TInt(_) => Ok((*array_of).clone()),
-                                    _ => Err(TypeError::SunscriptNotInteger(pos)),
+                                    _ => Err(TypeError::SubscriptNotInteger(pos)),
                                 }
                             }
 

@@ -341,7 +341,7 @@ fn varexp_subscriptvar_indice_no_entero() {
     });
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Err(TypeError::SunscriptNotInteger(_)) => (),
+        Err(TypeError::SubscriptNotInteger(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
         Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
     }
