@@ -1,6 +1,8 @@
 #![allow(clippy::pub_enum_variant_names)]
 extern crate uid;
 use std::collections::HashMap;
+pub use std::sync::{Arc, Weak};
+
 
 use crate::ast::*;
 
@@ -35,16 +37,16 @@ pub enum TigerType {
     TNil,
     TInt(R),
     TString,
-    TArray(Box<TigerType>, TypeId),
-    TRecord(Vec<(Box<String>, Box<TigerType>, u8)>, TypeId),
-    TipoInterno(String)
+    TArray(Arc<TigerType>, TypeId),
+    TRecord(Vec<(String, Arc<TigerType>, u8)>, TypeId),
+    Internal(String)
 }
 
-pub fn tipo_real(t: TigerType, tenv: &TypeEnviroment) -> TigerType {
-    match &t {
-        TigerType::TipoInterno(s) => match tenv.get(s) {
+pub fn tipo_real(t: Arc<TigerType>, tenv: &TypeEnviroment) -> Arc<TigerType> {
+    match &*t {
+        TigerType::Internal(s) => match tenv.get(s) {
             Some(tipo) => tipo.clone(),
-            None => panic!("at the tipo")
+            None => panic!("Undefined")
         },
         _ => t
     }
@@ -60,68 +62,70 @@ pub fn es_int(t: &TigerType) -> bool {
 #[derive(Clone, Debug)]
 pub enum EnvEntry {
     Var {
-        ty: TigerType,
+        ty: Arc<TigerType>,
     },
     Func {
-        formals: Vec<TigerType>,
-        result: TigerType,
+        formals: Vec<Arc<TigerType>>,
+        result: Arc<TigerType>,
     }
 }
 
-pub type TypeEnviroment = HashMap<Symbol, TigerType>;
+pub type TypeEnviroment = HashMap<Symbol, Arc<TigerType>>;
 pub type ValueEnviroment = HashMap<Symbol, EnvEntry>;
 
 pub fn initial_type_env() -> TypeEnviroment {
-    let mut type_env = TypeEnviroment::new();
-    type_env.insert(Symbol::from("int"), TigerType::TInt(R::RW));
-    type_env.insert(Symbol::from("string"), TigerType::TString);
-    type_env
+    vec![
+        (Symbol::from("int"), Arc::new(TigerType::TInt(R::RW))),
+        (Symbol::from("string"), Arc::new(TigerType::TString))
+    ]
+    .into_iter()
+    .collect()
 }
 
-// revisar valores de retorno de estas
+// TODO: return values for this functions
 pub fn initial_value_env() -> ValueEnviroment {
     use TigerType::*;
     use EnvEntry::*;
     let mut value_env = ValueEnviroment::new();
     value_env.insert(Symbol::from("print"), Func {
-        formals: vec![TString],
-        result: TUnit,
+        formals: vec![Arc::new(TString)],
+        result: Arc::new(TUnit),
     });
     value_env.insert(Symbol::from("flush"), Func {
-        formals: vec![TString],
-        result: TUnit,
+        formals: vec![Arc::new(TString)],
+        result: Arc::new(TUnit),
     });
     value_env.insert(Symbol::from("getchar"), Func {
-        formals: vec![TString],
-        result: TUnit,
+        formals: vec![Arc::new(TString)],
+        result: Arc::new(TUnit),
     });
     value_env.insert(Symbol::from("ord"), Func {
-        formals: vec![TString],
-        result: TUnit,
+        formals: vec![Arc::new(TString)],
+        result: Arc::new(TUnit),
     });
     value_env.insert(Symbol::from("chr"), Func {
-        formals: vec![TString],
-        result: TUnit,
+        formals: vec![Arc::new(TString)],
+        result: Arc::new(TUnit),
     });
     value_env.insert(Symbol::from("size"), Func {
-        formals: vec![TString],
-        result: TUnit,
+        formals: vec![Arc::new(TString)],
+        result: Arc::new(TUnit),
     });
     value_env.insert(Symbol::from("substring"), Func {
-        formals: vec![TString],
-        result: TUnit,
+        formals: vec![Arc::new(TString)],
+        result: Arc::new(TUnit),
     });
     value_env.insert(Symbol::from("concat"), Func {
-        formals: vec![TString],
-        result: TUnit,
+        formals: vec![Arc::new(TString)],
+        result: Arc::new(TUnit),
     });
     value_env.insert(Symbol::from("not"), Func {
-        formals: vec![TString],
-        result: TUnit,
+        formals: vec![Arc::new(TString)],
+        result: Arc::new(TUnit),
     });
     value_env.insert(Symbol::from("exit"), Func {
-        formals: vec![TString],
-        result: TUnit,
+        formals: vec![Arc::new(TString)],
+        result: Arc::new(TUnit),
     });
     value_env
 }
@@ -163,15 +167,15 @@ impl PartialEq for TigerType {
             | (TInt(_),TInt(_)) => true,
             (TRecord(_, uid1), TRecord(_, uid2 ))
             | (TArray(_, uid1), TArray(_, uid2)) => uid1 == uid2,
-            (TipoInterno(s), TipoInterno(t)) => s == t,
-            (TipoInterno(_), _) => panic!("Estamos comparando un TipoInterno"),
-            (_, TipoInterno(_)) => panic!("Estamos comparando un TipoInterno"),
+            (Internal(s), Internal(t)) => s == t,
+            (Internal(_), _) => panic!("Estamos comparando un Internal"),
+            (_, Internal(_)) => panic!("Estamos comparando un Internal"),
             (_, _) => false,
         }
     }
 }
 
-pub fn type_exp(exp : &Exp, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<TigerType, TypeError> {
+pub fn type_exp(exp : &Exp, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Arc<TigerType>, TypeError> {
     match exp {
         Exp {node, ..} => match node {
             _Exp::Var(..) => varexp::typecheck(exp, type_env, value_env),

@@ -1,4 +1,5 @@
 use std::fs::{read_dir, read_to_string};
+use std::sync::Arc;
 
 use crate::ast::*;
 use crate::ast::position::*;
@@ -59,7 +60,7 @@ fn unitexp() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TUnit) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -78,8 +79,10 @@ fn nilexp() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TNil) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(tiger_type) => match *tiger_type {
+            TigerType::TNil => (),
+            _ => panic!("wrong type: {:?}", tiger_type),
+        },
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
@@ -91,7 +94,7 @@ fn breakexp() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TUnit) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -110,7 +113,7 @@ fn intexp() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TInt(R::RW)) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -129,7 +132,7 @@ fn stringexp() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TString) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TString => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -146,10 +149,10 @@ fn varexp_simplevar_ok() {
     };
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    value_env.insert(Symbol::from("foo"), EnvEntry::Var{ty: TigerType::TInt(R::RW),});
+    value_env.insert(Symbol::from("foo"), EnvEntry::Var{ty: Arc::new(TigerType::TInt(R::RW)),});
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TInt(R::RW)) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -187,7 +190,7 @@ fn varexp_simplevar_no_es_simple() {
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
         formals: vec![],
-        result: TigerType::TUnit,
+        result: Arc::new(TigerType::TUnit),
     });
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
@@ -208,17 +211,18 @@ fn varexp_fieldvar_ok() {
     };
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    let foo_type = TigerType::TRecord(
-            vec![(Box::new(String::from("bar")),
-                Box::new(TigerType::TInt(R::RW)),
-                0)], TypeId::new());
+    let field_type = Arc::new(TigerType::TInt(R::RW));
+    let foo_type = Arc::new(TigerType::TRecord(
+            vec![(String::from("bar"),
+                field_type,
+                0)], TypeId::new()));
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         ty: foo_type,
     });
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TInt(R::RW)) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -235,14 +239,10 @@ fn varexp_fieldvar_field_inexistente() {
     };
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    let foo_type = TigerType::TRecord(
-            vec![(
-                Box::new(String::from("bar")),
-                Box::new(TigerType::TInt(R::RW)),
-                0
-            )],
-            TypeId::new(),
-        );
+    let foo_type = Arc::new(TigerType::TRecord(
+            vec![(String::from("bar"),
+                Arc::new(TigerType::TInt(R::RW)),
+                0)], TypeId::new()));
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         ty: foo_type,
@@ -266,7 +266,7 @@ fn varexp_fieldvar_sobre_tipo_no_record() {
     };
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    let foo_type = TigerType::TInt(R::RW);
+    let foo_type = Arc::new(TigerType::TInt(R::RW));
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         ty: foo_type,
@@ -297,17 +297,17 @@ fn varexp_subscriptvar_ok() {
     };
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    let foo_type = TigerType::TArray(
-        Box::new(TigerType::TInt(R::RW)),
+    let foo_type = Arc::new(TigerType::TArray(
+        Arc::new(TigerType::TInt(R::RW)),
         TypeId::new(),
-    );
+    ));
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         ty: foo_type,
     });
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TInt(R::RW)) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -331,10 +331,10 @@ fn varexp_subscriptvar_indice_no_entero() {
     };
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    let foo_type = TigerType::TArray(
-        Box::new(TigerType::TInt(R::RW)),
+    let foo_type = Arc::new(TigerType::TArray(
+        Arc::new(TigerType::TInt(R::RW)),
         TypeId::new(),
-    );
+    ));
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         ty: foo_type,
@@ -365,7 +365,7 @@ fn varexp_subscriptvar_no_array() {
     };
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
-    let foo_type = TigerType::TInt(R::RW);
+    let foo_type = Arc::new(TigerType::TInt(R::RW));
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         ty: foo_type,
@@ -394,11 +394,11 @@ fn callexp_ok() {
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
         formals: vec![],
-        result: TigerType::TUnit,
+        result: Arc::new(TigerType::TUnit),
     });
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TUnit) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -420,7 +420,7 @@ fn callexp_args_de_mas() {
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
         formals: vec![],
-        result: TigerType::TUnit,
+        result: Arc::new(TigerType::TUnit),
     });
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
@@ -442,8 +442,8 @@ fn callexp_args_de_menos() {
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
-        formals: vec![TigerType::TInt(R::RW)],
-        result: TigerType::TUnit,
+        formals: vec![Arc::new(TigerType::TInt(R::RW))],
+        result: Arc::new(TigerType::TUnit),
     });
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
@@ -489,7 +489,7 @@ fn opexp_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TInt(R::RW)) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -526,10 +526,11 @@ fn recordexp_ok() {
     };
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
-    let foo_type = TigerType::TRecord(
-            vec![(Box::new(String::from("baz")),
-                Box::new(TigerType::TInt(R::RW)),
-                0)], TypeId::new());
+    let field_type = Arc::new(TigerType::TInt(R::RW));
+    let foo_type = Arc::new(TigerType::TRecord(
+            vec![(String::from("baz"),
+                field_type,
+                0)], TypeId::new()));
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
@@ -568,7 +569,7 @@ fn recordexp_con_tipo_no_record() {
     };
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
-    type_env.insert(Symbol::from("FooType"), TigerType::TInt(R::RW));
+    type_env.insert(Symbol::from("FooType"), Arc::new(TigerType::TInt(R::RW)));
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
         Err(TypeError::NotRecordType(_)) => (),
@@ -586,10 +587,10 @@ fn arrayexp_ok() {
     }, pos: Pos {line: 0, column: 0}};
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
-    let foo_type = TigerType::TArray(
-        Box::new(TigerType::TInt(R::RW)),
+    let foo_type = Arc::new(TigerType::TArray(
+        Arc::new(TigerType::TInt(R::RW)),
         TypeId::new(),
-    );
+    ));
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
@@ -607,10 +608,10 @@ fn arrayexp_size_no_int() {
     }, pos: Pos {line: 0, column: 0}};
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
-    let foo_type = TigerType::TArray(
-        Box::new(TigerType::TInt(R::RW)),
+    let foo_type = Arc::new(TigerType::TArray(
+        Arc::new(TigerType::TInt(R::RW)),
         TypeId::new(),
-    );
+    ));
     type_env.insert(Symbol::from("FooType"), foo_type);
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
@@ -629,10 +630,10 @@ fn arrayexp_tipos_distintos() {
     }, pos: Pos {line: 0, column: 0}};
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
-    let foo_type = TigerType::TArray(
-        Box::new(TigerType::TInt(R::RW)),
+    let foo_type = Arc::new(TigerType::TArray(
+        Arc::new(TigerType::TInt(R::RW)),
         TypeId::new(),
-    );
+    ));
     type_env.insert(Symbol::from("FooType"), foo_type);
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
@@ -651,7 +652,7 @@ fn arrayexp_tipo_no_array() {
     }, pos: Pos {line: 0, column: 0}};
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
-    let foo_type = TigerType::TInt(R::RW);
+    let foo_type = Arc::new(TigerType::TInt(R::RW));
     type_env.insert(Symbol::from("FooType"), foo_type);
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
@@ -691,7 +692,7 @@ fn seqexp_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TInt(R::RW)) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -707,12 +708,12 @@ fn assignexp_ok() {
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let env_entry = EnvEntry::Var{
-        ty: TigerType::TInt(R::RW),
+        ty: Arc::new(TigerType::TInt(R::RW)),
     };
     value_env.insert(Symbol::from("foo"), env_entry);
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TUnit) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -743,7 +744,7 @@ fn assignexp_tipos_distintos() {
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let env_entry = EnvEntry::Var{
-        ty: TigerType::TInt(R::RW),
+        ty: Arc::new(TigerType::TInt(R::RW)),
     };
     value_env.insert(Symbol::from("foo"), env_entry);
     let res = type_exp(&exp, &type_env, &value_env);
@@ -763,7 +764,7 @@ fn assignexp_variable_read_only() {
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let env_entry = EnvEntry::Var{
-        ty: TigerType::TInt(R::RO),
+        ty: Arc::new(TigerType::TInt(R::RO)),
     };
     value_env.insert(Symbol::from("i"), env_entry);
     let res = type_exp(&exp, &type_env, &value_env);
@@ -786,7 +787,7 @@ fn ifexp_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TInt(_)) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RO) || *tiger_type == TigerType::TInt(R::RW) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -856,7 +857,7 @@ fn whileexp_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TUnit) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -891,7 +892,7 @@ fn forexp_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TUnit) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -910,7 +911,7 @@ fn forexp_iterador_es_usable() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TUnit) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -990,7 +991,7 @@ fn letexp_vardec_sin_tipo_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TInt(R::RW)) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1014,7 +1015,7 @@ fn letexp_vardec_con_tipo_ok() {
 
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TInt(R::RW)) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1092,7 +1093,7 @@ fn letexp_typedec_name_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TInt(R::RW)) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1133,7 +1134,7 @@ fn letexp_typedec_array_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TInt(R::RW)) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1178,7 +1179,7 @@ fn letexp_typedec_record_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TInt(R::RW)) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1216,7 +1217,7 @@ fn test_recursive_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TUnit) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
         Ok(..) => panic!("wrong type"),
         Err(..) => panic!("type error"),
     }
@@ -1309,7 +1310,7 @@ fn record_type_cycle_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TInt(R::RW)) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1337,7 +1338,7 @@ fn letexp_functiondec_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TUnit) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1386,7 +1387,7 @@ fn letexp_functiondec_llamada_en_bloque_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TInt(R::RW)) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1470,7 +1471,7 @@ fn letexp_functiondec_params_repetidos() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TUnit) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1498,7 +1499,7 @@ fn letexp_functiondec_nombres_repetidos() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TUnit) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1525,7 +1526,7 @@ fn letexp_functiondec_recursivas() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TUnit) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -1573,7 +1574,7 @@ fn letexp_todas_las_decs_ok() {
     let value_env = initial_value_env();
     let res = type_exp(&exp, &type_env, &value_env);
     match res {
-        Ok(TigerType::TInt(R::RW)) => (),
+        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
         Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }

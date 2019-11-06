@@ -1,7 +1,7 @@
 use crate::ast::*;
 use crate::typecheck::*;
 
-pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env:& ValueEnviroment) -> Result<TigerType, TypeError> {
+pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env:& ValueEnviroment) -> Result<Arc<TigerType>, TypeError> {
     use TigerType::*;
     match exp { Exp {node: _Exp::For {var, lo, hi, body, ..}, pos} => {
         let lo_type = tipo_real(type_exp(&*lo, type_env, value_env)?, type_env);
@@ -11,14 +11,13 @@ pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env:& ValueEnvirome
         }
         let mut new_value_env = value_env.clone();
         new_value_env.insert(var.clone(), EnvEntry::Var {
-            ty: TInt(R::RO),
+            ty: Arc::new(TInt(R::RO)),
         });
-        match type_exp(&*body, type_env, &new_value_env) {
-            Ok(TUnit) => (),
-            Ok(_) => return Err(TypeError::NonUnitBody(*pos)),
-            Err(type_error) => return Err(type_error)
+        match *type_exp(&*body, type_env, &new_value_env)? {
+            TUnit => (),
+            _ => return Err(TypeError::NonUnitBody(*pos))
         };
-        Ok(TUnit)
+        Ok(Arc::new(TUnit))
     }
     _ => panic!("delegation panic in forexp::tipar")
     }
