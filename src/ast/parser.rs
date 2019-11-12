@@ -80,3 +80,78 @@ fn simple_line_comments() {
         }
     }
 }
+
+#[test]
+fn simple_block_comments() {
+    let good_path = "./tiger_sources/lexer/simple_block_comments.tig";
+    let contents: String = read_to_string(&good_path).unwrap();
+    let lexed = Lexer::new(contents.lines());
+
+    for tok in lexed {
+        if let Ok(token) = tok {
+            println!("{:?}", token);
+        } else {
+            panic!("Lex error!");
+        }
+    }
+}
+
+#[test]
+fn simple_strings() {
+    let good_path = "./tiger_sources/lexer/simple_strings.tig";
+    let contents: String = read_to_string(&good_path).unwrap();
+    let lexed = Lexer::new(contents.lines());
+
+    for tok in lexed {
+        if let Ok(token) = tok {
+            println!("{:?}", token);
+        } else {
+            panic!("Lex error!");
+        }
+    }
+}
+
+#[test]
+fn spaced_strings() {
+    let good_path = "./tiger_sources/lexer/spaced_strings.tig";
+    let contents: String = read_to_string(&good_path).unwrap();
+    let lexed = Lexer::new(contents.lines());
+
+    for tok in lexed {
+        if let Ok(token) = tok {
+            println!("{:?}", token);
+        } else {
+            panic!("Lex error!");
+        }
+    }
+}
+
+#[test]
+fn escaped_strings() {
+    let good_path = "./tiger_sources/lexer/escaped_strings.tig";
+    let contents: String = read_to_string(&good_path).unwrap();
+    let lexed = Lexer::new(contents.lines());
+
+    for tok in lexed {
+        if let Ok(token) = tok {
+            println!("{:?}", token);
+        } else {
+            panic!("Lex error!");
+        }
+    }
+}
+
+#[test]
+fn multiline_strings() {
+    let good_path = "./tiger_sources/lexer/multiline_strings.tig";
+    let contents: String = read_to_string(&good_path).unwrap();
+    let lexed = Lexer::new(contents.lines());
+
+    for tok in lexed {
+        if let Ok(token) = tok {
+            println!("{:?}", token);
+        } else {
+            panic!("Lex error!");
+        }
+    }
+}

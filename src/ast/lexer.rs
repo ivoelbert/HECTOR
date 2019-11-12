@@ -15,10 +15,11 @@ use std::str::{Chars, Lines, SplitWhitespace};
 
 // An OK result means (Column, Token, Line). It's a weird hack to work with LALRPOP's way of doing things
 // THIS DOESN'T SEEM RIGHT!!!!
+// I think we should respect LALRPOP's way of doing things and figure out some other way of representing position
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Tok {
     Point,          // .
     Colon,          // :
@@ -202,6 +203,7 @@ pub struct Lexer<'input> {
     lines: Lines<'input>,
     line_lexer: LineLexer<'input>,
     state: LexerState,
+    current_string: String,
 }
 
 impl<'input> Lexer<'input> {
@@ -212,6 +214,7 @@ impl<'input> Lexer<'input> {
             lines: line_iterator,
             line_lexer: LineLexer::new(current.split_whitespace(), LexerState::LexingTokens),
             state: LexerState::LexingTokens,
+            current_string: String::from(current),
         }
     }
 
@@ -231,20 +234,68 @@ impl<'input> Iterator for Lexer<'input> {
                     token: Some(t),
                     state_transition,
                 })) => {
-                    // Remember to transition before returning that token!
-                    self.transition(state_transition);
-                    return Some(Ok(t));
+                    // We got a token and possibly a state transition!
+                    match t {
+                        Tok::OpenComen => {
+                            let new_state: LexerState = match self.state {
+                                LexerState::LexingBlockComment(n) => {
+                                    LexerState::LexingBlockComment(n + 1)
+                                }
+                                _ => LexerState::LexingBlockComment(1),
+                            };
+
+                            self.transition(new_state);
+                            continue;
+                        }
+                        Tok::CloseComen => {
+                            match self.state {
+                                LexerState::LexingBlockComment(1) => {
+                                    self.transition(LexerState::LexingTokens);
+                                    continue;
+                                }
+                                LexerState::LexingBlockComment(n) => {
+                                    self.transition(LexerState::LexingBlockComment(n - 1));
+                                    continue;
+                                }
+                                _ => {
+                                    return Some(Err(LexicalError::LexError));
+                                }
+                            };
+                        }
+                        Tok::Quote => {
+                            match self.state.clone() {
+                                LexerState::LexingString(s) => {
+                                    self.transition(LexerState::LexingTokens);
+                                    return Some(Ok(Tok::Str(s)));
+                                }
+                                _ => self.transition(LexerState::LexingString(String::from("")))
+                            };
+
+                            continue;
+                        }
+                        _ => {
+                            self.transition(state_transition);
+                            return Some(Ok(t));
+                        }
+                    };
                 }
                 Some(Ok(Consumpion {
                     token: None,
                     state_transition,
                 })) => {
-                    // Remember to transition, but keep on lexing lines, nothing to yield.
+                    // We just got a state transition!
                     self.transition(state_transition);
                     continue;
                 }
                 Some(Err(e)) => return Some(Err(e)),
                 None => {
+                    if let LexerState::LexingString(s) = self.state.clone() {
+                        let mut new_string = s.clone();
+                        new_string.push_str(&self.current_string);
+                        new_string.push('\n');
+
+                        self.transition(LexerState::LexingString(new_string));
+                    }
                     // Finished lexing this line!
                     match self.lines.next() {
                         Some(line) => {
@@ -258,6 +309,7 @@ impl<'input> Iterator for Lexer<'input> {
                             self.transition(new_state);
 
                             // Create the lexer for the next line
+                            self.current_string = String::from(line);
                             self.line_lexer =
                                 LineLexer::new(line.split_whitespace(), self.state.clone());
 
@@ -271,6 +323,7 @@ impl<'input> Iterator for Lexer<'input> {
         }
     }
 }
+
 
 /* Lex each individual line */
 struct LineLexer<'input> {
@@ -301,52 +354,107 @@ impl<'input> LineLexer<'input> {
     }
 }
 
+// Returns the location of the REST of the string (past the first unescaped quote)
+// -1 if no matches.
+fn quote_location(s: &str) -> i32 {
+    let re = Regex::new(r#"(^"|(?:[^\\])")"#).unwrap();
+    match re.find(s) {
+        Some(mat) => mat.end() as i32,
+        _ => -1,
+    }
+}
+
 impl<'input> Iterator for LineLexer<'input> {
     type Item = Result<Consumpion, LexicalError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.state == LexerState::LexingLineComment {
-            return None
+            return None;
         }
 
         loop {
-            if let Some(tok) = get_token(String::from(self.current_word)) {
-                // We should check if this token is yieldable! Probably we should just transition
-                // For now we'll just yield and keep the state
-                self.current_word = self.words.next().unwrap_or_else(|| "");
-                self.char_lexer = CharLexer::new(self.current_word.chars(), self.state.clone());
+            if self.state == LexerState::LexingTokens {
+                if let Some(tok) = get_token(String::from(self.current_word)) {
+                    // We should check if this token is yieldable! Probably we should just transition
+                    // For now we'll just yield and keep the state
+                    self.current_word = self.words.next().unwrap_or_else(|| "");
+                    self.char_lexer = CharLexer::new(self.current_word.chars(), self.state.clone());
 
-                // If the token is // just transition to LexingLineComment
-                if tok == Tok::LineComen {
-                    return Some(Ok(Consumpion::new(None, LexerState::LexingLineComment)));
-                }
-
-                return Some(Ok(Consumpion::new(Some(tok), self.state.clone())));
-            } else {
-                match self.char_lexer.next() {
-                    Some(Ok(Consumpion {
-                        token,
-                        state_transition,
-                    })) => {
-                        // We don't need to transition explicitly, just lift the new state.
-                        return Some(Ok(Consumpion::new(token, state_transition)));
+                    // If the token is // just transition to LexingLineComment
+                    if tok == Tok::LineComen {
+                        return Some(Ok(Consumpion::new(None, LexerState::LexingLineComment)));
                     }
-                    Some(Err(e)) => return Some(Err(e)),
-                    None => {
-                        if let Some(word) = self.words.next() {
-                            // No more tokens to get from this word, move to the next one
-                            self.current_word = word;
-                            self.char_lexer = CharLexer::new(word.chars(), self.state.clone());
-                            continue;
-                        } else {
-                            return None;
-                        }
+
+                    return Some(Ok(Consumpion::new(Some(tok), self.state.clone())));
+                }
+            }
+
+            if let LexerState::LexingString(s) = self.state.clone() {
+                let quote_loc = quote_location(self.current_word);
+
+                if quote_loc > 0 {
+                    // Found an unescaped quote!
+                    let position: usize = quote_loc as usize;
+
+                    // This line, until the quote
+                    let string_part = &self.current_word[..(position - 1)];
+
+                    // From the quote to the end
+                    let rest = &self.current_word[position..];
+
+                    let mut full_string = s.clone();
+                    full_string.push_str(string_part);
+
+                    self.char_lexer = CharLexer::new(rest.chars(), self.state.clone());
+                    return Some(Ok(Consumpion::new(Some(Tok::Str(full_string)), LexerState::LexingTokens)));
+                } else {
+                    // No unescaped quote...
+                    let mut new_string = s.clone();
+                    new_string.push_str(self.current_word);
+                    new_string.push(' ');
+                    self.transition(LexerState::LexingString(new_string));
+
+                    if let Some(word) = self.words.next() {
+                        self.current_word = word;
+                        self.char_lexer = CharLexer::new(word.chars(), self.state.clone());
+                        continue;
+                    } else {
+                        return None;
+                    }
+                }
+            }
+
+            match self.char_lexer.next() {
+                Some(Ok(Consumpion {
+                    token,
+                    state_transition,
+                })) => {
+                    // We don't need to transition explicitly, just lift the new state.
+                    if token == Some(Tok::Quote) {
+                        // We'll transition into LexingString, crop the current_word to the first quote.
+                        let quote_loc = quote_location(self.current_word) as usize;
+                        self.current_word = &self.current_word[quote_loc..];
+                    } else {
+                        self.current_word = "";
+                    }
+                    return Some(Ok(Consumpion::new(token, state_transition)));
+                }
+                Some(Err(e)) => return Some(Err(e)),
+                None => {
+                    if let Some(word) = self.words.next() {
+                        // No more tokens to get from this word, move to the next one
+                        self.current_word = word;
+                        self.char_lexer = CharLexer::new(word.chars(), self.state.clone());
+                        continue;
+                    } else {
+                        return None;
                     }
                 }
             }
         }
     }
 }
+
 
 /* Try lexing tokens from each individual char */
 struct CharLexer<'input> {
@@ -389,14 +497,41 @@ impl<'input> Iterator for CharLexer<'input> {
                         self.current_string = String::from("");
                         self.current_string.push(current_char);
 
-                        // If the token is // just transition to LexingLineComment
-                        if prev_token == Tok::LineComen {
-                            return Some(Ok(Consumpion::new(None, LexerState::LexingLineComment)));
-                        }
+                        match (self.state.clone(), prev_token.clone()) {
+                            (LexerState::LexingBlockComment(_), Tok::OpenComen)
+                            | (LexerState::LexingBlockComment(_), Tok::CloseComen) => {
+                                self.current_string = String::from("");
+                                return Some(Ok(Consumpion::new(
+                                    Some(prev_token),
+                                    self.state.clone(),
+                                )));
+                            }
+                            (LexerState::LexingBlockComment(_), _) => {
+                                continue;
+                            }
+                            _ => {
+                                // If the token is // just transition to LexingLineComment
+                                if prev_token == Tok::LineComen {
+                                    return Some(Ok(Consumpion::new(
+                                        None,
+                                        LexerState::LexingLineComment,
+                                    )));
+                                }
 
-                        return Some(Ok(Consumpion::new(Some(prev_token), self.state.clone())));
+                                return Some(Ok(Consumpion::new(
+                                    Some(prev_token),
+                                    self.state.clone(),
+                                )));
+                            }
+                        }
                     } else {
-                        return Some(Err(LexicalError::LexError));
+                        match self.state {
+                            // If we're lexing comments, no problem
+                            LexerState::LexingBlockComment(_) => return None,
+
+                            // If we're lexing tokens something's wrong!
+                            _ => return Some(Err(LexicalError::LexError)),
+                        }
                     }
                 }
             } else if self.current_string.is_empty() {
@@ -404,11 +539,30 @@ impl<'input> Iterator for CharLexer<'input> {
                 return None;
             } else if let Some(prev_token) = get_token(self.current_string.clone()) {
                 // No more chars, but there's a current_string. We should have a token to yield.
-                self.current_string = String::from("");
-                return Some(Ok(Consumpion::new(Some(prev_token), self.state.clone())));
+
+                match (self.state.clone(), prev_token.clone()) {
+                    (LexerState::LexingBlockComment(_), Tok::OpenComen)
+                    | (LexerState::LexingBlockComment(_), Tok::CloseComen) => {
+                        self.current_string = String::from("");
+                        return Some(Ok(Consumpion::new(Some(prev_token), self.state.clone())));
+                    }
+                    (LexerState::LexingBlockComment(_), _) => {
+                        self.current_string = String::from("");
+                        return None;
+                    }
+                    _ => {
+                        self.current_string = String::from("");
+                        return Some(Ok(Consumpion::new(Some(prev_token), self.state.clone())));
+                    }
+                }
             } else {
-                // We didn't have a token??? Error!
-                return Some(Err(LexicalError::LexError));
+                match self.state {
+                    // If we're lexing comments, no problem
+                    LexerState::LexingBlockComment(_) => return None,
+
+                    // If we're lexing tokens something's wrong!
+                    _ => return Some(Err(LexicalError::LexError)),
+                }
             }
         }
     }

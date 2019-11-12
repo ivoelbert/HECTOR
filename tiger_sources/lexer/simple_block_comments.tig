@@ -1,0 +1,15 @@
+/* Adding some block comments */
+let
+    /*
+        They should be multiline
+    */
+    var N:=8
+in
+    /*
+        /*
+            And nestable
+        */
+    */
+
+    N /* And don't brake stuff */ + 1
+end

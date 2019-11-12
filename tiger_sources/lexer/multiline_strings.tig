@@ -1,0 +1,6 @@
+let
+    var N := "perro but
+    multiline!"
+in
+    N
+end
