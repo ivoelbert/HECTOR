@@ -1,12 +1,22 @@
 use crate::ast::*;
 use crate::tree::*;
+use crate::typecheck::{type_exp, TigerType};
 
-pub fn trans_exp<'a>(
+pub fn trans_exp(
     Exp {node, ..}: &Exp,
-    levels: Vec<Level>,
-    value_env: ValueEnviroment,
-    breaks_stack: Vec<Option<Label>>,
+    level: Level,
+    value_env: &ValueEnviroment,
+    breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,
-) -> Result<(Tree::Exp, Vec<Fragment>), TransError> {
-    Ok((CONST(0), frags))
+) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
+    match node {
+        _Exp::Op{left, right, oper} => {
+            // match oper {
+            // }
+        }
+        _ => panic!("delegation error")
+    };
+    Ok((CONST(0), level, frags)) // TODO
+    // mapeo
+    // hay que volver a tipar para diferenciar
 }
