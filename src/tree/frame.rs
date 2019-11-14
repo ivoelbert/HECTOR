@@ -17,7 +17,7 @@ pub struct Frame {
 pub static LOCAL_GAP: i64 = 4;
 pub static STATIC_LINK_OFFSET: i64 = 1337; // TODO
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Access {
     InFrame(i64),
     InReg(Temp)
@@ -30,6 +30,15 @@ pub enum Frag {
         frame: Frame
     },
     ConstString(Label, String)
+}
+
+impl Frag {
+    pub fn new(tree: Tree::Stm, level: Level) -> Self {
+        Frag::Proc {
+            body: tree,
+            frame: level.frame
+        }
+    }
 }
 
 impl Frame {

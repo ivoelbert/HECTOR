@@ -1,12 +1,16 @@
 use crate::ast::*;
 use crate::tree::*;
 
-pub fn trans_exp<'a>(
+pub fn trans_exp(
     Exp {node, ..}: &Exp,
-    levels: Vec<Level>,
-    value_env: ValueEnviroment,
-    breaks_stack: Vec<Option<Label>>,
+    level: Level,
+    _value_env: &ValueEnviroment,
+    _breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,
-) -> Result<(Tree::Exp, Vec<Fragment>), TransError> {
-    Ok((CONST(0), frags))
+) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
+    // Translates as a noop.
+    match node {
+        _Exp::Unit => Ok((CONST(0), level, frags)),
+        _ => panic!("delegation error")
+    }
 }

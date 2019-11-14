@@ -1,13 +1,13 @@
 use crate::ast::*;
 use crate::tree::*;
 
-pub fn trans_stm<'a>(
+pub fn trans_stm(
     Exp { node, .. }: &Exp,
-    mut levels: Vec<Level>,
-    mut value_env: ValueEnviroment,
-    mut breaks_stack: Vec<Option<Label>>,
+    mut level: Level,
+    value_env: &ValueEnviroment,
+    breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,
-) -> Result<(Tree::Stm, Vec<Fragment>), TransError> {
+) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
     match node {
         _Exp::For {
             var,
@@ -16,34 +16,35 @@ pub fn trans_stm<'a>(
             body,
             escape,
         } => {
-            let top_level = levels.last_mut().expect("at least a top level");
-            let access = top_level.alloc_local(*escape);
-            value_env.insert(
+            let mut new_value_env = value_env.clone();
+            let mut new_breaks_stack = breaks_stack.clone();
+            let access = level.alloc_local(*escape);
+            new_value_env.insert(
                 var.clone(),
                 EnvEntry::Var {
                     access: access.clone(),
-                    depth: top_level.nesting_depth,
+                    depth: level.nesting_depth,
                 },
             );
-            let var_exp = super::varexp::simplevar(access, top_level.nesting_depth, top_level);
-            let (lo_exp, lo_frags) = super::trans_exp(
+            let var_exp = super::varexp::simplevar(access, level.nesting_depth, &level);
+            let (lo_exp, lo_level, lo_frags) = super::trans_exp(
                 lo,
-                levels.clone(),
-                value_env.clone(),
-                breaks_stack.clone(),
+                level,
+                &new_value_env,
+                breaks_stack,
                 frags,
             )?;
-            let (hi_exp, hi_frags) = super::trans_exp(
+            let (hi_exp, hi_level, hi_frags) = super::trans_exp(
                 hi,
-                levels.clone(),
-                value_env.clone(),
-                breaks_stack.clone(),
+                lo_level,
+                &new_value_env,
+                breaks_stack,
                 lo_frags,
             )?;
             let (start_label, continue_label, done_label) = (newlabel(), newlabel(), newlabel());
-            breaks_stack.push(Some(done_label));
-            let (body_stm, body_frags) =
-                super::trans_stm(body, levels, value_env, breaks_stack, hi_frags)?;
+            new_breaks_stack.push(Some(done_label));
+            let (body_stm, body_level, body_frags) =
+                super::trans_stm(body, hi_level, value_env, &new_breaks_stack, hi_frags)?;
             Ok((
                 Tree::seq(vec![
                     CJUMP(
@@ -61,6 +62,7 @@ pub fn trans_stm<'a>(
                     JUMP(NAME(start_label), vec![start_label]),
                     LABEL(done_label),
                 ]),
+                body_level,
                 body_frags,
             ))
         }

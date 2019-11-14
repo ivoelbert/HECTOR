@@ -1,21 +1,22 @@
 use crate::ast::*;
 use crate::tree::*;
 
-pub fn trans_stm<'a>(
+pub fn trans_stm(
     Exp { node, pos }: &Exp,
-    _levels: Vec<Level>,
-    _value_env: ValueEnviroment,
-    mut breaks_stack: Vec<Option<Label>>,
+    level: Level,
+    _value_env: &ValueEnviroment,
+    breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,
-) -> Result<(Tree::Stm, Vec<Fragment>), TransError> {
+) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
     match node {
         _Exp::Break => {
-            let loop_end_label = match breaks_stack.pop() {
+            let loop_end_label = match breaks_stack.last() {
                 Some(Some(l)) => l,
                 _ => return Err(TransError::BreakError(*pos)),
             };
             Ok((
-                JUMP(NAME(loop_end_label), vec![loop_end_label]),
+                JUMP(NAME(*loop_end_label), vec![*loop_end_label]),
+                level,
                 frags,
             ))
         }
@@ -30,13 +31,7 @@ fn no_labels_error() {
         pos: Pos { line: 0, column: 0 },
     };
     let level = Level::outermost();
-    let res = trans_stm(
-        &exp,
-        vec![level.clone()],
-        initial_value_env(level),
-        vec![],
-        vec![],
-    );
+    let res = trans_stm(&exp, level, &initial_value_env(), &vec![], vec![]);
     match res {
         Err(TransError::BreakError(_)) => (),
         Err(..) => panic!("wrong error"),
@@ -51,13 +46,7 @@ fn none_label_error() {
         pos: Pos { line: 0, column: 0 },
     };
     let level = Level::outermost();
-    let res = trans_stm(
-        &exp,
-        vec![level.clone()],
-        initial_value_env(level),
-        vec![],
-        vec![],
-    );
+    let res = trans_stm(&exp, level, &initial_value_env(), &vec![], vec![]);
     match res {
         Err(TransError::BreakError(_)) => (),
         Err(..) => panic!("wrong error"),
@@ -72,15 +61,9 @@ fn ok() {
         pos: Pos { line: 0, column: 0 },
     };
     let level = Level::outermost();
-    let res = trans_stm(
-        &exp,
-        vec![level.clone()],
-        initial_value_env(level),
-        vec![],
-        vec![],
-    );
+    let res = trans_stm(&exp, level, &initial_value_env(), &vec![Some(newlabel())], vec![]);
     match res {
-        Ok((JUMP(NAME(_), _), fragments)) => {
+        Ok((JUMP(NAME(_), _), _, fragments)) => {
             assert!(fragments.is_empty());
         }
         Ok(..) => panic!("wrong translation"),

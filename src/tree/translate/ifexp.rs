@@ -1,35 +1,35 @@
 use crate::ast::*;
 use crate::tree::*;
 
-pub fn trans_exp<'a>(
+pub fn trans_exp(
     Exp { node, .. }: &Exp,
-    levels: Vec<Level>,
-    value_env: ValueEnviroment,
-    breaks_stack: Vec<Option<Label>>,
+    level: Level,
+    value_env: &ValueEnviroment,
+    breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,
-) -> Result<(Tree::Exp, Vec<Fragment>), TransError> {
+) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
     match node {
         _Exp::If {
             test,
             then_,
             else_: Some(else_),
         } => {
-            let (test_exp, test_frags) = super::trans_exp(
+            let (test_exp, test_level, test_frags) = super::trans_exp(
                 &**test,
-                levels.clone(),
-                value_env.clone(),
-                breaks_stack.clone(),
+                level,
+                value_env,
+                breaks_stack,
                 frags,
             )?;
-            let (then_exp, then_frags) = super::trans_exp(
+            let (then_exp, then_level, then_frags) = super::trans_exp(
                 then_,
-                levels.clone(),
-                value_env.clone(),
-                breaks_stack.clone(),
+                test_level,
+                value_env,
+                breaks_stack,
                 test_frags,
             )?;
-            let (else_exp, else_frags) =
-                super::trans_exp(else_, levels, value_env, breaks_stack, then_frags)?;
+            let (else_exp, else_level, else_frags) =
+                super::trans_exp(else_, then_level, value_env, breaks_stack, then_frags)?;
             let (then_label, join_label, else_label) = (newlabel(), newlabel(), newlabel());
             let result = newtemp();
             Ok((
@@ -51,6 +51,7 @@ pub fn trans_exp<'a>(
                     ])),
                     Box::new(TEMP(result)),
                 ),
+                else_level,
                 else_frags,
             ))
         }
@@ -58,28 +59,28 @@ pub fn trans_exp<'a>(
     }
 }
 
-pub fn trans_stm<'a>(
+pub fn trans_stm(
     Exp { node, .. }: &Exp,
-    levels: Vec<Level>,
-    value_env: ValueEnviroment,
-    breaks_stack: Vec<Option<Label>>,
+    level: Level,
+    value_env: &ValueEnviroment,
+    breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,
-) -> Result<(Tree::Stm, Vec<Fragment>), TransError> {
+) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
     match node {
         _Exp::If {
             test,
             then_,
             else_: None,
         } => {
-            let (test_exp, test_frags) = super::trans_exp(
+            let (test_exp, test_level, test_frags) = super::trans_exp(
                 &**test,
-                levels.clone(),
-                value_env.clone(),
-                breaks_stack.clone(),
+                level,
+                value_env,
+                breaks_stack,
                 frags,
             )?;
-            let (then_stm, then_frags) =
-                super::trans_stm(then_, levels, value_env, breaks_stack, test_frags)?;
+            let (then_stm, then_level, then_frags) =
+                super::trans_stm(then_, test_level, value_env, breaks_stack, test_frags)?;
             let (then_label, join_label) = (newlabel(), newlabel());
             Ok((
                 Tree::seq(vec![
@@ -94,6 +95,7 @@ pub fn trans_stm<'a>(
                     then_stm,
                     LABEL(join_label),
                 ]),
+                then_level,
                 then_frags,
             ))
         }
@@ -102,22 +104,22 @@ pub fn trans_stm<'a>(
             then_,
             else_: Some(else_),
         } => {
-            let (test_exp, test_frags) = super::trans_exp(
+            let (test_exp, test_level, test_frags) = super::trans_exp(
                 &**test,
-                levels.clone(),
-                value_env.clone(),
-                breaks_stack.clone(),
+                level,
+                value_env,
+                breaks_stack,
                 frags,
             )?;
-            let (then_stm, then_frags) = super::trans_stm(
+            let (then_stm, then_level, then_frags) = super::trans_stm(
                 then_,
-                levels.clone(),
-                value_env.clone(),
-                breaks_stack.clone(),
+                test_level,
+                value_env,
+                breaks_stack,
                 test_frags,
             )?;
-            let (else_stm, else_frags) =
-                super::trans_stm(else_, levels, value_env, breaks_stack, then_frags)?;
+            let (else_stm, else_level, else_frags) =
+                super::trans_stm(else_, then_level, value_env, breaks_stack, then_frags)?;
             let (then_label, join_label, else_label) = (newlabel(), newlabel(), newlabel());
             Ok((
                 Tree::seq(vec![
@@ -135,6 +137,7 @@ pub fn trans_stm<'a>(
                     else_stm,
                     LABEL(join_label),
                 ]),
+                else_level,
                 else_frags,
             ))
         }

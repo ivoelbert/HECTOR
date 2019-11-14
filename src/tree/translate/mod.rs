@@ -21,39 +21,39 @@ mod whileexp;
 // Translation functions.
 // We replaced all side-effects in Appel's book for move semantics because it's our compiler.
 // Also, no packing and unpacking. No conditionals either, only expressions and statements.
-pub fn trans_exp<'a>(
+fn trans_exp(
     exp: &Exp,
-    levels: Vec<Level>,
-    value_env: ValueEnviroment,
-    breaks_stack: Vec<Option<Label>>,
+    level: Level,
+    value_env: &ValueEnviroment,
+    breaks_stack: &Vec<Option<Label>>,
     prev_frags: Vec<Fragment>,
-) -> Result<(Tree::Exp, Vec<Fragment>), TransError> {
+) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
     match exp {
         Exp { node, .. } => match node {
-            _Exp::Var(var) => varexp::trans_var(var, levels, value_env, breaks_stack, prev_frags),
-            _Exp::Unit => unitexp::trans_exp(exp, levels, value_env, breaks_stack, prev_frags),
-            _Exp::Nil => nilexp::trans_exp(exp, levels, value_env, breaks_stack, prev_frags),
-            _Exp::Int(_) => intexp::trans_exp(exp, levels, value_env, breaks_stack, prev_frags),
-            _Exp::String(_) => stringexp::trans_exp(exp, levels, value_env, breaks_stack, prev_frags),
-            _Exp::Call { .. } => callexp::trans_exp(exp, levels, value_env, breaks_stack, prev_frags),
-            _Exp::Op { .. } => opexp::trans_exp(exp, levels, value_env, breaks_stack, prev_frags),
-            _Exp::Record { .. } => recordexp::trans_exp(exp, levels, value_env, breaks_stack, prev_frags),
-            _Exp::If { .. } => ifexp::trans_exp(exp, levels, value_env, breaks_stack, prev_frags),
-            _Exp::Let { .. } => letexp::trans_exp(exp, levels, value_env, breaks_stack, prev_frags),
-            _Exp::Array { .. } => arrayexp::trans_exp(exp, levels, value_env, breaks_stack, prev_frags),
-            _Exp::Seq(_) => seqexp::trans_exp(exp, levels, value_env, breaks_stack, prev_frags),
+            _Exp::Var(var) => varexp::trans_var(var, level, value_env, breaks_stack, prev_frags),
+            _Exp::Unit => unitexp::trans_exp(exp, level, value_env, breaks_stack, prev_frags),
+            _Exp::Nil => nilexp::trans_exp(exp, level, value_env, breaks_stack, prev_frags),
+            _Exp::Int(_) => intexp::trans_exp(exp, level, value_env, breaks_stack, prev_frags),
+            _Exp::String(_) => stringexp::trans_exp(exp, level, value_env, breaks_stack, prev_frags),
+            _Exp::Call { .. } => callexp::trans_exp(exp, level, value_env, breaks_stack, prev_frags),
+            _Exp::Op { .. } => opexp::trans_exp(exp, level, value_env, breaks_stack, prev_frags),
+            _Exp::Record { .. } => recordexp::trans_exp(exp, level, value_env, breaks_stack, prev_frags),
+            _Exp::If { .. } => ifexp::trans_exp(exp, level, value_env, breaks_stack, prev_frags),
+            _Exp::Let { .. } => letexp::trans_exp(exp, level, value_env, breaks_stack, prev_frags),
+            _Exp::Array { .. } => arrayexp::trans_exp(exp, level, value_env, breaks_stack, prev_frags),
+            _Exp::Seq(_) => seqexp::trans_exp(exp, level, value_env, breaks_stack, prev_frags),
             _ => panic!("cannot translate as exp!")
         },
     }
 }
 
-fn trans_stm<'a>(
+fn trans_stm(
     exp: &Exp,
-    levels: Vec<Level>,
-    value_env: ValueEnviroment,
-    breaks_stack: Vec<Option<Label>>,
+    levels: Level,
+    value_env: &ValueEnviroment,
+    breaks_stack: &Vec<Option<Label>>,
     prev_frags: Vec<Fragment>,
-) -> Result<(Tree::Stm, Vec<Fragment>), TransError> {
+) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
     match exp {
         Exp { node, .. } => match node {
             _Exp::Break => breakexp::trans_stm(exp, levels, value_env, breaks_stack, prev_frags),
@@ -64,11 +64,28 @@ fn trans_stm<'a>(
             _Exp::While { .. } => whileexp::trans_stm(exp, levels, value_env, breaks_stack, prev_frags),
             _Exp::For { .. } => forexp::trans_stm(exp, levels, value_env, breaks_stack, prev_frags),
             _ => {
-                let (exp, frags) = trans_exp(exp, levels, value_env, breaks_stack, prev_frags)?;
-                Ok((Tree::Stm::EXP(Box::new(exp)), frags))
+                let (exp, level, frags) = trans_exp(exp, levels, value_env, breaks_stack, prev_frags)?;
+                Ok((Tree::Stm::EXP(Box::new(exp)), level, frags))
             }
         },
     }
+}
+
+fn translate_many_exp(
+    exps: &[Exp],
+    mut level: Level,
+    value_env: &ValueEnviroment,
+    breaks_stack: &Vec<Option<Label>>,
+    mut frags: Vec<Fragment>,
+) -> Result<(Vec<Tree::Exp>, Level, Vec<Fragment>), TransError> {
+    let mut interm_exps : Vec<Tree::Exp> = vec![];
+    for exp in exps {
+        let (i, l, f) = trans_exp(exp, level, value_env, breaks_stack, frags)?;
+        level = l;
+        interm_exps.push(i);
+        frags = f;
+    }
+    Ok((interm_exps, level, frags))
 }
 
 pub fn translate(exp: &Exp) -> Result<(Vec<Fragment>), TransError> {
@@ -82,5 +99,6 @@ pub fn translate(exp: &Exp) -> Result<(Vec<Fragment>), TransError> {
     //         body: boxed_exp(_Exp::Unit)
     //     });
     let level = Level::outermost();
-    Ok(trans_exp(exp, vec![level.clone()], initial_value_env(level), vec![], vec![])?.1)
+    let value_env = initial_value_env();
+    Ok(trans_exp(exp, level.clone(), &value_env, &vec![], vec![])?.2)
 }

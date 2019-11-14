@@ -1,13 +1,18 @@
+// This modules abtract arquitecture specific concepts during translation phase.
+// A frame is wrapped in a level as it's being built and when finished it's stored in a fragment
+// Registers are wrapped in temporaries.
+
 extern crate uid;
 
 pub use super::frame::{Frame};
-pub use super::Access;
+use super::Access;
 pub type Label = uid::Id<u16>;
 type LocalTemp = uid::Id<u16>;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Temp {
     FRAME_POINTER,
+    RV,
     // Other special temps.
     Local(LocalTemp),
 }
@@ -24,13 +29,11 @@ pub fn newlabel() -> Label {
     Label::new()
 }
 
-pub type LevelId = uid::Id<u16>;
 
 #[derive(Clone, Debug)]
 pub struct Level {
     pub frame: Frame,
     pub nesting_depth: i64,
-    pub id: LevelId,
 }
 
 impl Level {
@@ -41,15 +44,13 @@ impl Level {
                 vec![],
             ),
             nesting_depth: -1,
-            id: LevelId::new(),
         }
     }
 
-    pub fn new(parent_level: Level, name: Label, formals: Vec<bool>) -> Level {
+    pub fn new(depth: i64, name: Label, formals: Vec<bool>) -> Level {
         Level {
             frame: Frame::new(name, formals),
-            nesting_depth: parent_level.nesting_depth + 1,
-            id: LevelId::new(),
+            nesting_depth: depth,
         }
     }
 
