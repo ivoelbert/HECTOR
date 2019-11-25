@@ -2,8 +2,6 @@
 extern crate uid;
 use std::collections::HashMap;
 pub use std::sync::{Arc, Weak};
-
-
 use crate::ast::*;
 
 mod intexp;
@@ -39,7 +37,8 @@ pub enum TigerType {
     TString,
     TArray(Arc<TigerType>, TypeId),
     TRecord(Vec<(String, Arc<TigerType>, u8)>, TypeId),
-    Internal(String)
+    Internal(String),
+    Untyped,
 }
 
 pub fn tipo_real(t: Arc<TigerType>, tenv: &TypeEnviroment) -> Arc<TigerType> {
@@ -175,25 +174,25 @@ impl PartialEq for TigerType {
     }
 }
 
-pub fn type_exp(exp : &Exp, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Arc<TigerType>, TypeError> {
-    match exp {
-        Exp {node, ..} => match node {
-            _Exp::Var(..) => varexp::typecheck(exp, type_env, value_env),
-            _Exp::Unit => unitexp::typecheck(exp, type_env, value_env),
-            _Exp::Nil => nilexp::typecheck(exp, type_env, value_env),
-            _Exp::Int(..) => intexp::typecheck(exp, type_env,&value_env),
-            _Exp::String(..) => stringexp::typecheck(exp, type_env, value_env),
-            _Exp::Call{..} => callexp::typecheck(exp, type_env, value_env),
-            _Exp::Op{..} => opexp::typecheck(exp,&type_env, value_env),
-            _Exp::Assign{..} => assignexp::typecheck(exp, type_env, value_env),
-            _Exp::Record{..} => recordexp::typecheck(exp, type_env, value_env),
-            _Exp::Seq(..) => seqexp::typecheck(exp, type_env, value_env),
-            _Exp::If{..} => ifexp::typecheck(exp, type_env, value_env),
-            _Exp::While{..} => whileexp::typecheck(exp, type_env, value_env),
-            _Exp::For{..} => forexp::typecheck(exp, type_env, value_env),
-            _Exp::Let{..} => letexp::typecheck(exp, type_env, value_env),
-            _Exp::Break => breakexp::typecheck(exp, type_env, value_env),
-            _Exp::Array{..} => arrayexp::typecheck(exp, type_env, value_env),
+pub fn type_exp(ast : AST, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<AST, TypeError> {
+    match &ast {
+        AST {node, ..} => match node {
+            Exp::Var(..) => varexp::typecheck(ast, type_env, value_env),
+            Exp::Unit => unitexp::typecheck(ast, type_env, value_env),
+            Exp::Nil => nilexp::typecheck(ast, type_env, value_env),
+            Exp::Int(..) => intexp::typecheck(ast, type_env,&value_env),
+            Exp::String(..) => stringexp::typecheck(ast, type_env, value_env),
+            Exp::Call{..} => callexp::typecheck(ast, type_env, value_env),
+            Exp::Op{..} => opexp::typecheck(ast,&type_env, value_env),
+            Exp::Assign{..} => assignexp::typecheck(ast, type_env, value_env),
+            Exp::Record{..} => recordexp::typecheck(ast, type_env, value_env),
+            Exp::Seq(..) => seqexp::typecheck(ast, type_env, value_env),
+            Exp::If{..} => ifexp::typecheck(ast, type_env, value_env),
+            Exp::While{..} => whileexp::typecheck(ast, type_env, value_env),
+            Exp::For{..} => forexp::typecheck(ast, type_env, value_env),
+            Exp::Let{..} => letexp::typecheck(ast, type_env, value_env),
+            Exp::Break => breakexp::typecheck(ast, type_env, value_env),
+            Exp::Array{..} => arrayexp::typecheck(ast, type_env, value_env),
         }
     }
 }

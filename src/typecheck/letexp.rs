@@ -5,28 +5,34 @@ use std::convert::TryInto;
 
 fn typecheck_vardec(
     _VarDec {
-        name, typ, init, ..
-    }: &_VarDec,
+        name, typ, init, escape
+    }: _VarDec,
     type_env: &TypeEnviroment,
     mut value_env: ValueEnviroment,
     pos: Pos,
-) -> Result<ValueEnviroment, TypeError> {
-    let init_type = type_exp(init, type_env, &value_env)?;
-    let dec_type = match typ {
-        None => init_type,
-        Some(typ_string) => match type_env.get(typ_string) {
+) -> Result<(_VarDec, ValueEnviroment), TypeError> {
+    let init_ast = type_exp(*init, type_env, &value_env)?;
+    let dec_type = if let Some(typ_symbol) = &typ {
+        match type_env.get(typ_symbol) {
             Some(table_type) => {
-                if **table_type == *init_type {
+                if **table_type == *init_ast.typ {
                     (*table_type).clone()
                 } else {
                     return Err(TypeError::TypeMismatch(pos));
                 }
             }
             None => return Err(TypeError::UndeclaredType(pos)),
-        },
+        }
+    } else {
+        init_ast.typ.clone()
     };
     value_env.insert(name.clone(), EnvEntry::Var { ty: dec_type });
-    Ok(value_env)
+    Ok((_VarDec {
+        name,
+        typ,
+        init: Box::new(init_ast),
+        escape
+    }, value_env))
 }
 
 fn ty_to_tigertype(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<Arc<TigerType>, TypeError> {
@@ -111,14 +117,14 @@ fn typecheck_functiondec(
         params,
         result,
         body,
-        ..
-    }: &_FunctionDec,
+        name,
+    }: _FunctionDec,
     value_env: &ValueEnviroment,
     type_env: &TypeEnviroment,
     pos: Pos,
-) -> Result<(), TypeError> {
+) -> Result<_FunctionDec, TypeError> {
     // Lookup result type in env
-    let result_type : Arc<TigerType> = match result {
+    let result_type : Arc<TigerType> = match &result {
         None => Arc::new(TigerType::TUnit),
         Some(result_name) => match type_env.get(result_name) {
             Some(result_table_type) => result_table_type.clone(),
@@ -143,22 +149,27 @@ fn typecheck_functiondec(
     )?;
 
     // Type the body
-    let body_type = type_exp(&*body, type_env, &params_value_env)?;
-    if body_type == result_type {
-        Ok(())
+    let body_ast = type_exp(*body, type_env, &params_value_env)?;
+    if body_ast.typ == result_type {
+        Ok(_FunctionDec {
+            name,
+            params,
+            result,
+            body: Box::new(body_ast)
+        })
     } else {
         Err(TypeError::TypeMismatch(pos))
     }
 }
 
 fn typecheck_functiondec_batch(
-    decs: &[(_FunctionDec, Pos)],
+    decs: Vec<(_FunctionDec, Pos)>,
     type_env: &TypeEnviroment,
     mut value_env: ValueEnviroment,
-) -> Result<ValueEnviroment, TypeError> {
+) -> Result<(Vec<(_FunctionDec, Pos)>, ValueEnviroment), TypeError> {
 
     // Add prototypes to ValueEnviroment
-    for (dec, pos) in decs {
+    for (dec, pos) in &decs {
         // Check for repeated names
         if value_env.get(&dec.name).is_some() {
             return Err(TypeError::DuplicatedDefinitions(*pos))
@@ -167,18 +178,14 @@ fn typecheck_functiondec_batch(
     }
 
     // Type the functions with the new ValueEnviroment
-    match decs
-        .iter()
+    Ok((decs
+        .into_iter()
         .map(
-            |(dec, pos): &(_FunctionDec, Pos)| -> Result<(), TypeError> {
-                typecheck_functiondec(dec, &value_env, type_env, *pos)
+            |(dec, pos): (_FunctionDec, Pos)| -> Result<(_FunctionDec, Pos), TypeError> {
+                Ok((typecheck_functiondec(dec, &value_env, type_env, pos)?, pos))
             },
         )
-        .collect::<Result<Vec<()>, TypeError>>()
-    {
-        Ok(_) => Ok(value_env),
-        Err(type_error) => Err(type_error),
-    }
+        .collect::<Result<Vec<(_FunctionDec, Pos)>, TypeError>>()?, value_env))
 }
 
 fn sort_type_decs(decs: &[(_TypeDec, Pos)]) -> Result<(Vec<&(_TypeDec, Pos)>, Vec<&(_TypeDec, Pos)>), Symbol> {
@@ -322,47 +329,49 @@ fn typecheck_typedec_batch(
 }
 
 fn typecheck_decs(
-    decs: &[Dec],
+    decs: Vec<Dec>,
     type_env: &TypeEnviroment,
     value_env: &ValueEnviroment,
-) -> Result<(TypeEnviroment, ValueEnviroment), TypeError> {
+) -> Result<(Vec<Dec>, TypeEnviroment, ValueEnviroment), TypeError> {
     let mut new_type_env = type_env.clone();
     let mut new_value_env = value_env.clone();
+    let mut typed_decs : Vec<Dec> = vec![];
     for dec in decs {
         match dec {
             Dec::VarDec(vd, pos) => {
-                match typecheck_vardec(vd, &new_type_env, new_value_env, *pos) {
-                    Ok(venv) => new_value_env = venv,
-                    Err(type_error) => return Err(type_error),
-                }
+                let (typed_vd, venv) = typecheck_vardec(vd, &new_type_env, new_value_env, pos)?;
+                new_value_env = venv;
+                typed_decs.push(Dec::VarDec(typed_vd, pos));
             }
             Dec::FunctionDec(fd) => {
-                match typecheck_functiondec_batch(fd, &new_type_env, new_value_env) {
-                    Ok(venv) => new_value_env = venv,
-                    Err(type_error) => return Err(type_error),
-                }
+                let (typed_fd, venv) = typecheck_functiondec_batch(fd, &new_type_env, new_value_env)?;
+                new_value_env = venv;
+                typed_decs.push(Dec::FunctionDec(typed_fd));
             }
-            Dec::TypeDec(td) => match typecheck_typedec_batch(td, new_type_env) {
-                Ok(tenv) => new_type_env = tenv,
-                Err(type_error) => return Err(type_error),
-            },
+            Dec::TypeDec(td) => new_type_env = typecheck_typedec_batch(&td, new_type_env)?
         };
     }
-    Ok((new_type_env, new_value_env))
+    Ok((typed_decs, new_type_env, new_value_env))
 }
 
 pub fn typecheck(
-    exp: &Exp,
+    AST{node, pos, ..}: AST,
     type_env: &TypeEnviroment,
     value_env: &ValueEnviroment,
-) -> Result<Arc<TigerType>, TypeError> {
-    match exp {
-        Exp {
-            node: _Exp::Let { decs, body },
-            ..
-        } => {
-            let (new_type_env, new_value_env) = typecheck_decs(decs, type_env, value_env)?;
-            type_exp(body, &new_type_env, &new_value_env)
+) -> Result<AST, TypeError> {
+    match node {
+        Exp::Let { decs, body } => {
+            let (typed_decs, new_type_env, new_value_env) = typecheck_decs(decs, type_env, value_env)?;
+            let body_ast = type_exp(*body, &new_type_env, &new_value_env)?;
+            let typ = body_ast.typ.clone();
+            Ok(AST {
+                node: Exp::Let {
+                    decs: typed_decs,
+                    body: Box::new(body_ast)
+                },
+                typ,
+                pos,
+            })
         }
         _ => panic!("error de delegacion en letexp::tipar"),
     }

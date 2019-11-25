@@ -1,6 +1,8 @@
-use crate::ast::*;
-use crate::typecheck::*;
+use super::*;
 
-pub fn typecheck(_exp: &Exp, _type_env: &TypeEnviroment, _value_env: &ValueEnviroment) -> Result<Arc<TigerType>, TypeError> {
-    Ok(Arc::new(TigerType::TUnit))
+pub fn typecheck(AST{node, pos, ..}: AST, _type_env: &TypeEnviroment, _value_env: &ValueEnviroment) -> Result<AST, TypeError> {
+    match &node {
+        Exp::Unit => Ok(AST {node, pos, typ: Arc::new(TigerType::TUnit)}),
+        _ => panic!("delegation error")
+    }
 }

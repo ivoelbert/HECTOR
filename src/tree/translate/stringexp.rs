@@ -2,14 +2,14 @@ use crate::ast::*;
 use crate::tree::*;
 
 pub fn trans_exp(
-    Exp {node, ..}: &Exp,
+    AST {node, ..}: &AST,
     level: Level,
     _value_env: &ValueEnviroment,
     _breaks_stack: &Vec<Option<Label>>,
     mut frags: Vec<Fragment>,
-) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
+) -> Result<(Tree::AST, Level, Vec<Fragment>), TransError> {
     match node {
-        _Exp::String(s) => {
+        Exp::String(s) => {
             let l = newlabel();
             // Not sure if this is OK or I need one more fragment for the length
             frags.push(Fragment::ConstString(l.clone(), s.clone()));
@@ -21,12 +21,13 @@ pub fn trans_exp(
 
 #[test]
 fn ok() {
-    let exp = Exp {
-        node: _Exp::String(String::from("lorem ipsum")),
+    let exp = AST {
+        node: Exp::String(String::from("lorem ipsum")),
         pos: Pos {
             line: 0,
             column: 0,
-        }
+        },
+        typ: Arc::new(TigerType::TString)
     };
     let level = Level::outermost();
     let value_env = initial_value_env();

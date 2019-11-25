@@ -2,14 +2,14 @@ use crate::ast::*;
 use crate::tree::*;
 
 pub fn trans_stm(
-    Exp { node, pos }: &Exp,
+    AST { node, pos, .. }: &AST,
     level: Level,
     _value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,
 ) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
     match node {
-        _Exp::Break => {
+        Exp::Break => {
             let loop_end_label = match breaks_stack.last() {
                 Some(Some(l)) => l,
                 _ => return Err(TransError::BreakError(*pos)),
@@ -26,9 +26,10 @@ pub fn trans_stm(
 
 #[test]
 fn no_labels_error() {
-    let exp = Exp {
-        node: _Exp::Break,
+    let exp = AST {
+        node: Exp::Break,
         pos: Pos { line: 0, column: 0 },
+        typ: Arc::new(TigerType::TUnit)
     };
     let level = Level::outermost();
     let res = trans_stm(&exp, level, &initial_value_env(), &vec![], vec![]);
@@ -41,9 +42,10 @@ fn no_labels_error() {
 
 #[test]
 fn none_label_error() {
-    let exp = Exp {
-        node: _Exp::Break,
+    let exp = AST {
+        node: Exp::Break,
         pos: Pos { line: 0, column: 0 },
+        typ: Arc::new(TigerType::TUnit)
     };
     let level = Level::outermost();
     let res = trans_stm(&exp, level, &initial_value_env(), &vec![], vec![]);
@@ -56,9 +58,10 @@ fn none_label_error() {
 
 #[test]
 fn ok() {
-    let exp = Exp {
-        node: _Exp::Break,
+    let exp = AST {
+        node: Exp::Break,
         pos: Pos { line: 0, column: 0 },
+        typ: Arc::new(TigerType::TUnit)
     };
     let level = Level::outermost();
     let res = trans_stm(&exp, level, &initial_value_env(), &vec![Some(newlabel())], vec![]);
