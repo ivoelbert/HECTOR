@@ -67,7 +67,7 @@ impl Frame {
         Access::InReg(newtemp())
     }
     // proc_name could be an str
-    pub fn external_call(proc_label: Label, args: Vec<Tree::Exp>) -> Tree::Exp {
+    pub fn external_call(proc_label: Label, args: Vec<Tree::AST>) -> Tree::AST {
         CALL(Box::new(NAME(proc_label)), args)
     }
 }

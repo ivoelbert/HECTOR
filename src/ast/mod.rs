@@ -2,23 +2,35 @@ pub mod position;
 pub mod parser;
 mod token;
 
-
 use std::fmt::{self, Debug, Formatter};
+pub use crate::typecheck::{TigerType, Arc};
 pub use position::{Pos, WithPos};
 
 pub type Symbol = String;
 
-#[derive(Debug)]
 #[derive(Clone)]
-pub enum Var {
-    Simple(Symbol),
-    Field(Box<Var>, Symbol),
-    Subscript(Box<Var>, Box<Exp>),
+pub struct AST {
+    pub node: Exp,
+    pub pos: Pos,
+    pub typ: Arc<TigerType>,
 }
 
-#[allow(dead_code)]
+#[derive(Clone, Debug)]
+pub struct Var {
+    pub kind: VarKind,
+    pub pos: Pos,
+    pub typ: Arc<TigerType>,
+}
+
+#[derive(Clone, Debug)]
+pub enum VarKind {
+    Simple(Symbol),
+    Field(Box<Var>, Symbol),
+    Subscript(Box<Var>, Box<AST>),
+}
+
 #[derive(Clone)]
-pub enum _Exp {
+pub enum Exp {
     Var(Var),
     Unit,
     Nil,
@@ -26,76 +38,75 @@ pub enum _Exp {
     String(String),
     Call {
         func: Symbol,
-        args: Vec<Exp>,
+        args: Vec<AST>,
     },
     Op {
-        left: Box<Exp>,
+        left: Box<AST>,
         oper: Oper,
-        right: Box<Exp>,
+        right: Box<AST>,
     },
     Record {
-        fields: Vec<(Symbol, Box<Exp>)>,
+        fields: Vec<(Symbol, Box<AST>)>,
         typ: Symbol,
     },
-    Seq(Vec<Exp>),
+    Seq(Vec<AST>),
     Assign {
         var: Var,
-        exp: Box<Exp>,
+        exp: Box<AST>,
     },
     If {
-        test: Box<Exp>,
-        then_: Box<Exp>,
-        else_: Option<Box<Exp>>,
+        test: Box<AST>,
+        then_: Box<AST>,
+        else_: Option<Box<AST>>,
     },
     While {
-        test: Box<Exp>,
-        body: Box<Exp>,
+        test: Box<AST>,
+        body: Box<AST>,
     },
     For {
         var: Symbol,
         escape: bool,
-        lo: Box<Exp>,
-        hi: Box<Exp>,
-        body: Box<Exp>,
+        lo: Box<AST>,
+        hi: Box<AST>,
+        body: Box<AST>,
     },
     Let {
         decs: Vec<Dec>,
-        body: Box<Exp>,
+        body: Box<AST>,
     },
     Break,
     Array {
         typ: Symbol,
-        size: Box<Exp>,
-        init: Box<Exp>,
+        size: Box<AST>,
+        init: Box<AST>,
     },
 }
 
-impl Debug for _Exp {
+impl Debug for Exp {
     fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
         match self {
-            _Exp::Var(var) => write!(formatter, "Var({:?})", var),
-            _Exp::Unit => write!(formatter, "UNIT"),
-            _Exp::Nil => write!(formatter, "NIL"),
-            _Exp::Int(num) => write!(formatter, "Num({:?})", num),
-            _Exp::String(string) => write!(formatter, "Str({:?})", string),
-            _Exp::Call {func, args} => write!(formatter, "{:?}({:?})", func, args),
-            _Exp::Op {left, oper, right} => write!(formatter, "({:?} {:?} {:?})", left, oper, right),
-            _Exp::Record {fields, typ, ..} => write!(formatter, "(Record({:?}) {{ {:?} }})", typ, fields),
-            _Exp::Seq(seq) => write!(formatter, "{:?}", seq),
-            _Exp::Assign {var, exp} => write!(formatter, "({:?} := {:?})", var, exp),
-            _Exp::If {test, then_, else_: Some(e)} => write!(formatter, "(if {:?} then {:?} else {:?})", test, then_, e),
-            _Exp::If {test, then_, else_: None} => write!(formatter, "(if {:?} then {:?})", test, then_),
-            _Exp::While {test, body} => write!(formatter, "(while({:?}) {{ {:?} }})", test, body),
-            _Exp::For {var, lo, hi, body, ..} => write!(formatter, "(for {:?} := {:?} to {:?} {{ {:?} }} )", var, lo, hi, body),
-            _Exp::Let {decs, body} => write!(formatter, "(Let {{ {:?} }} in {{ {:?} }})", decs, body),
-            _Exp::Break => write!(formatter, "BREAK"),
-            _Exp::Array {typ, size, init} => write!(formatter, "(Array({:?}) [{:?} x {:?}])", typ, size, init),
+            Exp::Var(var) => write!(formatter, "Var({:?})", var),
+            Exp::Unit => write!(formatter, "UNIT"),
+            Exp::Nil => write!(formatter, "NIL"),
+            Exp::Int(num) => write!(formatter, "Num({:?})", num),
+            Exp::String(string) => write!(formatter, "Str({:?})", string),
+            Exp::Call {func, args} => write!(formatter, "{:?}({:?})", func, args),
+            Exp::Op {left, oper, right} => write!(formatter, "({:?} {:?} {:?})", left, oper, right),
+            Exp::Record {fields, typ, ..} => write!(formatter, "(Record({:?}) {{ {:?} }})", typ, fields),
+            Exp::Seq(seq) => write!(formatter, "{:?}", seq),
+            Exp::Assign {var, exp} => write!(formatter, "({:?} := {:?})", var, exp),
+            Exp::If {test, then_, else_: Some(e)} => write!(formatter, "(if {:?} then {:?} else {:?})", test, then_, e),
+            Exp::If {test, then_, else_: None} => write!(formatter, "(if {:?} then {:?})", test, then_),
+            Exp::While {test, body} => write!(formatter, "(while({:?}) {{ {:?} }})", test, body),
+            Exp::For {var, lo, hi, body, ..} => write!(formatter, "(for {:?} := {:?} to {:?} {{ {:?} }} )", var, lo, hi, body),
+            Exp::Let {decs, body} => write!(formatter, "(Let {{ {:?} }} in {{ {:?} }})", decs, body),
+            Exp::Break => write!(formatter, "BREAK"),
+            Exp::Array {typ, size, init} => write!(formatter, "(Array({:?}) [{:?} x {:?}])", typ, size, init),
         }
     }
 }
 
-pub type Exp = WithPos<_Exp>;
-impl Debug for Exp {
+impl Debug for AST {
     fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
         write!(formatter, "{:?}", self.node)
     }
@@ -106,7 +117,7 @@ pub struct _FunctionDec {
     pub name: Symbol,
     pub params: Vec<Field>,
     pub result: Option<Symbol>,
-    pub body: Box<Exp>,
+    pub body: Box<AST>,
 }
 
 #[derive(Debug, Clone)]
@@ -114,7 +125,7 @@ pub struct _VarDec {
     pub name: Symbol,
     pub escape: bool,
     pub typ: Option<Symbol>,
-    pub init: Box<Exp>,
+    pub init: Box<AST>,
 }
 
 #[derive(Debug, Clone)]
@@ -131,7 +142,7 @@ pub enum Dec {
 }
 
 impl _FunctionDec {
-    pub fn new(name: Symbol, params: Vec<Field>, result: Option<Symbol>, body: Box<Exp>) -> Self {
+    pub fn new(name: Symbol, params: Vec<Field>, result: Option<Symbol>, body: Box<AST>) -> Self {
         Self {
             name,
             params,
@@ -142,7 +153,7 @@ impl _FunctionDec {
 }
 
 impl _VarDec {
-    pub fn new(name: Symbol, typ: Option<Symbol>, init: Box<Exp>) -> Self {
+    pub fn new(name: Symbol, typ: Option<Symbol>, init: Box<AST>) -> Self {
         Self {
             name,
             escape: false,
@@ -176,7 +187,7 @@ pub struct Field {
     pub typ: Ty,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub enum Oper {
     PlusOp,
     MinusOp,
@@ -207,13 +218,28 @@ impl Debug for Oper {
     }
 }
 
-pub fn posed_exp(exp: _Exp, line: u32, column: u32) -> Box<Exp> {
+pub fn posed_exp(exp: Exp, line: u32, column: u32) -> Box<AST> {
     let pos = Pos::new(line, column);
-    let pos_exp = WithPos::new(exp, pos);
-
+    let pos_exp = AST {
+        node: exp,
+        pos,
+        typ: Arc::new(TigerType::Untyped)
+    };
     Box::new(pos_exp)
 }
 
-pub fn boxed_exp(exp: _Exp) -> Box<Exp> {
-    Box::new(Exp {node: exp, pos: Pos {line: 0, column: 0}})
+pub fn make_ast(exp: Exp) -> AST {
+    AST {node: exp, pos: Pos {line: 0, column: 0}, typ: Arc::new(TigerType::Untyped)}
+}
+
+pub fn boxed_ast(exp: Exp) -> Box<AST> {
+    Box::new(AST {node: exp, pos: Pos {line: 0, column: 0}, typ: Arc::new(TigerType::Untyped)})
+}
+
+pub fn make_var(kind: VarKind) -> Var {
+    Var {kind, pos: Pos {line: 0, column: 0}, typ: Arc::new(TigerType::Untyped)}
+}
+
+pub fn boxed_var(kind: VarKind) -> Box<Var> {
+    Box::new(Var {kind, pos: Pos {line: 0, column: 0}, typ: Arc::new(TigerType::Untyped)})
 }

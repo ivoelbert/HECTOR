@@ -14,13 +14,13 @@ fn good() {
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
-        let exp = parse(contents).expect("parser error");
+        let ast =  parse(contents).expect("parser error");
         let type_env = TypeEnviroment::new();
         let value_env = ValueEnviroment::new();
-        let res = type_exp(&exp , &type_env, &value_env);
+        let res = type_exp(ast.clone() , &type_env, &value_env);
         match res {
             Ok(..) => (),
-            Err(type_error) => panic!("Expresion: {:?}\n Type Error: {:?}", exp, type_error)
+            Err(type_error) => panic!("ASTresion: {:?}\n Type Error: {:?}", ast, type_error)
         }
     }
 }
@@ -32,56 +32,44 @@ fn bad_type() {
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
-        let exp = parse(contents).expect("falla el parser");
+        let ast =  parse(contents).expect("falla el parser");
         let type_env = TypeEnviroment::new();
         let value_env = ValueEnviroment::new();
-        let res = type_exp(&exp , &type_env, &value_env);
+        let res = type_exp(ast.clone() , &type_env, &value_env);
         match res {
             Err(..) => (),
-            Ok(tiger_type) => panic!("Expresion: {:?}\n Type: {:?}", exp, tiger_type),
+            Ok(tiger_type) => panic!("ASTresion: {:?}\n Type: {:?}", ast, tiger_type),
         }
     }
 }
 
-fn possed_exp(exp: _Exp) -> Exp {
-    Exp {node: exp, pos: Pos {line: 0, column: 0}}
+fn make_ast(exp: Exp) -> AST {
+    AST {node: exp, pos: Pos {line: 0, column: 0}, typ: Arc::new(TigerType::Untyped)}
 }
 
 #[test]
 fn unitexp() {
-    let exp = Exp {
-        node: _Exp::Unit,
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
+    let ast = make_ast(Exp::Unit);
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn nilexp() {
-    let exp = Exp {
-        node: _Exp::Nil,
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
+    let ast = make_ast(Exp::Nil);
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) => match *tiger_type {
+        Ok(AST{typ, ..}) => match *typ {
             TigerType::TNil => (),
-            _ => panic!("wrong type: {:?}", tiger_type),
+            _ => panic!("wrong type: {:?}", typ),
         },
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
@@ -89,110 +77,80 @@ fn nilexp() {
 
 #[test]
 fn breakexp() {
-    let exp = Exp {node: _Exp::Break, pos: Pos {line: 0, column: 0}};
+    let ast =  make_ast(Exp::Break);
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn intexp() {
-    let exp = Exp {
-        node: _Exp::Int(1),
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
+    let ast =  make_ast(Exp::Int(1));
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn stringexp() {
-    let exp = Exp {
-        node: _Exp::String(String::from("lorem ipsum")),
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
+    let ast =  make_ast(Exp::String(String::from("lorem ipsum")));
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TString => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TString => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn varexp_simplevar_ok() {
-    let exp = Exp {
-        node: _Exp::Var(Var::Simple(Symbol::from("foo"))),
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
+    let ast =  make_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("foo")))));
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{ty: Arc::new(TigerType::TInt(R::RW)),});
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn varexp_simplevar_no_declarada() {
-    let exp = Exp {
-        node: _Exp::Var(Var::Simple(Symbol::from("foo"))),
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
+    let ast =  make_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("foo")))));
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredSimpleVar(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
-        Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        Ok(ast) => panic!("Should error, returns: {:?}", ast)
     }
 }
 
 #[test]
 fn varexp_simplevar_no_es_simple() {
-    let exp = Exp {
-        node: _Exp::Var(Var::Simple(Symbol::from("f"))),
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
+    let ast =  make_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("f")))));
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
         formals: vec![],
         result: Arc::new(TigerType::TUnit),
     });
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::NotSimpleVar(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -202,13 +160,11 @@ fn varexp_simplevar_no_es_simple() {
 
 #[test]
 fn varexp_fieldvar_ok() {
-    let exp = Exp {
-        node: _Exp::Var(Var::Field(Box::new(Var::Simple(Symbol::from("foo"))),Symbol::from("bar"))),
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
+    let ast = make_ast(Exp::Var(
+        make_var(VarKind::Field(
+            boxed_var(VarKind::Simple(Symbol::from("foo"))),
+            Symbol::from("bar")))
+    ));
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let field_type = Arc::new(TigerType::TInt(R::RW));
@@ -220,23 +176,21 @@ fn varexp_fieldvar_ok() {
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         ty: foo_type,
     });
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn varexp_fieldvar_field_inexistente() {
-    let exp = Exp {
-        node: _Exp::Var(Var::Field(Box::new(Var::Simple(Symbol::from("foo"))),Symbol::from("perro"))),
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
+    let ast = make_ast(Exp::Var(
+        make_var(VarKind::Field(
+            boxed_var(VarKind::Simple(Symbol::from("foo"))),
+            Symbol::from("perro")))
+    ));
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let foo_type = Arc::new(TigerType::TRecord(
@@ -247,7 +201,7 @@ fn varexp_fieldvar_field_inexistente() {
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         ty: foo_type,
     });
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::FieldDoesNotExist(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -257,13 +211,11 @@ fn varexp_fieldvar_field_inexistente() {
 
 #[test]
 fn varexp_fieldvar_sobre_tipo_no_record() {
-    let exp = Exp {
-        node: _Exp::Var(Var::Field(Box::new(Var::Simple(Symbol::from("foo"))),Symbol::from("bar"))),
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
+    let ast = make_ast(Exp::Var(
+        make_var(VarKind::Field(
+            boxed_var(VarKind::Simple(Symbol::from("foo"))),
+            Symbol::from("bar")))
+    ));
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let foo_type = Arc::new(TigerType::TInt(R::RW));
@@ -271,7 +223,7 @@ fn varexp_fieldvar_sobre_tipo_no_record() {
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         ty: foo_type,
     });
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::NotRecordType(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -281,20 +233,10 @@ fn varexp_fieldvar_sobre_tipo_no_record() {
 
 #[test]
 fn varexp_subscriptvar_ok() {
-    let exp = Exp {
-        node: _Exp::Var(
-            Var::Subscript(Box::new(Var::Simple(Symbol::from("foo"))),
-            Box::new(Exp {
-                node: _Exp::Int(0),
-                pos: Pos {
-                    line: 0,
-                    column: 0,
-            }}))),
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
+    let ast = make_ast(Exp::Var(
+        make_var(VarKind::Subscript(boxed_var(VarKind::Simple(Symbol::from("foo"))),
+        boxed_ast(Exp::Int(0))),
+    )));
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let foo_type = Arc::new(TigerType::TArray(
@@ -305,30 +247,22 @@ fn varexp_subscriptvar_ok() {
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         ty: foo_type,
     });
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn varexp_subscriptvar_indice_no_entero() {
-    let exp = Exp {
-        node: _Exp::Var(
-            Var::Subscript(Box::new(Var::Simple(Symbol::from("foo"))),
-            Box::new(Exp {
-                node: _Exp::String(String::from("una string de indice :o")),
-                pos: Pos {
-                    line: 0,
-                    column: 0,
-            }}))),
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
+    let ast = make_ast(Exp::Var(
+        make_var(VarKind::Subscript(
+            boxed_var(VarKind::Simple(Symbol::from("foo"))),
+            boxed_ast(Exp::String(String::from("una string de indice :o"))),
+        ))
+    ));
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let foo_type = Arc::new(TigerType::TArray(
@@ -339,7 +273,7 @@ fn varexp_subscriptvar_indice_no_entero() {
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         ty: foo_type,
     });
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::SubscriptNotInteger(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -349,20 +283,10 @@ fn varexp_subscriptvar_indice_no_entero() {
 
 #[test]
 fn varexp_subscriptvar_no_array() {
-    let exp = Exp {
-        node: _Exp::Var(
-            Var::Subscript(Box::new(Var::Simple(Symbol::from("foo"))),
-            Box::new(Exp {
-                node: _Exp::Int(0),
-                pos: Pos {
-                    line: 0,
-                    column: 0,
-            }}))),
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
+    let ast = make_ast(Exp::Var(
+        make_var(VarKind::Subscript(boxed_var(VarKind::Simple(Symbol::from("foo"))),
+        boxed_ast(Exp::Int(0))),
+    )));
     let mut type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let foo_type = Arc::new(TigerType::TInt(R::RW));
@@ -370,7 +294,7 @@ fn varexp_subscriptvar_no_array() {
     value_env.insert(Symbol::from("foo"), EnvEntry::Var{
         ty: foo_type,
     });
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::NotArrayType(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -380,49 +304,37 @@ fn varexp_subscriptvar_no_array() {
 
 #[test]
 fn callexp_ok() {
-    let exp = Exp {
-        node: _Exp::Call {
-            func: Symbol::from("f"),
-            args: vec![],
-        },
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
+    let ast = make_ast(Exp::Call {
+        func: Symbol::from("f"),
+        args: vec![],
+    });
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
         formals: vec![],
         result: Arc::new(TigerType::TUnit),
     });
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn callexp_args_de_mas() {
-    let exp = Exp {
-        node: _Exp::Call {
-            func: Symbol::from("f"),
-            args: vec![Exp {
-                node: _Exp::Int(1),
-                pos: Pos {line: 0, column: 0}
-            }],
-        },
-        pos: Pos {line: 0, column: 0}
-    };
+    let ast = make_ast(Exp::Call {
+        func: Symbol::from("f"),
+        args: vec![make_ast(Exp::Int(1))],
+    });
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
         formals: vec![],
         result: Arc::new(TigerType::TUnit),
     });
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::TooManyArguments(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -432,20 +344,17 @@ fn callexp_args_de_mas() {
 
 #[test]
 fn callexp_args_de_menos() {
-    let exp = Exp {
-        node: _Exp::Call {
-            func: Symbol::from("f"),
-            args: vec![],
-        },
-        pos: Pos {line: 0, column: 0}
-    };
+    let ast = make_ast(Exp::Call {
+        func: Symbol::from("f"),
+        args: vec![],
+    });
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     value_env.insert(Symbol::from("f"), EnvEntry::Func {
         formals: vec![Arc::new(TigerType::TInt(R::RW))],
         result: Arc::new(TigerType::TUnit),
     });
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::TooFewArguments(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -455,19 +364,13 @@ fn callexp_args_de_menos() {
 
 #[test]
 fn callexp_funcion_no_declarada() {
-    let exp = Exp {
-        node: _Exp::Call {
-            func: Symbol::from("f"),
-            args: vec![],
-        },
-        pos: Pos {
-            line: 0,
-            column: 0,
-        }
-    };
+    let ast = make_ast(Exp::Call {
+        func: Symbol::from("f"),
+        args: vec![],
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredFunction(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -477,37 +380,31 @@ fn callexp_funcion_no_declarada() {
 
 #[test]
 fn opexp_ok() {
-    let exp = Exp {
-        node: _Exp::Op {
-            left: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
-            oper: Oper::PlusOp,
-            right: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
-        },
-        pos: Pos {line: 0, column: 0}
-    };
+    let ast = make_ast(Exp::Op {
+        left: boxed_ast(Exp::Int(1)),
+        oper: Oper::PlusOp,
+        right: boxed_ast(Exp::Int(1)),
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn opexp_tipos_distintos() {
-    let exp = Exp {
-        node: _Exp::Op {
-            left: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
-            oper: Oper::PlusOp,
-            right: Box::new(Exp {node: _Exp::String(String::from("perro")), pos: Pos {line: 0, column: 0}}),
-        },
-        pos: Pos {line: 0, column: 0}
-    };
+    let ast = make_ast(Exp::Op {
+        left: boxed_ast(Exp::Int(1)),
+        oper: Oper::PlusOp,
+        right: boxed_ast(Exp::String(String::from("perro"))),
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -517,13 +414,10 @@ fn opexp_tipos_distintos() {
 
 #[test]
 fn recordexp_ok() {
-    let exp = Exp {
-        node: _Exp::Record {
-            fields: vec![(Symbol::from("baz"), Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}))],
-            typ: Symbol::from("FooType"),
-        },
-        pos: Pos {line: 0, column: 0}
-    };
+    let ast = make_ast(Exp::Record {
+        fields: vec![(Symbol::from("baz"), boxed_ast(Exp::Int(1)))],
+        typ: Symbol::from("FooType"),
+    });
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
     let field_type = Arc::new(TigerType::TInt(R::RW));
@@ -532,25 +426,23 @@ fn recordexp_ok() {
                 field_type,
                 0)], TypeId::new()));
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(return_type) => assert!(return_type == foo_type),
+        Ok(AST{typ, ..}) if *typ == *foo_type => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn recordexp_tipo_inexistente() {
-    let exp = Exp {
-        node: _Exp::Record {
-            fields: vec![(Symbol::from("baz"), Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}))],
-            typ: Symbol::from("FooType"),
-        },
-        pos: Pos {line: 0, column: 0}
-    };
+    let ast = make_ast(Exp::Record {
+        fields: vec![(Symbol::from("baz"), boxed_ast(Exp::Int(1)))],
+        typ: Symbol::from("FooType"),
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -560,17 +452,14 @@ fn recordexp_tipo_inexistente() {
 
 #[test]
 fn recordexp_con_tipo_no_record() {
-    let exp = Exp {
-        node: _Exp::Record {
-            fields: vec![(Symbol::from("baz"), Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}))],
-            typ: Symbol::from("FooType"),
-        },
-        pos: Pos {line: 0, column: 0}
-    };
+    let ast = make_ast(Exp::Record {
+        fields: vec![(Symbol::from("baz"), boxed_ast(Exp::Int(1)))],
+        typ: Symbol::from("FooType"),
+    });
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
     type_env.insert(Symbol::from("FooType"), Arc::new(TigerType::TInt(R::RW)));
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::NotRecordType(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -580,11 +469,11 @@ fn recordexp_con_tipo_no_record() {
 
 #[test]
 fn arrayexp_ok() {
-    let exp = Exp {node: _Exp::Array {
+    let ast = make_ast(Exp::Array {
         typ: Symbol::from("FooType"),
-        size: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
-        init: Box::new(Exp {node: _Exp::Int(2), pos: Pos {line: 0, column: 0}}),
-    }, pos: Pos {line: 0, column: 0}};
+        size: boxed_ast(Exp::Int(1)),
+        init: boxed_ast(Exp::Int(2))
+    });
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
     let foo_type = Arc::new(TigerType::TArray(
@@ -592,20 +481,21 @@ fn arrayexp_ok() {
         TypeId::new(),
     ));
     type_env.insert(Symbol::from("FooType"), foo_type.clone());
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(return_type) => assert!(return_type == foo_type),
+        Ok(AST{typ, ..}) if *typ == *foo_type => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(..) => panic!("array")
     }
 }
 
 #[test]
 fn arrayexp_size_no_int() {
-    let exp = Exp {node: _Exp::Array {
+    let ast = make_ast(Exp::Array {
         typ: Symbol::from("FooType"),
-        size: Box::new(Exp {node: _Exp::String(String::from("perro")), pos: Pos {line: 0, column: 0}}),
-        init: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
-    }, pos: Pos {line: 0, column: 0}};
+        size: boxed_ast(Exp::String(String::from("perro"))),
+        init: boxed_ast(Exp::Int(2))
+    });
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
     let foo_type = Arc::new(TigerType::TArray(
@@ -613,7 +503,7 @@ fn arrayexp_size_no_int() {
         TypeId::new(),
     ));
     type_env.insert(Symbol::from("FooType"), foo_type);
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerSize(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -623,11 +513,11 @@ fn arrayexp_size_no_int() {
 
 #[test]
 fn arrayexp_tipos_distintos() {
-    let exp = Exp {node: _Exp::Array {
+    let ast = make_ast(Exp::Array {
         typ: Symbol::from("FooType"),
-        size: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
-        init: Box::new(Exp {node: _Exp::String(String::from("perro")), pos: Pos {line: 0, column: 0}}),
-    }, pos: Pos {line: 0, column: 0}};
+        size: boxed_ast(Exp::Int(1)),
+        init: boxed_ast(Exp::String(String::from("perro")))
+    });
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
     let foo_type = Arc::new(TigerType::TArray(
@@ -635,7 +525,7 @@ fn arrayexp_tipos_distintos() {
         TypeId::new(),
     ));
     type_env.insert(Symbol::from("FooType"), foo_type);
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -645,16 +535,16 @@ fn arrayexp_tipos_distintos() {
 
 #[test]
 fn arrayexp_tipo_no_array() {
-    let exp = Exp {node: _Exp::Array {
+    let ast = make_ast(Exp::Array {
         typ: Symbol::from("FooType"),
-        size: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
-        init: Box::new(Exp {node: _Exp::String(String::from("perro")), pos: Pos {line: 0, column: 0}}),
-    }, pos: Pos {line: 0, column: 0}};
+        size: boxed_ast(Exp::Int(1)),
+        init: boxed_ast(Exp::String(String::from("perro")))
+    });
     let mut type_env = initial_type_env();
     let value_env = initial_value_env();
     let foo_type = Arc::new(TigerType::TInt(R::RW));
     type_env.insert(Symbol::from("FooType"), foo_type);
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::NotArrayType(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -664,14 +554,14 @@ fn arrayexp_tipo_no_array() {
 
 #[test]
 fn arrayexp_tipo_no_existe() {
-    let exp = Exp {node: _Exp::Array {
+    let ast = make_ast(Exp::Array {
         typ: Symbol::from("FooType"),
-        size: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
-        init: Box::new(Exp {node: _Exp::String(String::from("perro")), pos: Pos {line: 0, column: 0}}),
-    }, pos: Pos {line: 0, column: 0}};
+        size: boxed_ast(Exp::Int(1)),
+        init: boxed_ast(Exp::String(String::from("perro")))
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -681,53 +571,50 @@ fn arrayexp_tipo_no_existe() {
 
 #[test]
 fn seqexp_ok() {
-    let exp = Exp {
-        node: _Exp::Seq(vec![
-            Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}},
-            Exp {node: _Exp::Int(2), pos: Pos {line: 0, column: 0}},
-        ]),
-        pos: Pos {line: 0, column: 0}
-    };
+    let ast = make_ast(Exp::Seq(vec![
+        make_ast(Exp::Int(1)),
+        make_ast(Exp::Int(1)),
+    ]));
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
-// Se puede testear algo mas de _Exp::Seq? Hay alguna condicion del ultimo tipo?
+// Se puede testear algo mas de Exp::Seq? Hay alguna condicion del ultimo tipo?
 
 #[test]
 fn assignexp_ok() {
-    let exp = Exp {node: _Exp::Assign{
-        var: Var::Simple(Symbol::from("foo")),
-        exp: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
-    }, pos: Pos {line: 0, column: 0}};
+    let ast = make_ast(Exp::Assign{
+        var: make_var(VarKind::Simple(Symbol::from("foo"))),
+        exp: boxed_ast(Exp::Int(1)),
+    });
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let env_entry = EnvEntry::Var{
         ty: Arc::new(TigerType::TInt(R::RW)),
     };
     value_env.insert(Symbol::from("foo"), env_entry);
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn assignexp_variable_no_existe() {
-    let exp = Exp {node: _Exp::Assign{
-        var: Var::Simple(Symbol::from("foo")),
-        exp: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
-    }, pos: Pos {line: 0, column: 0}};
+    let ast = make_ast(Exp::Assign{
+        var: make_var(VarKind::Simple(Symbol::from("foo"))),
+        exp: boxed_ast(Exp::Int(1)),
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredSimpleVar(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -737,17 +624,17 @@ fn assignexp_variable_no_existe() {
 
 #[test]
 fn assignexp_tipos_distintos() {
-    let exp = Exp {node: _Exp::Assign{
-        var: Var::Simple(Symbol::from("foo")),
-        exp: Box::new(Exp {node: _Exp::String(String::from("perro")), pos: Pos {line: 0, column: 0}}),
-    }, pos: Pos {line: 0, column: 0}};
+    let ast = make_ast(Exp::Assign{
+        var: make_var(VarKind::Simple(Symbol::from("foo"))),
+        exp: boxed_ast(Exp::String(String::from("perro"))),
+    });
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let env_entry = EnvEntry::Var{
         ty: Arc::new(TigerType::TInt(R::RW)),
     };
     value_env.insert(Symbol::from("foo"), env_entry);
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -757,17 +644,17 @@ fn assignexp_tipos_distintos() {
 
 #[test]
 fn assignexp_variable_read_only() {
-    let exp = Exp {node: _Exp::Assign{
-        var: Var::Simple(Symbol::from("i")),
-        exp: Box::new(Exp {node: _Exp::Int(2), pos: Pos {line: 0, column: 0}}),
-    }, pos: Pos {line: 0, column: 0}};
+    let ast = make_ast(Exp::Assign{
+        var: make_var(VarKind::Simple(Symbol::from("i"))),
+        exp: boxed_ast(Exp::Int(2)),
+    });
     let type_env = initial_type_env();
     let mut value_env = initial_value_env();
     let env_entry = EnvEntry::Var{
         ty: Arc::new(TigerType::TInt(R::RO)),
     };
     value_env.insert(Symbol::from("i"), env_entry);
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::ReadOnlyAssignment(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -777,33 +664,31 @@ fn assignexp_variable_read_only() {
 
 #[test]
 fn ifexp_ok() {
-    let exp = Exp {node: _Exp::If {
-        test: Box::new(Exp {node: _Exp::Int(0), pos: Pos {line: 0, column: 0}}),
-        then_: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
-        else_: Some(Box::new(Exp {node: _Exp::Int(2), pos: Pos {line: 0, column: 0}}))
-    }
-    , pos: Pos {line: 0, column: 0}};
+    let ast = make_ast(Exp::If {
+        test: boxed_ast(Exp::Int(0)),
+        then_: boxed_ast(Exp::Int(1)),
+        else_: Some(boxed_ast(Exp::Int(2)))
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RO) || *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn ifexp_test_no_entero() {
-    let exp = Exp {node: _Exp::If {
-        test: Box::new(Exp {node: _Exp::String(String::from("perro")), pos: Pos {line: 0, column: 0}}),
-        then_: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
-        else_: Some(Box::new(Exp {node: _Exp::Int(2), pos: Pos {line: 0, column: 0}}))
-    }
-    , pos: Pos {line: 0, column: 0}};
+    let ast = make_ast(Exp::If {
+        test: boxed_ast(Exp::String(String::from("perro"))),
+        then_: boxed_ast(Exp::Int(1)),
+        else_: Some(boxed_ast(Exp::Int(2)))
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerCondition(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -813,15 +698,14 @@ fn ifexp_test_no_entero() {
 
 #[test]
 fn ifexp_tipos_then_else_distintos() {
-    let exp = Exp {node: _Exp::If {
-        test: Box::new(Exp {node: _Exp::Int(0), pos: Pos {line: 0, column: 0}}),
-        then_: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
-        else_: Some(Box::new(Exp {node: _Exp::String(String::from("perro")), pos: Pos {line: 0, column: 0}})),
-    }
-    , pos: Pos {line: 0, column: 0}};
+    let ast = make_ast(Exp::If {
+        test: boxed_ast(Exp::Int(0)),
+        then_: boxed_ast(Exp::Int(1)),
+        else_: Some(boxed_ast(Exp::String(String::from("perro")))),
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::ThenElseTypeMismatch(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -831,15 +715,14 @@ fn ifexp_tipos_then_else_distintos() {
 
 #[test]
 fn ifexp_sin_else_no_unit() {
-    let exp = Exp {node: _Exp::If {
-        test: Box::new(Exp {node: _Exp::Int(0), pos: Pos {line: 0, column: 0}}),
-        then_: Box::new(Exp {node: _Exp::Int(1), pos: Pos {line: 0, column: 0}}),
+    let ast = make_ast(Exp::If {
+        test: boxed_ast(Exp::Int(0)),
+        then_: boxed_ast(Exp::Int(1)),
         else_: None
-    }
-    , pos: Pos {line: 0, column: 0}};
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::NonUnitBody(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -849,29 +732,29 @@ fn ifexp_sin_else_no_unit() {
 
 #[test]
 fn whileexp_ok() {
-    let exp = Exp {node: _Exp::While {
-        test: Box::new(Exp {node: _Exp::Int(0), pos: Pos {line: 0, column: 0}}),
-        body: Box::new(Exp {node: _Exp::Unit, pos: Pos {line: 0, column: 0}}),
-    }, pos: Pos {line: 0, column: 0}};
+    let ast = make_ast(Exp::While {
+        test: boxed_ast(Exp::Int(0)),
+        body: boxed_ast(Exp::Unit),
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn whileexp_condicion_no_entera() {
-    let exp = Exp {node: _Exp::While {
-        test: Box::new(Exp {node: _Exp::Unit, pos: Pos {line: 0, column: 0}}),
-        body: Box::new(Exp {node: _Exp::Unit, pos: Pos {line: 0, column: 0}}),
-    }, pos: Pos {line: 0, column: 0}};
+    let ast = make_ast(Exp::While {
+        test: boxed_ast(Exp::Unit),
+        body: boxed_ast(Exp::Unit),
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerCondition(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -881,54 +764,56 @@ fn whileexp_condicion_no_entera() {
 
 #[test]
 fn forexp_ok() {
-    let exp = Exp {node: _Exp::For {
+    let ast = make_ast(Exp::For {
         var: Symbol::from("i"),
         escape: false,
-        lo: Box::new(Exp { node: _Exp::Int(1), pos: Pos {line: 0, column: 0,}}),
-        hi: Box::new(Exp { node: _Exp::Int(10), pos: Pos {line: 0, column: 0,}}),
-        body: Box::new(Exp { node: _Exp::Unit, pos: Pos {line: 0, column: 0,}}),
-    }, pos: Pos {line: 0, column: 0}};
+        lo: boxed_ast(Exp::Int(1)),
+        hi: boxed_ast(Exp::Int(10)),
+        body: boxed_ast(Exp::Unit),
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn forexp_iterador_es_usable() {
-    let exp = Exp {node: _Exp::For {
+    let ast = make_ast(Exp::For {
         var: Symbol::from("i"),
         escape: false,
-        lo: Box::new(Exp { node: _Exp::Int(1), pos: Pos {line: 0, column: 0,}}),
-        hi: Box::new(Exp { node: _Exp::Int(10), pos: Pos {line: 0, column: 0,}}),
-        body: boxed_exp(_Exp::Seq(vec![possed_exp(_Exp::Var(Var::Simple(Symbol::from("i")))), possed_exp(_Exp::Unit)])),
-    }, pos: Pos {line: 0, column: 0}};
+        lo: boxed_ast(Exp::Int(1)),
+        hi: boxed_ast(Exp::Int(10)),
+        body: boxed_ast(Exp::Seq(vec![
+            make_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("i"))))),
+            make_ast(Exp::Unit)])),
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn forexp_body_no_es_unit() {
-    let exp = Exp {node: _Exp::For {
+    let ast = make_ast(Exp::For {
         var: Symbol::from("i"),
         escape: false,
-        lo: Box::new(Exp { node: _Exp::Int(1), pos: Pos {line: 0, column: 0,}}),
-        hi: Box::new(Exp { node: _Exp::Int(10), pos: Pos {line: 0, column: 0,}}),
-        body: Box::new(Exp { node: _Exp::Int(2), pos: Pos {line: 0, column: 0,}}),
-    }, pos: Pos {line: 0, column: 0}};
+        lo: boxed_ast(Exp::Int(1)),
+        hi: boxed_ast(Exp::Int(10)),
+        body: boxed_ast(Exp::Int(2)),
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::NonUnitBody(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -938,16 +823,16 @@ fn forexp_body_no_es_unit() {
 
 #[test]
 fn forexp_lo_no_es_int() {
-    let exp = Exp {node: _Exp::For {
+    let ast = make_ast(Exp::For {
         var: Symbol::from("i"),
         escape: false,
-        lo: Box::new(Exp { node: _Exp::Unit, pos: Pos {line: 0, column: 0,}}),
-        hi: Box::new(Exp { node: _Exp::Int(10), pos: Pos {line: 0, column: 0,}}),
-        body: Box::new(Exp { node: _Exp::Unit, pos: Pos {line: 0, column: 0,}}),
-    }, pos: Pos {line: 0, column: 0}};
+        lo: boxed_ast(Exp::Unit),
+        hi: boxed_ast(Exp::Int(10)),
+        body: boxed_ast(Exp::Unit),
+    });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerForRange(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -957,16 +842,16 @@ fn forexp_lo_no_es_int() {
 
 #[test]
 fn forexp_hi_no_es_int() {
-    let exp = Exp {node: _Exp::For {
+    let ast = make_ast(Exp::For {
         var: Symbol::from("i"),
         escape: false,
-        lo: Box::new(Exp { node: _Exp::Int(1), pos: Pos {line: 0, column: 0,}}),
-        hi: Box::new(Exp { node: _Exp::Unit, pos: Pos {line: 0, column: 0,}}),
-        body: Box::new(Exp { node: _Exp::Unit, pos: Pos {line: 0, column: 0,}}),
-    }, pos: Pos {line: 0, column: 0}};
-        let type_env = initial_type_env();
+        lo: boxed_ast(Exp::Int(1)),
+        hi: boxed_ast(Exp::Unit),
+        body: boxed_ast(Exp::Unit),
+    });
+    let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::NonIntegerForRange(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -976,67 +861,67 @@ fn forexp_hi_no_es_int() {
 
 #[test]
 fn letexp_vardec_sin_tipo_ok() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![Dec::VarDec(
             _VarDec::new(
                 Symbol::from("foo"),
                 None,
-                boxed_exp(_Exp::Int(4))
+                boxed_ast(Exp::Int(4))
             ),
             Pos{line: 0, column: 0}
         )],
-        body: boxed_exp(_Exp::Var(Var::Simple(Symbol::from("foo"))))
+        body: boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("foo")))))
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn letexp_vardec_con_tipo_ok() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![Dec::VarDec(
             _VarDec::new(
                 Symbol::from("foo"),
                 Some(Symbol::from("int")),
-                boxed_exp(_Exp::Int(4)),
+                boxed_ast(Exp::Int(4)),
             ),
             Pos{line: 0, column: 0}
         )],
-        body: boxed_exp(_Exp::Var(Var::Simple(Symbol::from("foo"))))
+        body: boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("foo")))))
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
 
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn letexp_vardec_tipo_no_esta_declarado() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![Dec::VarDec(
             _VarDec::new(
                 Symbol::from("foo"),
                 Some(Symbol::from("un_tipo_no_declarado")),
-                boxed_exp(_Exp::Int(4)),
+                boxed_ast(Exp::Int(4)),
             ),
             Pos{line: 0, column: 0}
         )],
-        body: boxed_exp(_Exp::Unit)
+        body: boxed_ast(Exp::Unit)
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -1046,20 +931,20 @@ fn letexp_vardec_tipo_no_esta_declarado() {
 
 #[test]
 fn letexp_vardec_tipos_distintos() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![Dec::VarDec(
             _VarDec::new(
                 Symbol::from("foo"),
                 Some(Symbol::from("string")),
-                boxed_exp(_Exp::Int(4))
+                boxed_ast(Exp::Int(4))
             ),
             Pos{line: 0, column: 0}
         )],
-        body: boxed_exp(_Exp::Unit)
+        body: boxed_ast(Exp::Unit)
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -1069,7 +954,7 @@ fn letexp_vardec_tipos_distintos() {
 
 #[test]
 fn letexp_typedec_name_ok() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![
             Dec::TypeDec(vec![(
                 _TypeDec::new(
@@ -1082,26 +967,26 @@ fn letexp_typedec_name_ok() {
                 _VarDec::new(
                     Symbol::from("foo"),
                     Some(Symbol::from("FooType")),
-                    boxed_exp(_Exp::Int(4))
+                    boxed_ast(Exp::Int(4))
                 ),
                 Pos{line: 0, column: 0}
             ),
         ],
-        body: boxed_exp(_Exp::Var(Var::Simple(Symbol::from("foo"))))
+        body: boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("foo")))))
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn letexp_typedec_array_ok() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![
             Dec::TypeDec(vec![(
                 _TypeDec::new(
@@ -1114,35 +999,35 @@ fn letexp_typedec_array_ok() {
                 _VarDec::new(
                     Symbol::from("foo"),
                     Some(Symbol::from("FooType")),
-                    boxed_exp(_Exp::Array {
+                    boxed_ast(Exp::Array {
                         typ: Symbol::from("FooType"),
-                        size:boxed_exp(_Exp::Int(1)),
-                        init: boxed_exp(_Exp::Int(2)),
+                        size:boxed_ast(Exp::Int(1)),
+                        init: boxed_ast(Exp::Int(2)),
                     })
                 ),
                 Pos{line: 0, column: 0}
             ),
         ],
-        body: boxed_exp(_Exp::Var(
-            Var::Subscript(
-                Box::new(Var::Simple(Symbol::from("foo"))),
-                boxed_exp(_Exp::Int(0))
-            )
+        body: boxed_ast(Exp::Var(
+            make_var(VarKind::Subscript(
+                boxed_var(VarKind::Simple(Symbol::from("foo"))),
+                boxed_ast(Exp::Int(0))
+            ))
         ))
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn letexp_typedec_record_ok() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![
             Dec::TypeDec(vec![(
                 _TypeDec::new(
@@ -1161,42 +1046,42 @@ fn letexp_typedec_record_ok() {
                 _VarDec::new(
                     Symbol::from("foo"),
                     Some(Symbol::from("FooType")),
-                    boxed_exp(_Exp::Record {
-                        fields: vec![(Symbol::from("bar"), boxed_exp(_Exp::Int(1)))],
+                    boxed_ast(Exp::Record {
+                        fields: vec![(Symbol::from("bar"), boxed_ast(Exp::Int(1)))],
                         typ: Symbol::from("FooType"),
                     })
                 ),
                 Pos{line: 0, column: 2}
             )],
-        body: boxed_exp(_Exp::Var(
-            Var::Field(
-                Box::new(Var::Simple(Symbol::from("foo"))),
+        body: boxed_ast(Exp::Var(
+            make_var(VarKind::Field(
+                boxed_var(VarKind::Simple(Symbol::from("foo"))),
                 Symbol::from("bar")
-            )
+            ))
         ))
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn letexp_typedec_recursion_infinita() {
-   let exp = possed_exp(_Exp::Let {
+   let ast =  make_ast(Exp::Let {
         decs: vec![Dec::TypeDec(vec![
             (_TypeDec::new(Symbol::from("FooType"), Ty::Name(Symbol::from("BaazType"))), Pos{line: 0, column: 0}),
             (_TypeDec::new(Symbol::from("BaazType"), Ty::Name(Symbol::from("FooType"))), Pos{line: 0, column: 0}),
         ])],
-        body: boxed_exp(_Exp::Unit)
+        body: boxed_ast(Exp::Unit)
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::TypeCycle(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -1205,27 +1090,27 @@ fn letexp_typedec_recursion_infinita() {
 }
 #[test]
 fn test_recursive_ok() {
-   let exp = possed_exp(_Exp::Let {
+   let ast =  make_ast(Exp::Let {
         decs: vec![Dec::TypeDec(vec![
             (_TypeDec::new(Symbol::from("C"), Ty::Name(Symbol::from("B"))), Pos{line: 0, column: 0}),
             (_TypeDec::new(Symbol::from("B"), Ty::Name(Symbol::from("A"))), Pos{line: 0, column: 0}),
             (_TypeDec::new(Symbol::from("A"), Ty::Name(Symbol::from("int"))), Pos{line: 0, column: 0}),
         ])],
-        body: boxed_exp(_Exp::Unit)
+        body: boxed_ast(Exp::Unit)
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
-        Ok(..) => panic!("wrong type"),
+        Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(..) => panic!("type error"),
     }
 }
 
 #[test]
 fn letexp_typedec_referencia_tipo_inexistente() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![Dec::TypeDec(vec![(
             _TypeDec::new(
                 Symbol::from("FooType"),
@@ -1233,11 +1118,11 @@ fn letexp_typedec_referencia_tipo_inexistente() {
             ),
             Pos{line: 0, column: 0}
         )])],
-        body: boxed_exp(_Exp::Unit)
+        body: boxed_ast(Exp::Unit)
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredType(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -1247,7 +1132,7 @@ fn letexp_typedec_referencia_tipo_inexistente() {
 
 #[test]
 fn record_type_cycle_ok() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![
             Dec::TypeDec(vec![(
                 _TypeDec::new(
@@ -1271,19 +1156,19 @@ fn record_type_cycle_ok() {
                 _VarDec::new(
                     Symbol::from("foo"),
                     Some(Symbol::from("List")),
-                    boxed_exp(_Exp::Record {
+                    boxed_ast(Exp::Record {
                         fields: vec![
-                            (Symbol::from("head"), boxed_exp(_Exp::Int(1))),
-                            (Symbol::from("tail"), boxed_exp(_Exp::Record {
+                            (Symbol::from("head"), boxed_ast(Exp::Int(1))),
+                            (Symbol::from("tail"), boxed_ast(Exp::Record {
                                 fields: vec![
-                                    (Symbol::from("head"), boxed_exp(_Exp::Int(2))),
-                                    (Symbol::from("tail"), boxed_exp(_Exp::Record {
+                                    (Symbol::from("head"), boxed_ast(Exp::Int(2))),
+                                    (Symbol::from("tail"), boxed_ast(Exp::Record {
                                         fields: vec![
-                                            (Symbol::from("head"), boxed_exp(_Exp::Int(3))),
-                                            (Symbol::from("tail"), boxed_exp(_Exp::Record {
+                                            (Symbol::from("head"), boxed_ast(Exp::Int(3))),
+                                            (Symbol::from("tail"), boxed_ast(Exp::Record {
                                                 fields: vec![
-                                                    (Symbol::from("head"), boxed_exp(_Exp::Int(4))),
-                                                    (Symbol::from("tail"), boxed_exp(_Exp::Nil))
+                                                    (Symbol::from("head"), boxed_ast(Exp::Int(4))),
+                                                    (Symbol::from("tail"), boxed_ast(Exp::Nil))
                                                 ],
                                                 typ: Symbol::from("List"),
                                             }))
@@ -1299,26 +1184,26 @@ fn record_type_cycle_ok() {
                 ),
                 Pos{line: 0, column: 2}
             )],
-        body: boxed_exp(_Exp::Var(
-            Var::Field(
-                Box::new(Var::Simple(Symbol::from("foo"))),
+        body: boxed_ast(Exp::Var(
+            make_var(VarKind::Field(
+                boxed_var(VarKind::Simple(Symbol::from("foo"))),
                 Symbol::from("head")
-            )
+            ))
         ))
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn letexp_functiondec_ok() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
                 Symbol::from("foo"),
@@ -1328,25 +1213,25 @@ fn letexp_functiondec_ok() {
                     escape: false,
                 }],
                 None,
-                boxed_exp(_Exp::Unit)
+                boxed_ast(Exp::Unit)
             ),
             Pos{line: 0, column: 0}
         )])],
-        body: boxed_exp(_Exp::Unit)
+        body: boxed_ast(Exp::Unit)
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn letexp_functiondec_llamada_en_bloque_ok() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![
             Dec::FunctionDec(vec![(
                 _FunctionDec::new(
@@ -1357,7 +1242,7 @@ fn letexp_functiondec_llamada_en_bloque_ok() {
                         escape: false,
                     }],
                     Some(Symbol::from("int")),
-                    boxed_exp(_Exp::Var(Var::Simple(Symbol::from("arg1")))),
+                    boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("arg1"))))),
                 ),
                 Pos{line: 0, column: 0}
             )]),
@@ -1370,32 +1255,32 @@ fn letexp_functiondec_llamada_en_bloque_ok() {
                         escape: false,
                     }],
                     Some(Symbol::from("int")),
-                    boxed_exp(_Exp::Call {
+                    boxed_ast(Exp::Call {
                         func: Symbol::from("foo"),
-                        args: vec![possed_exp(_Exp::Var(Var::Simple(Symbol::from("arg2"))))],
+                        args: vec![make_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("arg2")))))],
                     })
                 ),
                 Pos{line: 0, column: 0}
             )]),
         ],
-        body: boxed_exp(_Exp::Call {
+        body: boxed_ast(Exp::Call {
             func: Symbol::from("baaz"),
-            args: vec![possed_exp(_Exp::Int(2))]
+            args: vec![make_ast(Exp::Int(2))]
         })
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn letexp_functiondec_body_no_tipa() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
                 Symbol::from("foo"),
@@ -1405,15 +1290,15 @@ fn letexp_functiondec_body_no_tipa() {
                     escape: false,
                 }],
                 None,
-                boxed_exp(_Exp::Var(Var::Simple(Symbol::from("baaz")))), // undeclared
+                boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("baaz"))))), // undeclared
             ),
             Pos{line: 0, column: 0}
         )])],
-        body: boxed_exp(_Exp::Unit)
+        body: boxed_ast(Exp::Unit)
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::UndeclaredSimpleVar(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -1423,7 +1308,7 @@ fn letexp_functiondec_body_no_tipa() {
 
 #[test]
 fn letexp_functiondec_body_distinto_result() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
                 Symbol::from("foo"),
@@ -1433,15 +1318,15 @@ fn letexp_functiondec_body_distinto_result() {
                     escape: false,
                 }],
                 None,
-                boxed_exp(_Exp::Int(2)),
+                boxed_ast(Exp::Int(2)),
             ),
             Pos{line: 0, column: 0}
         )])],
-        body: boxed_exp(_Exp::Unit)
+        body: boxed_ast(Exp::Unit)
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
         Err(TypeError::TypeMismatch(_)) => (),
         Err(type_error) => panic!("Wrong type error: {:?}", type_error),
@@ -1451,7 +1336,7 @@ fn letexp_functiondec_body_distinto_result() {
 
 #[test]
 fn letexp_functiondec_params_repetidos() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
                 Symbol::from("foo"),
@@ -1461,25 +1346,25 @@ fn letexp_functiondec_params_repetidos() {
                     escape: false,
                 }],
                 None,
-                boxed_exp(_Exp::Unit)
+                boxed_ast(Exp::Unit)
             ),
             Pos{line: 0, column: 0}
         )])],
-        body: boxed_exp(_Exp::Unit)
+        body: boxed_ast(Exp::Unit)
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn letexp_functiondec_nombres_repetidos() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
                 Symbol::from("foo"),
@@ -1489,25 +1374,25 @@ fn letexp_functiondec_nombres_repetidos() {
                     escape: false,
                 }],
                 None,
-                boxed_exp(_Exp::Unit)
+                boxed_ast(Exp::Unit)
             ),
             Pos{line: 0, column: 0}
         )])],
-        body: boxed_exp(_Exp::Unit)
+        body: boxed_ast(Exp::Unit)
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn letexp_functiondec_recursivas() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
             _FunctionDec::new(
                 Symbol::from("foo"),
@@ -1517,24 +1402,24 @@ fn letexp_functiondec_recursivas() {
                     escape: false,
                 }],
                 None,
-                boxed_exp(_Exp::Unit)
+                boxed_ast(Exp::Unit)
             ),
             Pos{line: 0, column: 0})])],
-        body: boxed_exp(_Exp::Unit)
+        body: boxed_ast(Exp::Unit)
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TUnit => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }
 
 #[test]
 fn letexp_todas_las_decs_ok() {
-    let exp = possed_exp(_Exp::Let {
+    let ast =  make_ast(Exp::Let {
         decs: vec![
             Dec::TypeDec(vec![(
                 _TypeDec::new(
@@ -1547,7 +1432,7 @@ fn letexp_todas_las_decs_ok() {
                 _VarDec::new(
                     Symbol::from("foo"),
                     Some(Symbol::from("FooType")),
-                    boxed_exp(_Exp::Int(4))
+                    boxed_ast(Exp::Int(4))
                 ),
                 Pos{line: 0, column: 0}
             ),
@@ -1560,22 +1445,22 @@ fn letexp_todas_las_decs_ok() {
                         escape: false,
                     }],
                     Some(Symbol::from("FooType")),
-                    boxed_exp(_Exp::Var(Var::Simple(Symbol::from("bar"))))
+                    boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("bar")))))
                 ),
                 Pos{line: 0, column: 0}
             )]),
         ],
-        body: boxed_exp(_Exp::Call {
+        body: boxed_ast(Exp::Call {
             func: Symbol::from("baaz"),
-            args: vec![possed_exp(_Exp::Var(Var::Simple(Symbol::from("foo"))))]
+            args: vec![make_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("foo")))))]
         })
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(ast, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }

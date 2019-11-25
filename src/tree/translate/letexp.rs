@@ -87,14 +87,14 @@ pub fn fundecs(
 }
 
 pub fn trans_exp(
-    Exp { node, .. }: &Exp,
+    AST { node, .. }: &AST,
     mut level: Level,
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
     mut frags: Vec<Fragment>,
-) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
+) -> Result<(Tree::AST, Level, Vec<Fragment>), TransError> {
     match node {
-        _Exp::Let { decs, body } => {
+        Exp::Let { decs, body } => {
             // TODO: this should be a fold
             let mut vardec_stms = vec![];
             let mut new_value_env = value_env.clone();

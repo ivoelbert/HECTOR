@@ -2,14 +2,14 @@ use crate::ast::*;
 use crate::tree::*;
 
 pub fn trans_stm(
-    Exp { node, .. }: &Exp,
+    AST { node, .. }: &AST,
     mut level: Level,
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,
 ) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
     match node {
-        _Exp::For {
+        Exp::For {
             var,
             lo,
             hi,

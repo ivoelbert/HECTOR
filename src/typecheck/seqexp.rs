@@ -1,18 +1,24 @@
-use crate::ast::*;
-use crate::typecheck::*;
+use super::*;
 
-pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Arc<TigerType>, TypeError> {
-    use TigerType::*;
-    match exp { Exp {node: _Exp::Seq(exps), ..} => {
-        let mut seq_type : Arc<TigerType> = Arc::new(TUnit);
-        if exps.is_empty() {
-            panic!("empty seqexp");
+pub fn typecheck(
+    AST{node, pos, ..}: AST,
+    type_env: &TypeEnviroment,
+    value_env: &ValueEnviroment)
+-> Result<AST, TypeError> {
+    match node {
+        Exp::Seq(exps) => {
+            assert!(!exps.is_empty());
+            let typed_seq = exps
+                .into_iter()
+                .map(|exp| type_exp(exp, type_env, value_env))
+                .collect::<Result<Vec<AST>, TypeError>>()?;
+            let typ = typed_seq.last().unwrap().typ.clone();
+            Ok(AST {
+                node: Exp::Seq(typed_seq),
+                pos,
+                typ
+            })
         }
-        for exp in exps {
-            seq_type = type_exp(exp, &type_env, value_env)?;
-        }
-        Ok(seq_type)
-    }
-    _ => panic!("delegation panic on seqexp::tipar")
+        _ => panic!("delegation panic on seqexp::tipar")
     }
 }

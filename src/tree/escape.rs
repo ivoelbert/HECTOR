@@ -3,26 +3,38 @@ use crate::ast::*;
 
 type EscapeTable = HashMap<Symbol, (u32, bool)>;
 
-fn trav_var(var: Var, table: EscapeTable, current_depth: u32) -> (Var, EscapeTable) {
-    match var {
-        Var::Simple(symbol) => match table.get(&symbol) {
+fn trav_var(Var{kind, typ, pos}: Var, table: EscapeTable, current_depth: u32) -> (Var, EscapeTable) {
+    match kind {
+        VarKind::Simple(symbol) => match table.get(&symbol) {
             Some((table_depth, ..)) => {
                 let mut new_table = table.clone();
                 if current_depth > *table_depth {
                     new_table.insert(symbol.clone(), (*table_depth, true));
                 }
-                (Var::Simple(symbol), new_table)
+                (Var {
+                    kind: VarKind::Simple(symbol),
+                    typ,
+                    pos
+                }, new_table)
             }
             None => panic!("Var {} does not exist!", symbol)
         },
-        Var::Subscript(array, subscript) => {
+        VarKind::Subscript(array, subscript) => {
             let (r_array, array_table) = trav_var(*array, table, current_depth);
             let (r_subscript, subscript_table) = trav_exp(*subscript, array_table, current_depth);
-            (Var::Subscript(Box::new(r_array), Box::new(r_subscript)), subscript_table)
+            (Var {
+                kind: VarKind::Subscript(Box::new(r_array), Box::new(r_subscript)),
+                typ,
+                pos
+            }, subscript_table)
         },
-        Var::Field(record, field) => {
+        VarKind::Field(record, field) => {
             let (r_record, record_table) = trav_var(*record, table, current_depth);
-            (Var::Field(Box::new(r_record), field), record_table)
+            (Var {
+                kind: VarKind::Field(Box::new(r_record), field),
+                typ,
+                pos
+            }, record_table)
         }
     }
 }
@@ -122,8 +134,8 @@ fn merge_tables(outer_table: EscapeTable, inner_table: EscapeTable) -> EscapeTab
         .collect()
 }
 
-fn trav_exp(Exp {node, pos}: Exp, table: EscapeTable, current_depth: u32) -> (Exp, EscapeTable) {
-    // This function consumes consumes an Exp and generates a new one with correct variable escapes.
+fn trav_exp(AST {node, typ, pos}: AST, table: EscapeTable, current_depth: u32) -> (AST, EscapeTable) {
+    // This function consumes consumes an AST and generates a new one with correct variable escapes.
     // If a variable is declared, then a new entry is inserted in the table with a false value (replacing if necesary).
     //      Then, the lower branches are computed and the resulting table is checked for escapes.
     // If a variable is called, then the escape will be checked and set to true in the returned table if needed.
@@ -133,133 +145,146 @@ fn trav_exp(Exp {node, pos}: Exp, table: EscapeTable, current_depth: u32) -> (Ex
     //
     // Branches are checked sequentially. This could be parallelized, but a table-combining function should be defined fot that.
     match node {
-        _Exp::Array {init, typ, size} => {
+        Exp::Array {init, typ: array_type, size} => {
             let (r_init, r_table) = trav_exp(*init, table, current_depth);
-            (Exp {
-                node: _Exp::Array {init: Box::new(r_init), typ, size},
+            (AST {
+                node: Exp::Array {init: Box::new(r_init), typ: array_type, size},
+                typ,
                 pos
             }, r_table)
         },
-        _Exp::Assign{var, exp} => {
+        Exp::Assign{var, exp} => {
             let (r_var, r_var_table) = trav_var(var, table, current_depth);
             let (r_exp, r_exp_table) = trav_exp(*exp, r_var_table, current_depth);
-            (Exp {
-                node: _Exp::Assign {var: r_var, exp: Box::new(r_exp)},
+            (AST {
+                node: Exp::Assign {var: r_var, exp: Box::new(r_exp)},
+                typ,
                 pos
             }, r_exp_table)
         },
-        _Exp::Call{func, args} => {
-            let (r_args, r_table) : (Vec<Exp>, EscapeTable)  = args
+        Exp::Call{func, args} => {
+            let (r_args, r_table) : (Vec<AST>, EscapeTable)  = args
                 .iter()
                 .fold((vec![], table), move |(mut prev, table), exp| {
                     let (e, t) = trav_exp(exp.clone(), table, current_depth);  // move problems here?
                     prev.push(e);
                     (prev, t)
                 });
-            (Exp {
-                node: _Exp::Call{func, args: r_args},
-                pos
+            (AST {
+                node: Exp::Call{func, args: r_args},
+                pos,
+                typ,
             }, r_table)
         },
-        _Exp::For{var, lo, hi, body, ..} => {
-            // ForExp is kinda tricky. Variables referenced in range are outside, not the iterator.
+        Exp::For{var, lo, hi, body, ..} => {
+            // ForAST is kinda tricky. Variables referenced in range are outside, not the iterator.
             let (lo_exp, lo_table) = trav_exp(*lo, table, current_depth);
             let (hi_exp, hi_table) = trav_exp(*hi, lo_table, current_depth);
             let mut inner_table = hi_table.clone();
             inner_table.insert(var.clone(), (current_depth, false));
             let (body_exp, mut body_table) = trav_exp(*body, inner_table, current_depth);
             let escape = body_table.remove(&var).unwrap().1;
-            (Exp {
-                node: _Exp::For {var, lo: Box::new(lo_exp), hi: Box::new(hi_exp), body: Box::new(body_exp), escape},
-                pos
+            (AST {
+                node: Exp::For {var, lo: Box::new(lo_exp), hi: Box::new(hi_exp), body: Box::new(body_exp), escape},
+                pos,
+                typ,
             }, merge_tables(hi_table, body_table))
         },
-        _Exp::If{test, then_, else_} => {
+        Exp::If{test, then_, else_} => {
             let (test_exp, test_table) = trav_exp(*test, table, current_depth);
             let (then_exp, then_table) = trav_exp(*then_, test_table, current_depth);
             if let Some(some_else) = else_ {
                 let (else_exp, else_table) = trav_exp(*some_else, then_table, current_depth);
-                (Exp {
-                    node: _Exp::If{test: Box::new(test_exp), then_: Box::new(then_exp), else_: Some(Box::new(else_exp))},
-                    pos
+                (AST {
+                    node: Exp::If{test: Box::new(test_exp), then_: Box::new(then_exp), else_: Some(Box::new(else_exp))},
+                    pos,
+                    typ,
                 }, else_table)
             } else {
-                (Exp {
-                    node: _Exp::If{test: Box::new(test_exp), then_: Box::new(then_exp), else_: None},
-                    pos
+                (AST {
+                    node: Exp::If{test: Box::new(test_exp), then_: Box::new(then_exp), else_: None},
+                    pos,
+                    typ,
                 }, then_table)
             }
         },
-        _Exp::Let{mut decs, body} => {
+        Exp::Let{mut decs, body} => {
             decs.reverse();
             let (r_decs, outer_table, decs_table) = trav_decs(decs, table.clone(), current_depth);
             let (r_body, body_table) = trav_exp(*body, decs_table, current_depth);
             let (rr_decs, post_body_table) = post_decs(r_decs, body_table);
-            (Exp {
-                node: _Exp::Let{decs: rr_decs, body: Box::new(r_body)},
-                pos
+            (AST {
+                node: Exp::Let{decs: rr_decs, body: Box::new(r_body)},
+                pos,
+                typ,
             }, merge_tables(table, merge_tables(outer_table, post_body_table))) // I think post_body_table is always empty, idk...
         },
-        _Exp::Op{left, right, oper} => {
+        Exp::Op{left, right, oper} => {
             let (left_exp, left_table) = trav_exp(*left, table, current_depth);
             let (right_exp, right_table) = trav_exp(*right, left_table, current_depth);
-            (Exp {
-                node: _Exp::Op{oper, left: Box::new(left_exp), right: Box::new(right_exp)},
-                pos
+            (AST {
+                node: Exp::Op{oper, left: Box::new(left_exp), right: Box::new(right_exp)},
+                pos,
+                typ,
             }, right_table)
         },
-        _Exp::Record{fields, typ} => {
-            let (r_fields, r_table) : (Vec<(Symbol, Box<Exp>)>, EscapeTable)  = fields
+        Exp::Record{fields, typ: record_typ} => {
+            let (r_fields, r_table) : (Vec<(Symbol, Box<AST>)>, EscapeTable)  = fields
                 .iter()
                 .fold((vec![], table), |(mut prev, table), (s, exp)| {
                     let (e, t) = trav_exp(*exp.clone(), table, current_depth);  // move problems here?
                     prev.push((s.clone(), Box::new(e)));
                     (prev, t)
                 });
-            (Exp {
-                node: _Exp::Record{fields: r_fields, typ},
-                pos
+            (AST {
+                node: Exp::Record{fields: r_fields, typ: record_typ},
+                pos,
+                typ,
             }, r_table)
         },
-        _Exp::Seq(exps) => {
-            let (r_exps, r_table) : (Vec<Exp>, EscapeTable)  = exps
+        Exp::Seq(exps) => {
+            let (r_exps, r_table) : (Vec<AST>, EscapeTable)  = exps
                 .iter()
                 .fold((vec![], table), |(mut prev, table), exp| {
                     let (e, t) = trav_exp(exp.clone(), table, current_depth);  // move problems here?
                     prev.push(e);
                     (prev, t)
                 });
-            (Exp {
-                node: _Exp::Seq(r_exps),
-                pos
+            (AST {
+                node: Exp::Seq(r_exps),
+                pos,
+                typ,
             }, r_table)
         },
-        _Exp::Var(var) => {
+        Exp::Var(var) => {
             let (r_var, r_table) = trav_var(var, table, current_depth);
-            (Exp {
-                node: _Exp::Var(r_var),
-                pos
+            (AST {
+                node: Exp::Var(r_var),
+                pos,
+                typ,
             }, r_table)
         },
-        _Exp::While{test, body} => {
+        Exp::While{test, body} => {
             let (test_exp, test_table) = trav_exp(*test, table, current_depth);
             let (body_exp, body_table) = trav_exp(*body, test_table, current_depth);
-            (Exp {
-                node: _Exp::While{test: Box::new(test_exp), body: Box::new(body_exp)},
-                pos
+            (AST {
+                node: Exp::While{test: Box::new(test_exp), body: Box::new(body_exp)},
+                pos,
+                typ,
             }, body_table)
 
         },
         e => (
-            Exp {
+            AST {
                 node: e,
-                pos
+                pos,
+                typ,
             }, table
         ),
     }
 }
 
-pub fn find_escapes(exp: Exp) -> Exp {
+pub fn find_escapes(exp: AST) -> AST {
     // Lo hacemos despues del tipado para que no salten aca errores de variables no declaradas.
     trav_exp(exp, EscapeTable::new(), 0).0
 }

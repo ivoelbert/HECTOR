@@ -2,14 +2,14 @@ use crate::ast::*;
 use crate::tree::*;
 
 pub fn trans_stm(
-    Exp {node, ..}: &Exp,
+    AST {node, ..}: &AST,
     level: Level,
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,
 ) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
     match node {
-        _Exp::While{test, body} => {
+        Exp::While{test, body} => {
             let (test_label, body_label, done_label) = (newlabel(), newlabel(), newlabel());
             let (test_exp, test_level, test_frags) = super::trans_exp(test, level, value_env, breaks_stack, frags)?;
             let mut new_breaks_stack = breaks_stack.clone();

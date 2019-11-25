@@ -2,7 +2,7 @@ use crate::ast::*;
 use crate::tree::*;
 
 fn trans_seq(
-    exps: &[Exp],
+    exps: &[AST],
     level: Level,
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
@@ -18,14 +18,14 @@ fn trans_seq(
 }
 
 pub fn trans_exp(
-    Exp { node, .. }: &Exp,
+    AST { node, .. }: &AST,
     level: Level,
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,
-) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
+) -> Result<(Tree::AST, Level, Vec<Fragment>), TransError> {
     match node {
-        _Exp::Seq(exps) => match exps.split_last() {
+        Exp::Seq(exps) => match exps.split_last() {
             Some((last, rest)) => {
                 let (prev_stms, prev_level, prev_frags) =
                     trans_seq(rest, level, value_env, breaks_stack, frags)?;
@@ -40,14 +40,14 @@ pub fn trans_exp(
 }
 
 pub fn trans_stm(
-    Exp { node, .. }: &Exp,
+    AST { node, .. }: &AST,
     level: Level,
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,
 ) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
     match node {
-        _Exp::Seq(exps) => match exps.split_last() {
+        Exp::Seq(exps) => match exps.split_last() {
             Some((last, rest)) => {
                 let (prev_stms, prev_level, seq_frags) =
                     trans_seq(rest, level, value_env, breaks_stack, frags)?;

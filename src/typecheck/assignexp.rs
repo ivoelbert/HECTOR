@@ -1,21 +1,32 @@
-use crate::ast::*;
-use crate::typecheck::*;
+use super::*;
 
-pub fn typecheck(exp: &Exp, type_env: &TypeEnviroment, value_env: &ValueEnviroment) -> Result<Arc<TigerType>, TypeError> {
+pub fn typecheck(
+    ast: AST,
+    type_env: &TypeEnviroment,
+    value_env: &ValueEnviroment
+) -> Result<AST, TypeError> {
     use TigerType::*;
     use super::varexp::typecheck_var;
-    match exp {
-        Exp {node: _Exp::Assign{var , exp: value_exp}, pos} => {
-            let var_type = match &*typecheck_var(var, *pos, type_env, value_env)? {
-                TInt(R::RO) => return Err(TypeError::ReadOnlyAssignment(*pos)),
+    match ast {
+        AST {node: Exp::Assign{var, exp: value_exp}, pos, ..} => {
+            let typed_var = typecheck_var(var, type_env, value_env)?;
+            let var_type = match &*typed_var.typ {
+                TInt(R::RO) => return Err(TypeError::ReadOnlyAssignment(pos)),
                 tiger_type => tiger_type.clone(),
             };
-            let value_type = &*type_exp(value_exp, type_env, value_env)?;
-            if var_type == *value_type {
-                Ok(Arc::new(TUnit))
+            let value_ast = type_exp(*value_exp, type_env, value_env)?;
+            if var_type == *value_ast.typ {
+                Ok(AST {
+                    node: Exp::Assign{
+                        var: typed_var,
+                        exp: Box::new(value_ast)
+                    },
+                    pos,
+                    typ: Arc::new(TUnit)
+                })
             }
             else {
-                Err(TypeError::TypeMismatch(*pos))
+                Err(TypeError::TypeMismatch(pos))
             }
         },
         _ => panic!("Mala delegacion en seman")

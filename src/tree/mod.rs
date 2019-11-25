@@ -82,7 +82,7 @@ pub fn initial_value_env() -> ValueEnviroment {
     value_env
 }
 
-use Tree::Exp::*;
+use Tree::AST::*;
 use Tree::Stm::*;
 use Tree::BinOp::*;
 use Tree::RelOp::*;

@@ -1,4 +1,4 @@
-use super::{Exp, posed_exp, _Exp};
+use super::{AST, posed_exp, Exp};
 use super::position::{Pos};
 use lalrpop_util::lalrpop_mod;
 
@@ -10,9 +10,9 @@ pub enum ParseError {
     UnexpectedToken(Pos),
 }
 
-pub fn parse(source : String) -> Result<Exp, ParseError> {
+pub fn parse(source : String) -> Result<AST, ParseError> {
     let str_src: &str = &*source;
-    let box_exp = posed_exp(_Exp::Unit, 1, 1);
+    let box_exp = posed_exp(Exp::Unit, 1, 1);
 
      Ok(*box_exp)
 }

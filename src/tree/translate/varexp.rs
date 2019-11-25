@@ -1,9 +1,9 @@
 use super::super::frame::STATIC_LINK_OFFSET;
 use crate::ast::*;
 use crate::tree::*;
-use Tree::Exp::*;
+use Tree::AST::*;
 
-pub fn generate_static_link(remaining_depth: i64) -> Tree::Exp {
+pub fn generate_static_link(remaining_depth: i64) -> Tree::AST {
     match remaining_depth {
         1 => MEM(Box::new(plus!(
             TEMP(Temp::FRAME_POINTER),
@@ -17,7 +17,7 @@ pub fn generate_static_link(remaining_depth: i64) -> Tree::Exp {
 }
 
 // Generates an expression that evaluates to the memory direction of the variable
-pub fn simplevar(access: Access, nesting_depth: i64, current_level: &Level) -> Tree::Exp {
+pub fn simplevar(access: Access, nesting_depth: i64, current_level: &Level) -> Tree::AST {
     let delta_depth = current_level.nesting_depth - nesting_depth;
     match access {
         Access::InReg(t) => {
@@ -38,21 +38,21 @@ pub fn simplevar(access: Access, nesting_depth: i64, current_level: &Level) -> T
 }
 
 pub fn trans_var(
-    var: &Var,
+    Var{kind, typ, pos}: &Var,
     level: Level,
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,
-) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
+) -> Result<(Tree::AST, Level, Vec<Fragment>), TransError> {
     // TODO
-    match var {
-        Var::Simple(name) => Ok((CONST(0), level, frags)),
-        Var::Subscript(array, index) => Ok((CONST(0), level, frags)),
+    match kind {
+        VarKind::Simple(name) => Ok((CONST(0), level, frags)),
+        VarKind::Subscript(array, index) => Ok((CONST(0), level, frags)),
         // el arreglo es la direccion de memoria
         // le sumas el offset del indice
         // hay un runtime para fallar de forma linda
         // o dejar que se coma un segfault
-        Var::Field(record, field) => Ok((CONST(0), level, frags)),
+        VarKind::Field(record, field) => Ok((CONST(0), level, frags)),
         // cada campo tiene un numero de orden, con eso haces el corrimimento
     }
 }

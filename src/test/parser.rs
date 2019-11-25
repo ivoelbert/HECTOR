@@ -1,8 +1,9 @@
 use std::fs::{read_dir, read_to_string};
 
-use super::super::ast::parser::{parse};
-use super::super::ast::position::Pos;
-use super::super::ast::*;
+use crate::ast::parser::{parse};
+use crate::ast::position::Pos;
+use crate::ast::*;
+use crate::typecheck::{TigerType};
 
 #[test]
 fn good() {
@@ -54,8 +55,8 @@ fn number() {
     let input = String::from("0");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
-            node: _Exp::Int(0),
+        Ok(AST {
+            node: Exp::Int(0),
             ..
         }) => (),
         Ok(..) => panic!("wrong parsing"),
@@ -68,8 +69,8 @@ fn string() {
     let input = String::from("\"perro\"");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
-            node: _Exp::String(_),
+        Ok(AST {
+            node: Exp::String(_),
             ..
         }) => (),
         Ok(..) => panic!("wrong parsing"),
@@ -82,8 +83,8 @@ fn breakexp() {
     let input = String::from("break");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
-            node: _Exp::Break,
+        Ok(AST {
+            node: Exp::Break,
             ..
         }) => (),
         Ok(..) => panic!("wrong parsing"),
@@ -96,8 +97,8 @@ fn simplevar() {
     let input = String::from("foo");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
-            node: _Exp::Var(Var::Simple(_)),
+        Ok(AST {
+            node: Exp::Var(Var{kind: VarKind::Simple(_), ..}),
             ..
         }) => (),
         Ok(..) => panic!("wrong parsing"),
@@ -110,8 +111,8 @@ fn subscriptvar() {
     let input = String::from("foo[0]");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
-            node: _Exp::Var(Var::Subscript(_, _)),
+        Ok(AST {
+            node: Exp::Var(Var{kind: VarKind::Subscript(..), ..}),
             ..
         }) => (),
         Ok(..) => panic!("wrong parsing"),
@@ -124,8 +125,8 @@ fn fieldvar() {
     let input = String::from("foo.baz");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
-            node: _Exp::Var(Var::Field(_, _)),
+        Ok(AST {
+            node: Exp::Var(Var{kind: VarKind::Field(..), ..}),
             ..
         }) => (),
         Ok(..) => panic!("wrong parsing"),
@@ -138,8 +139,8 @@ fn callexp() {
     let input = String::from("foo(1, \"perro\", baz)");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
-            node: _Exp::Call {..},
+        Ok(AST {
+            node: Exp::Call {..},
             ..
         }) => (),
         Ok(..) => panic!("wrong parsing"),
@@ -163,13 +164,14 @@ fn simple_sum() {
     let input = String::from("2 + 2");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
+        Ok(AST {
             node:
-                _Exp::Op {
+                Exp::Op {
                     oper: Oper::PlusOp,
                     ..
                 },
             pos: Pos { line: 0, column: 0 },
+            typ: _,
         }) => (),
         Ok(..) => panic!("wrong parsing"),
         Err(..) => panic!("parser fails in a well-formed expression"),
@@ -181,13 +183,14 @@ fn simple_mult() {
     let input = String::from("2 * 2");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
+        Ok(AST {
             node:
-                _Exp::Op {
+                Exp::Op {
                     oper: Oper::TimesOp,
                     ..
                 },
             pos: Pos { line: 0, column: 0 },
+            typ: _,
         }) => (),
         Ok(..) => panic!("wrong parsing"),
         Err(..) => panic!("parser fails in a well-formed expression"),
@@ -199,13 +202,14 @@ fn simple_comp() {
     let input = String::from("2 >= 2");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
+        Ok(AST {
             node:
-                _Exp::Op {
+                Exp::Op {
                     oper: Oper::GeOp,
                     ..
                 },
             pos: Pos { line: 0, column: 0 },
+            typ: _,
         }) => (),
         Ok(..) => panic!("wrong parsing"),
         Err(..) => panic!("parser fails in a well-formed expression"),
@@ -217,8 +221,8 @@ fn recordexp() {
     let input = String::from("{first_name: \"Jhon\", last_name: \"doe\", age: 42}");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
-            node: _Exp::Record {..},
+        Ok(AST {
+            node: Exp::Record {..},
             ..
         }) => (),
         Ok(..) => panic!("wrong parsing"),
@@ -231,8 +235,8 @@ fn seqexp() {
     let input = String::from("(1;2)");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
-            node: _Exp::Seq(_),
+        Ok(AST {
+            node: Exp::Seq(_),
             ..
         }) => (),
         Ok(..) => panic!("wrong parsing"),
@@ -245,10 +249,10 @@ fn assignexp() {
     let input = String::from("foo = 42");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
+        Ok(AST {
             node:
-                _Exp::Assign {
-                    var: Var::Simple(_),
+                Exp::Assign {
+                    var: Var{kind: VarKind::Simple(_), ..},
                     ..
                 },
             ..
@@ -263,9 +267,9 @@ fn ifexp() {
     let input = String::from("if 1 then 2 else 3");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
+        Ok(AST {
             node:
-                _Exp::If {
+                Exp::If {
                     ..
                 },
             ..
@@ -280,8 +284,8 @@ fn whileexp() {
     let input = String::from("for i :=0 to 100 do 1");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
-            node: _Exp::While {..},
+        Ok(AST {
+            node: Exp::While {..},
             ..
         }) => (),
         Ok(..) => panic!("wrong parsing"),
@@ -294,9 +298,9 @@ fn forexp() {
     let input = String::from("for i :=0 to 100 do 1");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
+        Ok(AST {
             node:
-                _Exp::For {
+                Exp::For {
                     ..
                 },
             ..
@@ -311,9 +315,9 @@ fn letexp_functiondec() {
     let input = String::from("let function foo() = 1 in 2 ");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
+        Ok(AST {
             node:
-                _Exp::Let {
+                Exp::Let {
                     ..
                 },
             ..
@@ -329,9 +333,9 @@ fn letexp_typedec_namety() {
     let input = String::from("let type numeritos = int in 2 ");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
+        Ok(AST {
             node:
-                _Exp::Let {
+                Exp::Let {
                     ..
                 },
             ..
@@ -346,9 +350,9 @@ fn letexp_typedec_recordty() {
     let input = String::from("let type name = {first_name: string, last_name: string} in 2 ");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
+        Ok(AST {
             node:
-                _Exp::Let {
+                Exp::Let {
                     ..
                 },
             ..
@@ -363,9 +367,9 @@ fn letexp_typedec_arrayty() {
     let input = String::from("let type intArray = array of int in 2 ");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
+        Ok(AST {
             node:
-                _Exp::Let {
+                Exp::Let {
                     ..
                 },
             ..
@@ -381,9 +385,9 @@ fn letexp_arrayexp() {
     let input = String::from("arrtype [10] of 0");
     let parsed = parse(input);
     match parsed {
-        Ok(Exp {
+        Ok(AST {
             node:
-                _Exp::Array {
+                Exp::Array {
                     ..
                 },
             ..

@@ -3,32 +3,32 @@ use crate::ast::tigerabs::*;
 
 grammar;
 
-pub Expr: Box<Exp> = {
-    <l: Expr> "|" <r: CompExp> => {
-        let no_pos_exp = _Exp::If {
+pub ASTr: Box<AST> = {
+    <l: ASTr> "|" <r: CompAST> => {
+        let no_pos_exp = Exp::If {
             test: l,
-            then_: posed_exp(_Exp::Int(1), 0, 0),
+            then_: posed_exp(Exp::Int(1), 0, 0),
             else_: Some(r),
         };
         return posed_exp(no_pos_exp, 0, 0)
     },
-    <l: Expr> "&" <r: CompExp> => {
-        let no_pos_exp = _Exp::If {
+    <l: ASTr> "&" <r: CompAST> => {
+        let no_pos_exp = Exp::If {
             test: l,
             then_: r,
-            else_: Some(posed_exp(_Exp::Int(0), 0, 0)),
+            else_: Some(posed_exp(Exp::Int(0), 0, 0)),
         };
         return posed_exp(no_pos_exp, 0, 0)
     },
-    CompExp,
+    CompAST,
 }
 
-pub CompExp: Box<Exp> = {
-    <l:AddExp> <o:CompOp> <r:AddExp> => {
-        let no_pos_exp = _Exp::Op {left: l, oper: o, right: r};
+pub CompAST: Box<AST> = {
+    <l:AddAST> <o:CompOp> <r:AddAST> => {
+        let no_pos_exp = Exp::Op {left: l, oper: o, right: r};
         return posed_exp(no_pos_exp, 0, 0)
     },
-    AddExp,
+    AddAST,
 }
 
 CompOp: Oper = {
@@ -40,12 +40,12 @@ CompOp: Oper = {
     "<>" => Oper::NeqOp,
 }
 
-AddExp: Box<Exp> = {
-    <l:AddExp> <o:AddOp> <r:MultExp> => {
-        let no_pos_exp = _Exp::Op {left: l, oper: o, right: r};
+AddAST: Box<AST> = {
+    <l:AddAST> <o:AddOp> <r:MultAST> => {
+        let no_pos_exp = Exp::Op {left: l, oper: o, right: r};
         return posed_exp(no_pos_exp, 0, 0)
     },
-    MultExp,
+    MultAST,
 }
 
 AddOp: Oper = {
@@ -53,9 +53,9 @@ AddOp: Oper = {
     "-" => Oper::MinusOp,
 };
 
-MultExp: Box<Exp> = {
-    <l:MultExp> <o:MultOp> <r:Term> => {
-        let no_pos_exp = _Exp::Op {left: l, oper: o, right: r};
+MultAST: Box<AST> = {
+    <l:MultAST> <o:MultOp> <r:Term> => {
+        let no_pos_exp = Exp::Op {left: l, oper: o, right: r};
         return posed_exp(no_pos_exp, 0, 0)
     },
     Term,
@@ -66,12 +66,12 @@ MultOp: Oper = {
     "/" => Oper::DivideOp,
 };
 
-Term: Box<Exp> = {
+Term: Box<AST> = {
     Num => {
-        let no_pos_exp = _Exp::Int(<>);
+        let no_pos_exp = Exp::Int(<>);
         return posed_exp(no_pos_exp, 0, 0)
     },
-    "(" <Expr> ")",
+    "(" <ASTr> ")",
 };
 
 Num: i32 = {

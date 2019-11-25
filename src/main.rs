@@ -26,16 +26,8 @@ use typecheck::{initial_type_env, initial_value_env, type_exp, TigerType, R};
 //extern crate lalrpop_util;
 extern crate pathfinding;
 
-fn possed_exp(exp: _Exp) -> Exp {
-    Exp {node: exp, pos: Pos {line: 0, column: 0}}
-}
-
-fn boxed_exp(exp: _Exp) -> Box<Exp> {
-    Box::new(Exp {node: exp, pos: Pos {line: 0, column: 0}})
-}
-
 fn main() {
-    let exp = possed_exp(_Exp::Let {
+    let exp = make_ast(Exp::Let {
         decs: vec![
             Dec::TypeDec(vec![(
                 _TypeDec::new(
@@ -59,19 +51,19 @@ fn main() {
                 _VarDec::new(
                     Symbol::from("foo"),
                     Some(Symbol::from("List")),
-                    boxed_exp(_Exp::Record {
+                    boxed_ast(Exp::Record {
                         fields: vec![
-                            (Symbol::from("head"), boxed_exp(_Exp::Int(1))),
-                            (Symbol::from("tail"), boxed_exp(_Exp::Record {
+                            (Symbol::from("head"), boxed_ast(Exp::Int(1))),
+                            (Symbol::from("tail"), boxed_ast(Exp::Record {
                                 fields: vec![
-                                    (Symbol::from("head"), boxed_exp(_Exp::Int(2))),
-                                    (Symbol::from("tail"), boxed_exp(_Exp::Record {
+                                    (Symbol::from("head"), boxed_ast(Exp::Int(2))),
+                                    (Symbol::from("tail"), boxed_ast(Exp::Record {
                                         fields: vec![
-                                            (Symbol::from("head"), boxed_exp(_Exp::Int(3))),
-                                            (Symbol::from("tail"), boxed_exp(_Exp::Record {
+                                            (Symbol::from("head"), boxed_ast(Exp::Int(3))),
+                                            (Symbol::from("tail"), boxed_ast(Exp::Record {
                                                 fields: vec![
-                                                    (Symbol::from("head"), boxed_exp(_Exp::Int(4))),
-                                                    (Symbol::from("tail"), boxed_exp(_Exp::Nil))
+                                                    (Symbol::from("head"), boxed_ast(Exp::Int(4))),
+                                                    (Symbol::from("tail"), boxed_ast(Exp::Nil))
                                                 ],
                                                 typ: Symbol::from("List"),
                                             }))
@@ -87,19 +79,19 @@ fn main() {
                 ),
                 Pos{line: 0, column: 2}
             )],
-        body: boxed_exp(_Exp::Var(
-            Var::Field(
-                Box::new(Var::Simple(Symbol::from("foo"))),
+        body: boxed_ast(Exp::Var(
+            make_var(VarKind::Field(
+                boxed_var(VarKind::Simple(Symbol::from("foo"))),
                 Symbol::from("head")
-            )
+            ))
         ))
     });
     let type_env = initial_type_env();
     let value_env = initial_value_env();
-    let res = type_exp(&exp, &type_env, &value_env);
+    let res = type_exp(exp, &type_env, &value_env);
     match res {
-        Ok(tiger_type) if *tiger_type == TigerType::TInt(R::RW) => (),
-        Ok(tiger_type) => panic!("wrong type: {:?}", tiger_type),
+        Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+        Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
         Err(type_error) => panic!("type error: {:?}", type_error)
     }
 }

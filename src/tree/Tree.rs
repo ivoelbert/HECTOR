@@ -1,22 +1,22 @@
 use super::level::{Label, Temp};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Exp {
+pub enum AST {
     CONST(i64),
     NAME(Label),
     TEMP(Temp),
-    BINOP(BinOp, Box<Exp>, Box<Exp>),
-    MEM(Box<Exp>),
-    CALL(Box<Exp>, Vec<Exp>),
-    ESEQ(Box<Stm>, Box<Exp>)
+    BINOP(BinOp, Box<AST>, Box<AST>),
+    MEM(Box<AST>),
+    CALL(Box<AST>, Vec<AST>),
+    ESEQ(Box<Stm>, Box<AST>)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Stm {
-    EXP(Box<Exp>),
-    MOVE(Box<Exp>, Box<Exp>),
-    JUMP(Exp, Vec<Label>),
-    CJUMP(RelOp, Exp, Exp, Label, Label),
+    EXP(Box<AST>),
+    MOVE(Box<AST>, Box<AST>),
+    JUMP(AST, Vec<Label>),
+    CJUMP(RelOp, AST, AST, Label, Label),
     SEQ(Box<Stm>, Box<Stm>),
     LABEL(Label)
 }
@@ -69,7 +69,7 @@ pub fn seq(mut stms: Vec<Stm>) -> Stm {
     let maybe_stm = stms.pop();
     match maybe_stm {
         Some(s) => Stm::SEQ(Box::new(s), Box::new(seq(stms))),
-        None => Stm::EXP(Box::new(Exp::CONST(0))),
+        None => Stm::EXP(Box::new(AST::CONST(0))),
     }
 }
 

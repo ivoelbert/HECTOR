@@ -1,20 +1,10 @@
-use super::super::ast::*;
-use super::super::ast::position::*;
-use super::super::tree::escape::*;
-
-
-fn possed_exp(exp: _Exp) -> Exp {
-    Exp {node: exp, pos: Pos {line: 0, column: 0}}
-}
-
-fn boxed_exp(exp: _Exp) -> Box<Exp> {
-    Box::new(Exp {node: exp, pos: Pos {line: 0, column: 0}})
-}
-
+use crate::ast::*;
+use crate::ast::position::*;
+use crate::tree::escape::*;
 
 #[test]
 fn escaped_arguments() {
-    let exp = possed_exp(_Exp::Let {
+    let exp = make_ast(Exp::Let {
         decs: vec![
             Dec::FunctionDec(vec![(
                 _FunctionDec::new(
@@ -25,7 +15,7 @@ fn escaped_arguments() {
                         escape: false,
                     }],
                     Some(Symbol::from("int")),
-                    boxed_exp(_Exp::Let {
+                    boxed_ast(Exp::Let {
                         decs: vec![
                             Dec::FunctionDec(vec![(
                                 _FunctionDec::new(
@@ -36,30 +26,30 @@ fn escaped_arguments() {
                                         escape: false,
                                     }],
                                     Some(Symbol::from("int")),
-                                    boxed_exp(_Exp::Op {
-                                        left: boxed_exp(_Exp::Var(Var::Simple(Symbol::from("arg1")))),
-                                        right: boxed_exp(_Exp::Var(Var::Simple(Symbol::from("arg2")))),
+                                    boxed_ast(Exp::Op {
+                                        left: boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("arg1"))))),
+                                        right: boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("arg2"))))),
                                         oper: Oper::PlusOp
                                     }),
                                 ),
                                 Pos{line: 0, column: 0}
                             )]),
                         ],
-                        body: boxed_exp(_Exp::Call {
+                        body: boxed_ast(Exp::Call {
                             func: Symbol::from("baaz"),
-                            args: vec![possed_exp(_Exp::Int(2))]
+                            args: vec![make_ast(Exp::Int(2))]
                         })
                     }),
                 ),
                 Pos{line: 0, column: 0}
             )]),
         ],
-        body: boxed_exp(_Exp::Call {
+        body: boxed_ast(Exp::Call {
             func: Symbol::from("fun1"),
-            args: vec![possed_exp(_Exp::Int(2))]
+            args: vec![make_ast(Exp::Int(2))]
         })
     });
-    if let Exp {node: _Exp::Let {decs, ..}, ..} = find_escapes(exp) {
+    if let AST {node: Exp::Let {decs, ..}, ..} = find_escapes(exp) {
         if let Some((Dec::FunctionDec(funs), ..)) = decs.split_first() {
             if let Some(((_FunctionDec{params, ..}, ..), ..)) = funs.split_first() {
                 if let Some((Field {escape, ..}, ..)) = params.split_first() {
@@ -77,7 +67,7 @@ fn escaped_arguments() {
 
 #[test]
 fn not_escaped_arguments() {
-    let exp = possed_exp(_Exp::Let {
+    let exp = make_ast(Exp::Let {
         decs: vec![
             Dec::FunctionDec(vec![(
                 _FunctionDec::new(
@@ -88,7 +78,7 @@ fn not_escaped_arguments() {
                         escape: false,
                     }],
                     Some(Symbol::from("int")),
-                    boxed_exp(_Exp::Let {
+                    boxed_ast(Exp::Let {
                         decs: vec![
                             Dec::FunctionDec(vec![(
                                 _FunctionDec::new(
@@ -99,30 +89,30 @@ fn not_escaped_arguments() {
                                         escape: false,
                                     }],
                                     Some(Symbol::from("int")),
-                                    boxed_exp(_Exp::Op {
-                                        left: boxed_exp(_Exp::Var(Var::Simple(Symbol::from("arg2")))),
-                                        right: boxed_exp(_Exp::Var(Var::Simple(Symbol::from("arg2")))),
+                                    boxed_ast(Exp::Op {
+                                        left: boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("arg2"))))),
+                                        right: boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("arg2"))))),
                                         oper: Oper::PlusOp
                                     }),
                                 ),
                                 Pos{line: 0, column: 0}
                             )]),
                         ],
-                        body: boxed_exp(_Exp::Call {
+                        body: boxed_ast(Exp::Call {
                             func: Symbol::from("baaz"),
-                            args: vec![possed_exp(_Exp::Int(2))]
+                            args: vec![make_ast(Exp::Int(2))]
                         })
                     }),
                 ),
                 Pos{line: 0, column: 0}
             )]),
         ],
-        body: boxed_exp(_Exp::Call {
+        body: boxed_ast(Exp::Call {
             func: Symbol::from("fun1"),
-            args: vec![possed_exp(_Exp::Int(2))]
+            args: vec![make_ast(Exp::Int(2))]
         })
     });
-    if let Exp {node: _Exp::Let {decs, ..}, ..} = find_escapes(exp) {
+    if let AST {node: Exp::Let {decs, ..}, ..} = find_escapes(exp) {
         if let Some((Dec::FunctionDec(funs), ..)) = decs.split_first() {
             if let Some(((_FunctionDec{params, ..}, ..), ..)) = funs.split_first() {
                 if let Some((Field {escape, ..}, ..)) = params.split_first() {
@@ -140,10 +130,10 @@ fn not_escaped_arguments() {
 
 #[test]
 fn escaped_var() {
-    let exp = possed_exp(_Exp::Let {
+    let exp = make_ast(Exp::Let {
         decs: vec![
             Dec::VarDec(
-                _VarDec{name: Symbol::from("var1"), escape: false, init: boxed_exp(_Exp::Int(1)), typ: None}, // var defined here
+                _VarDec{name: Symbol::from("var1"), escape: false, init: boxed_ast(Exp::Int(1)), typ: None}, // var defined here
                 Pos{line: 0, column: 0}
             ),
             Dec::FunctionDec(vec![(
@@ -155,17 +145,17 @@ fn escaped_var() {
                         escape: false,
                     }],
                     Some(Symbol::from("int")),
-                    boxed_exp(_Exp::Var(Var::Simple(Symbol::from("var1")))), // and used here
+                    boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("var1"))))), // and used here
                 ),
                 Pos{line: 0, column: 0}
             )]),
         ],
-        body: boxed_exp(_Exp::Call {
+        body: boxed_ast(Exp::Call {
             func: Symbol::from("fun1"),
-            args: vec![possed_exp(_Exp::Int(2))]
+            args: vec![make_ast(Exp::Int(2))]
         })
     });
-    if let Exp {node: _Exp::Let {decs, ..}, ..} = find_escapes(exp) {
+    if let AST {node: Exp::Let {decs, ..}, ..} = find_escapes(exp) {
         if let Some((Dec::VarDec(_VarDec{escape, ..}, ..), ..)) = decs.split_first() {
             if *escape {
                 return () // PASS
@@ -178,10 +168,10 @@ fn escaped_var() {
 }
 #[test]
 fn not_escaped_var() {
-    let exp = possed_exp(_Exp::Let {
+    let exp = make_ast(Exp::Let {
         decs: vec![
             Dec::VarDec(
-                _VarDec{name: Symbol::from("var1"), escape: false, init: boxed_exp(_Exp::Int(1)), typ: None}, // var defined, never used
+                _VarDec{name: Symbol::from("var1"), escape: false, init: boxed_ast(Exp::Int(1)), typ: None}, // var defined, never used
                 Pos{line: 0, column: 0}
             ),
             Dec::FunctionDec(vec![(
@@ -193,17 +183,17 @@ fn not_escaped_var() {
                         escape: false,
                     }],
                     Some(Symbol::from("int")),
-                    boxed_exp(_Exp::Var(Var::Simple(Symbol::from("arg1")))),  // and used here
+                    boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("arg1"))))),  // and used here
                 ),
                 Pos{line: 0, column: 0}
             )]),
         ],
-        body: boxed_exp(_Exp::Call {
+        body: boxed_ast(Exp::Call {
             func: Symbol::from("fun1"),
-            args: vec![possed_exp(_Exp::Int(2))]
+            args: vec![make_ast(Exp::Int(2))]
         })
     });
-    if let Exp {node: _Exp::Let {decs, ..}, ..} = find_escapes(exp) {
+    if let AST {node: Exp::Let {decs, ..}, ..} = find_escapes(exp) {
         if let Some((Dec::VarDec(_VarDec{escape, ..}, ..), ..)) = decs.split_first() {
             if !*escape {
                 return () // PASS
@@ -218,11 +208,11 @@ fn not_escaped_var() {
 #[test]
 fn escaped_for() {
     // TODO
-    let exp = possed_exp(_Exp::For {
+    let exp = make_ast(Exp::For {
         var: Symbol::from("i"), // iterator defined here
-        lo: boxed_exp(_Exp::Int(1)),
-        hi: boxed_exp(_Exp::Int(1)),
-        body: boxed_exp(_Exp::Let {
+        lo: boxed_ast(Exp::Int(1)),
+        hi: boxed_ast(Exp::Int(1)),
+        body: boxed_ast(Exp::Let {
             decs: vec![
                 Dec::FunctionDec(vec![(
                     _FunctionDec::new(
@@ -233,30 +223,30 @@ fn escaped_for() {
                             escape: false,
                         }],
                         Some(Symbol::from("int")),
-                        boxed_exp(_Exp::Var(Var::Simple(Symbol::from("i")))), // and used here
+                        boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("i"))))), // and used here
                     ),
                     Pos{line: 0, column: 0}
                 )]),
             ],
-            body: boxed_exp(_Exp::Call {
+            body: boxed_ast(Exp::Call {
                 func: Symbol::from("fun1"),
-                args: vec![possed_exp(_Exp::Int(2))]
+                args: vec![make_ast(Exp::Int(2))]
             })
         }),
         escape: false
     });
-    if let Exp {node: _Exp::For {escape, ..}, ..} = find_escapes(exp) {
+    if let AST {node: Exp::For {escape, ..}, ..} = find_escapes(exp) {
         assert!(escape)
     }
 }
 #[test]
 fn not_escaped_for() {
     // TODO
-    let exp = possed_exp(_Exp::For {
+    let exp = make_ast(Exp::For {
         var: Symbol::from("i"), // iterator defined here
-        lo: boxed_exp(_Exp::Int(1)),
-        hi: boxed_exp(_Exp::Int(1)),
-        body: boxed_exp(_Exp::Let {
+        lo: boxed_ast(Exp::Int(1)),
+        hi: boxed_ast(Exp::Int(1)),
+        body: boxed_ast(Exp::Let {
             decs: vec![
                 Dec::FunctionDec(vec![(
                     _FunctionDec::new(
@@ -267,19 +257,19 @@ fn not_escaped_for() {
                             escape: false,
                         }],
                         Some(Symbol::from("int")),
-                        boxed_exp(_Exp::Var(Var::Simple(Symbol::from("arg1")))), // but not used
+                        boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("arg1"))))), // but not used
                     ),
                     Pos{line: 0, column: 0}
                 )]),
             ],
-            body: boxed_exp(_Exp::Call {
+            body: boxed_ast(Exp::Call {
                 func: Symbol::from("fun1"),
-                args: vec![possed_exp(_Exp::Int(2))]
+                args: vec![make_ast(Exp::Int(2))]
             })
         }),
         escape: false
     });
-    if let Exp {node: _Exp::For {escape, ..}, ..} = find_escapes(exp) {
+    if let AST {node: Exp::For {escape, ..}, ..} = find_escapes(exp) {
         assert!(!escape)
     }
 }

@@ -2,14 +2,14 @@ use crate::ast::*;
 use crate::tree::*;
 
 pub fn trans_exp(
-    Exp { node, .. }: &Exp,
+    AST { node, .. }: &AST,
     level: Level,
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,
-) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
+) -> Result<(Tree::AST, Level, Vec<Fragment>), TransError> {
     match node {
-        _Exp::Call { func, args } => {
+        Exp::Call { func, args } => {
             let entry = value_env
                 .get(func)
                 .expect("typecheck should make sure this is found");
@@ -30,7 +30,7 @@ pub fn trans_exp(
 }
 
 pub fn trans_stm(
-    exp: &Exp,
+    exp: &AST,
     level: Level,
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
