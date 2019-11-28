@@ -300,27 +300,15 @@ VarEx: Var = {
 }
 
 Num: i64 = {
-    <n:"Number"> => if let lexer::Tok::Number(i) = n {
-        return i;
-    } else {
-        panic!("Could not extract i64 from Number token");
-    }
+    <n:"Number"> => n
 };
 
 Sym: String = {
-    <s:"Symbol"> => if let lexer::Tok::Symbol(name) = s {
-        return name;
-    } else {
-        panic!("Could not extract String from Symbol token");
-    }
+    <s:"Symbol"> => s
 }
 
 Str: String = {
-    <s:"StringLiteral"> => if let lexer::Tok::Str(literal) = s {
-        return literal;
-    } else {
-        panic!("Could not extract String from Str token");
-    }
+    <s:"StringLiteral"> => s
 }
 
 DecsEx: Vec<Dec> = {
@@ -436,9 +424,9 @@ extern {
         "to" => lexer::Tok::To,
         "break" => lexer::Tok::Break,
         "nil" => lexer::Tok::Nil,
-        "Symbol" => lexer::Tok::Symbol(String),
-        "StringLiteral" => lexer::Tok::Str(String),
-        "Number" => lexer::Tok::Number(i64),
+        "Symbol" => lexer::Tok::Symbol(<String>),
+        "StringLiteral" => lexer::Tok::Str(<String>),
+        "Number" => lexer::Tok::Number(<i64>),
         "/*" => lexer::Tok::OpenComen, // Shouldn't appear
         "*/" => lexer::Tok::CloseComen, // Shouldn't appear
         "//" => lexer::Tok::LineComen, // Shouldn't appear

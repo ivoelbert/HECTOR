@@ -275,7 +275,7 @@ impl<'input> Iterator for Lexer<'input> {
                         }
                         _ => {
                             self.transition(state_transition);
-                            return Some(Ok((0, t, 1));
+                            return Some(Ok((0, t, 1)));
                         }
                     };
                 }

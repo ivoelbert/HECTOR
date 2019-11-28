@@ -37,6 +37,9 @@ fn basic_full_tokens() {
             panic!("Lex error!");
         }
     }
+
+    parse(contents);
+    return;
 }
 
 #[test]
@@ -52,6 +55,10 @@ fn basic_compound_tokens() {
             panic!("Lex error!");
         }
     }
+
+    println!("Parser output:\n\n");
+    parse(contents);
+    return;
 }
 
 #[test]
@@ -67,6 +74,10 @@ fn complex_compound_tokens() {
             panic!("Lex error!");
         }
     }
+
+    println!("Parser output:\n\n");
+    parse(contents);
+    return;
 }
 
 #[test]
@@ -82,6 +93,10 @@ fn simple_line_comments() {
             panic!("Lex error!");
         }
     }
+
+    println!("Parser output:\n\n");
+    parse(contents);
+    return;
 }
 
 #[test]
@@ -97,6 +112,10 @@ fn simple_block_comments() {
             panic!("Lex error!");
         }
     }
+
+    println!("Parser output:\n\n");
+    parse(contents);
+    return;
 }
 
 #[test]
@@ -112,6 +131,10 @@ fn simple_strings() {
             panic!("Lex error!");
         }
     }
+
+    println!("Parser output:\n\n");
+    parse(contents);
+    return;
 }
 
 #[test]
@@ -127,6 +150,10 @@ fn spaced_strings() {
             panic!("Lex error!");
         }
     }
+
+    println!("Parser output:\n\n");
+    parse(contents);
+    return;
 }
 
 #[test]
@@ -142,6 +169,10 @@ fn escaped_strings() {
             panic!("Lex error!");
         }
     }
+
+    println!("Parser output:\n\n");
+    parse(contents);
+    return;
 }
 
 #[test]
@@ -157,4 +188,8 @@ fn multiline_strings() {
             panic!("Lex error!");
         }
     }
+
+    println!("Parser output:\n\n");
+    parse(contents);
+    return;
 }
