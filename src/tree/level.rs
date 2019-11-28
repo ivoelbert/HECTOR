@@ -12,7 +12,7 @@ type LocalTemp = uid::Id<u16>;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Temp {
     FRAME_POINTER,
-    RV,
+    RV, // Return Value
     // Other special temps.
     Local(LocalTemp),
 }

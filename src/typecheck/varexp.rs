@@ -1,6 +1,6 @@
 use super::*;
 
-fn field_type(fields: &[(String, Arc<TigerType>, u8)], symbol: &str) -> Option<Arc<TigerType>> {
+fn field_type(fields: &[(String, Arc<TigerType>, i64)], symbol: &str) -> Option<Arc<TigerType>> {
     for field in fields {
         if field.0 == symbol {
             return Some(field.1.clone());

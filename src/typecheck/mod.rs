@@ -36,7 +36,7 @@ pub enum TigerType {
     TInt(R),
     TString,
     TArray(Arc<TigerType>, TypeId),
-    TRecord(Vec<(String, Arc<TigerType>, u8)>, TypeId),
+    TRecord(Vec<(String, Arc<TigerType>, i64)>, TypeId),
     Internal(String),
     Untyped,
 }

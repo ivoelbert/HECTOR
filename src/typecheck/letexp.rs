@@ -49,7 +49,7 @@ fn ty_to_tigertype(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<Arc<T
             None => Err(TypeError::UndeclaredType(pos)),
         },
         Ty::Record(fields_vector) => {
-            let mut record: Vec<(String, Arc<TigerType>, u8)> = vec![];
+            let mut record: Vec<(String, Arc<TigerType>, i64)> = vec![];
             for (i, Field {name,typ: field_ty, ..}) in fields_vector.iter().enumerate() {
                 record.push((
                     name.clone(),
@@ -308,7 +308,7 @@ fn typecheck_typedec_batch(
     for (_TypeDec { name, ty }, pos) in records {
             match ty {
                 Ty::Record(fields_vector) => {
-                    let mut record: Vec<(String, Arc<TigerType>, u8)> = vec![];
+                    let mut record: Vec<(String, Arc<TigerType>, i64)> = vec![];
                     for (i, Field {name,typ: field_ty, ..}) in fields_vector.iter().enumerate() {
                         record.push((
                             name.clone(),

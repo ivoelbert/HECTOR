@@ -1,22 +1,22 @@
 use super::level::{Label, Temp};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum AST {
+pub enum Exp {
     CONST(i64),
     NAME(Label),
     TEMP(Temp),
-    BINOP(BinOp, Box<AST>, Box<AST>),
-    MEM(Box<AST>),
-    CALL(Box<AST>, Vec<AST>),
-    ESEQ(Box<Stm>, Box<AST>)
+    BINOP(BinOp, Box<Exp>, Box<Exp>),
+    MEM(Box<Exp>),
+    CALL(Box<Exp>, Vec<Exp>),
+    ESEQ(Box<Stm>, Box<Exp>)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Stm {
-    EXP(Box<AST>),
-    MOVE(Box<AST>, Box<AST>),
-    JUMP(AST, Vec<Label>),
-    CJUMP(RelOp, AST, AST, Label, Label),
+    EXP(Box<Exp>),
+    MOVE(Box<Exp>, Box<Exp>),
+    JUMP(Exp, Vec<Label>),
+    CJUMP(BinOp, Exp, Exp, Label, Label),
     SEQ(Box<Stm>, Box<Stm>),
     LABEL(Label)
 }
@@ -32,11 +32,7 @@ pub enum BinOp {
     LSHIFT,
     RSHIFT,
     ARSHIFT,
-    XOR
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum RelOp {
+    XOR,
     EQ,
     NE,
     LT,
@@ -49,8 +45,22 @@ pub enum RelOp {
     UGE
 }
 
-pub fn not_rel(ro : &RelOp) -> RelOp {
-    use RelOp::*;
+// #[derive(Debug, Clone, PartialEq, Eq)]
+// pub enum RelOp {
+//     EQ,
+//     NE,
+//     LT,
+//     GT,
+//     LE,
+//     GE,
+//     ULT,
+//     ULE,
+//     UGT,
+//     UGE
+// }
+
+pub fn not_rel(ro : &BinOp) -> BinOp {
+    use BinOp::*;
     match ro {
         EQ => NE,
 	    NE => EQ,
@@ -61,7 +71,8 @@ pub fn not_rel(ro : &RelOp) -> RelOp {
 	    ULT => UGE,
 	    UGE => ULT,
 	    ULE => UGT,
-	    UGT => ULE,
+        UGT => ULE,
+        _ => panic!()
     }
 }
 
@@ -69,7 +80,7 @@ pub fn seq(mut stms: Vec<Stm>) -> Stm {
     let maybe_stm = stms.pop();
     match maybe_stm {
         Some(s) => Stm::SEQ(Box::new(s), Box::new(seq(stms))),
-        None => Stm::EXP(Box::new(AST::CONST(0))),
+        None => Stm::EXP(Box::new(Exp::CONST(0))),
     }
 }
 

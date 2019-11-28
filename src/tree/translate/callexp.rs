@@ -7,7 +7,7 @@ pub fn trans_exp(
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,
-) -> Result<(Tree::AST, Level, Vec<Fragment>), TransError> {
+) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
     match node {
         Exp::Call { func, args } => {
             let entry = value_env

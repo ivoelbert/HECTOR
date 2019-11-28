@@ -5,11 +5,11 @@ pub mod frame;
 #[macro_use]
 pub mod Tree;
 mod translate;
-pub mod level;
+mod level;
 
 use crate::ast::position::Pos;
 #[allow(non_snake_case)]
-pub use level::*;
+use level::*;
 type Access = frame::Access;
 pub type Fragment = frame::Frag;
 
@@ -32,11 +32,11 @@ pub enum EnvEntry {
 
 use std::collections::HashMap;
 use crate::ast::Symbol;
-pub type ValueEnviroment = HashMap<Symbol, EnvEntry>;
+type ValueEnviroment = HashMap<Symbol, EnvEntry>;
 
 
 // TODO: check for correctnes
-pub fn initial_value_env() -> ValueEnviroment {
+fn initial_value_env() -> ValueEnviroment {
     use EnvEntry::*;
     let mut value_env = ValueEnviroment::new();
     value_env.insert(Symbol::from("print"), Func {
@@ -82,10 +82,9 @@ pub fn initial_value_env() -> ValueEnviroment {
     value_env
 }
 
-use Tree::AST::*;
+use Tree::Exp::*;
 use Tree::Stm::*;
 use Tree::BinOp::*;
-use Tree::RelOp::*;
 use Tree::seq;
 
 pub use translate::translate;

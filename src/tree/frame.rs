@@ -14,8 +14,10 @@ pub struct Frame {
     actual_reg: i64
 }
 
+// TODO: all of this constants
 pub static LOCAL_GAP: i64 = 4;
-pub static STATIC_LINK_OFFSET: i64 = 1337; // TODO
+pub static STATIC_LINK_OFFSET: i64 = 1337;
+pub static WORD_SIZE: i64 = 4;
 
 #[derive(Clone, Copy, Debug)]
 pub enum Access {
@@ -67,7 +69,7 @@ impl Frame {
         Access::InReg(newtemp())
     }
     // proc_name could be an str
-    pub fn external_call(proc_label: Label, args: Vec<Tree::AST>) -> Tree::AST {
+    pub fn external_call(proc_label: Label, args: Vec<Tree::Exp>) -> Tree::Exp {
         CALL(Box::new(NAME(proc_label)), args)
     }
 }

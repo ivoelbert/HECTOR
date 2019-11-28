@@ -27,7 +27,7 @@ fn trans_exp(
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
     prev_frags: Vec<Fragment>,
-) -> Result<(Tree::AST, Level, Vec<Fragment>), TransError> {
+) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
     match exp {
         AST { node, .. } => match node {
             Exp::Var(var) => varexp::trans_var(var, level, value_env, breaks_stack, prev_frags),
@@ -77,8 +77,8 @@ fn translate_many_exp(
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
     mut frags: Vec<Fragment>,
-) -> Result<(Vec<Tree::AST>, Level, Vec<Fragment>), TransError> {
-    let mut interm_exps : Vec<Tree::AST> = vec![];
+) -> Result<(Vec<Tree::Exp>, Level, Vec<Fragment>), TransError> {
+    let mut interm_exps : Vec<Tree::Exp> = vec![];
     for exp in exps {
         let (i, l, f) = trans_exp(exp, level, value_env, breaks_stack, frags)?;
         level = l;
