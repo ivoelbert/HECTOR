@@ -1,6 +1,8 @@
 #![allow(clippy::pub_enum_variant_names)]
 extern crate uid;
 use std::collections::HashMap;
+use serde::{Serialize, Serializer};
+
 pub use std::sync::{Arc, Weak};
 use crate::ast::*;
 
@@ -21,7 +23,7 @@ mod stringexp;
 mod callexp;
 mod breakexp;
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize)]
 pub enum R {
     RO,
     RW
@@ -40,6 +42,41 @@ pub enum TigerType {
     Internal(String),
     Untyped,
 }
+
+impl Serialize for TigerType {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            TigerType::TUnit => {
+                serializer.serialize_str("Unit")
+            }
+            TigerType::TNil => {
+                serializer.serialize_str("Nil")
+            }
+            TigerType::TString => {
+                serializer.serialize_str("String")
+            }
+            TigerType::TInt(..) => {
+                serializer.serialize_str("Int")
+            }
+            TigerType::TArray(..) => {
+                serializer.serialize_str("Array")
+            }
+            TigerType::TRecord(..) => {
+                serializer.serialize_str("Record")
+            }
+            TigerType::Internal(..) => {
+                serializer.serialize_str("Internal")
+            }
+            TigerType::Untyped => {
+                serializer.serialize_str("Untyped")
+            }
+        }
+    }
+}
+
 
 pub fn tipo_real(t: Arc<TigerType>, tenv: &TypeEnviroment) -> Arc<TigerType> {
     match &*t {

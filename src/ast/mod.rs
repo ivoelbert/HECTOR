@@ -3,33 +3,34 @@ pub mod parser;
 mod token;
 
 use std::fmt::{self, Debug, Formatter};
+use serde::Serialize;
 pub use crate::typecheck::{TigerType, Arc};
 pub use position::{Pos, WithPos};
 
 pub type Symbol = String;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct AST {
     pub node: Exp,
     pub pos: Pos,
     pub typ: Arc<TigerType>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Var {
     pub kind: VarKind,
     pub pos: Pos,
     pub typ: Arc<TigerType>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub enum VarKind {
     Simple(Symbol),
     Field(Box<Var>, Symbol),
     Subscript(Box<Var>, Box<AST>),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub enum Exp {
     Var(Var),
     Unit,
@@ -106,13 +107,43 @@ impl Debug for Exp {
     }
 }
 
+impl std::fmt::Display for Exp {
+    fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
+        match self {
+            Exp::Var(var) => write!(formatter, "Var({:?})", var),
+            Exp::Unit => write!(formatter, "UNIT"),
+            Exp::Nil => write!(formatter, "NIL"),
+            Exp::Int(num) => write!(formatter, "Num({:?})", num),
+            Exp::String(string) => write!(formatter, "Str({:?})", string),
+            Exp::Call {func, args} => write!(formatter, "{:?}({:?})", func, args),
+            Exp::Op {left, oper, right} => write!(formatter, "({:?} {:?} {:?})", left, oper, right),
+            Exp::Record {fields, typ, ..} => write!(formatter, "(Record({:?}) {{ {:?} }})", typ, fields),
+            Exp::Seq(seq) => write!(formatter, "{:?}", seq),
+            Exp::Assign {var, exp} => write!(formatter, "({:?} := {:?})", var, exp),
+            Exp::If {test, then_, else_: Some(e)} => write!(formatter, "(if {:?} then {:?} else {:?})", test, then_, e),
+            Exp::If {test, then_, else_: None} => write!(formatter, "(if {:?} then {:?})", test, then_),
+            Exp::While {test, body} => write!(formatter, "(while({:?}) {{ {:?} }})", test, body),
+            Exp::For {var, lo, hi, body, ..} => write!(formatter, "(for {:?} := {:?} to {:?} {{ {:?} }} )", var, lo, hi, body),
+            Exp::Let {decs, body} => write!(formatter, "(Let {{ {:?} }} in {{ {:?} }})", decs, body),
+            Exp::Break => write!(formatter, "BREAK"),
+            Exp::Array {typ, size, init} => write!(formatter, "(Array({:?}) [{:?} x {:?}])", typ, size, init),
+        }
+    }
+}
+
 impl Debug for AST {
     fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
         write!(formatter, "{:?}", self.node)
     }
 }
 
-#[derive(Debug, Clone)]
+impl std::fmt::Display for AST {
+    fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
+        write!(formatter, "{:?}", self.node)
+    }
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct _FunctionDec {
     pub name: Symbol,
     pub params: Vec<Field>,
@@ -120,7 +151,7 @@ pub struct _FunctionDec {
     pub body: Box<AST>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct _VarDec {
     pub name: Symbol,
     pub escape: bool,
@@ -128,13 +159,13 @@ pub struct _VarDec {
     pub init: Box<AST>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct _TypeDec {
     pub name: Symbol,
     pub ty: Ty,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum Dec {
     FunctionDec(Vec<(_FunctionDec, Pos)>),
     VarDec(_VarDec, Pos),
@@ -172,7 +203,7 @@ impl _TypeDec {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum Ty {
     Name(Symbol),
     Record(Vec<Field>),
@@ -180,14 +211,14 @@ pub enum Ty {
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Field {
     pub name: Symbol,
     pub escape: bool,
     pub typ: Ty,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Serialize)]
 pub enum Oper {
     PlusOp,
     MinusOp,

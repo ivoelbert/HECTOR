@@ -1,7 +1,8 @@
 use std::fmt::{self, Display, Debug, Formatter};
+use serde::Serialize;
 use std::u32;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, Serialize)]
 pub struct Pos {
     pub column: u32,
     pub line: u32,
