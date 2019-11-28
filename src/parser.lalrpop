@@ -1,6 +1,7 @@
 use std::str::FromStr;
 use crate::ast::tigerabs::*;
 use crate::ast::position::*;
+use crate::ast::lexer;
 
 grammar;
 
@@ -298,16 +299,28 @@ VarEx: Var = {
     },
 }
 
-Num: i32 = {
-    r"[0-9]+" => i32::from_str(<>).unwrap()
+Num: i64 = {
+    <n:"Number"> => if let lexer::Tok::Number(i) = n {
+        return i;
+    } else {
+        panic!("Could not extract i64 from Number token");
+    }
 };
 
 Sym: String = {
-    r"[_a-zA-Z][_a-zA-Z0-9]*" => String::from_str(<>).unwrap()
+    <s:"Symbol"> => if let lexer::Tok::Symbol(name) = s {
+        return name;
+    } else {
+        panic!("Could not extract String from Symbol token");
+    }
 }
 
 Str: String = {
-    r#""(?:[^\\"\\\\]*(?:\.[^\\"\\\\]*)*)""# => String::from_str(<>).unwrap()
+    <s:"StringLiteral"> => if let lexer::Tok::Str(literal) = s {
+        return literal;
+    } else {
+        panic!("Could not extract String from Str token");
+    }
 }
 
 DecsEx: Vec<Dec> = {
@@ -375,5 +388,60 @@ TyFieldEx: Field = {
             escape: false,
             typ: Ty::NameTy(ty_name),
         }
+    }
+}
+
+extern {
+    type Location = usize;
+    type Error = lexer::LexicalError;
+
+    enum lexer::Tok {
+        "." => lexer::Tok::Point,
+        ":" => lexer::Tok::Colon,
+        ":=" => lexer::Tok::Assign,
+        "," => lexer::Tok::Comma,
+        ";" => lexer::Tok::Semicolon,
+        "(" => lexer::Tok::OpenParen,
+        ")" => lexer::Tok::CloseParen,
+        "[" => lexer::Tok::OpenBracket,
+        "]" => lexer::Tok::CloseBracket,
+        "{" => lexer::Tok::OpenBraces,
+        "}" => lexer::Tok::CloseBraces,
+        "&" => lexer::Tok::Ampersand,
+        "|" => lexer::Tok::Pipe,
+        "=" => lexer::Tok::Equals,
+        "<" => lexer::Tok::Lt,
+        "<=" => lexer::Tok::Lte,
+        ">" => lexer::Tok::Gt,
+        ">=" => lexer::Tok::Gte,
+        "<>" => lexer::Tok::Neq,
+        "+" => lexer::Tok::Plus,
+        "-" => lexer::Tok::Minus,
+        "*" => lexer::Tok::Times,
+        "/" => lexer::Tok::Div,
+        "type" => lexer::Tok::Type,
+        "array" => lexer::Tok::Array,
+        "of" => lexer::Tok::Of,
+        "var" => lexer::Tok::Var,
+        "function" => lexer::Tok::Function,
+        "let" => lexer::Tok::Let,
+        "in" => lexer::Tok::In,
+        "end" => lexer::Tok::End,
+        "if" => lexer::Tok::If,
+        "then" => lexer::Tok::Then,
+        "else" => lexer::Tok::Else,
+        "while" => lexer::Tok::While,
+        "do" => lexer::Tok::Do,
+        "for" => lexer::Tok::For,
+        "to" => lexer::Tok::To,
+        "break" => lexer::Tok::Break,
+        "nil" => lexer::Tok::Nil,
+        "Symbol" => lexer::Tok::Symbol(String),
+        "StringLiteral" => lexer::Tok::Str(String),
+        "Number" => lexer::Tok::Number(i64),
+        "/*" => lexer::Tok::OpenComen, // Shouldn't appear
+        "*/" => lexer::Tok::CloseComen, // Shouldn't appear
+        "//" => lexer::Tok::LineComen, // Shouldn't appear
+        "Quote" => lexer::Tok::Quote, // Shouldn't appear
     }
 }

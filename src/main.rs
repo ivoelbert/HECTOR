@@ -12,8 +12,8 @@ use ast::position::{Pos, WithPos};
 
 use seman::tigerseman::*;
 
-//#[macro_use]
-//extern crate lalrpop_util;
+#[macro_use]
+extern crate lalrpop_util;
 
 fn main() {
     let exp: Exp = WithPos {

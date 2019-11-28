@@ -2,10 +2,10 @@ use super::tigerabs::{Exp, _Exp};
 use super::position::{Pos, WithPos};
 use super::lexer::Lexer;
 use std::fs::{read_dir, read_to_string};
-//use lalrpop_util::lalrpop_mod;
+use lalrpop_util::lalrpop_mod;
 
-//#[macro_use]
-//lalrpop_mod!(pub parser);
+#[macro_use]
+lalrpop_mod!(pub parser);
 
 #[derive(Debug)]
 pub enum ParseError {
@@ -14,11 +14,14 @@ pub enum ParseError {
 
 
 pub fn parse(source : String) -> Result<Exp, ParseError> {
-    Err(ParseError::UnexpectedToken(Pos::new(0, 0)))
-    //let str_src: &str = &*source;
-    //let box_exp = parser::ExprParser::new().parse(str_src).unwrap();
+    let str_src: &str = &*source;
+    let lexed = Lexer::new(str_src.lines());
+    //let box_exp = parser::ExprParser::new().parse(lexed).unwrap();
+    let box_exp = parser::ExprParser::new().parse(lexed).unwrap();
 
-    //return Ok(*box_exp)
+    println!("{:?}", box_exp);
+
+    return Ok(*box_exp);
 }
 
 #[test]
