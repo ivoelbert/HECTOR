@@ -13,9 +13,25 @@
 use regex::Regex;
 use std::str::{Chars, Lines, SplitWhitespace};
 
-// An OK result means (Column, Token, Line). It's a weird hack to work with LALRPOP's way of doing things
-// THIS DOESN'T SEEM RIGHT!!!!
-// I think we should respect LALRPOP's way of doing things and figure out some other way of representing position
+/*
+*   IMPORTANT NOTE:
+*
+*   We're not representing position currently, we *could* add that as token parameter,
+*   and the parser should adapt to it easily.
+*
+*   Equally important, Spanned should represent:
+*
+*   (@L, tok, @R) where
+*
+*   @L is the byte in the string where the token started
+*   tok is the yielded token
+*   @R is the byte in the string where the token ended
+*
+*   We're only working with tok and hardcoding the positions to be @L = 0, @R = 1.
+*   This *works* but we're probably messing up debug capabilities.
+*   LALRPOP's documentation is unclear as to why @L and @R are needed.
+*/
+
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
 
