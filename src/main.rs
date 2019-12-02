@@ -23,7 +23,10 @@ mod test;
 
 use ast::*;
 use typecheck::{initial_type_env, initial_value_env, type_exp, TigerType, R};
-//extern crate lalrpop_util;
+
+#[macro_use]
+extern crate lalrpop_util;
+
 extern crate pathfinding;
 
 fn main() {

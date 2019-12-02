@@ -1,9 +1,11 @@
-use super::{AST, posed_exp, Exp};
-use super::position::{Pos};
+use super::{AST};
+use super::position::{Pos, WithPos};
+use super::lexer::Lexer;
+use std::fs::{read_dir, read_to_string};
 use lalrpop_util::lalrpop_mod;
 
-//#[macro_use]
-//lalrpop_mod!(pub parser);
+#[macro_use]
+lalrpop_mod!(pub parser);
 
 #[derive(Debug)]
 pub enum ParseError {
@@ -12,7 +14,10 @@ pub enum ParseError {
 
 pub fn parse(source : String) -> Result<AST, ParseError> {
     let str_src: &str = &*source;
-    let box_exp = posed_exp(Exp::Unit, 1, 1);
+    let lexed = Lexer::new(str_src.lines());
+    let box_exp = parser::ExprParser::new().parse(lexed).unwrap();
 
-     Ok(*box_exp)
+    println!("{:?}", box_exp);
+
+    return Ok(*box_exp);
 }

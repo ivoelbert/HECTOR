@@ -1,5 +1,6 @@
 pub mod position;
 pub mod parser;
+pub mod lexer;
 mod token;
 
 use std::fmt::{self, Debug, Formatter};
@@ -273,4 +274,63 @@ pub fn make_var(kind: VarKind) -> Var {
 
 pub fn boxed_var(kind: VarKind) -> Box<Var> {
     Box::new(Var {kind, pos: Pos {line: 0, column: 0}, typ: Arc::new(TigerType::Untyped)})
+}
+
+pub fn append_dec(new_dec: Dec, decs: Vec<Dec>) -> Vec<Dec> {
+    let cloned_decs = decs.clone();
+    let first_dec = cloned_decs[0].clone();
+    let cloned_new_dec = new_dec.clone();
+
+    match (new_dec, first_dec) {
+        (Dec::FunctionDec(new_fd), Dec::FunctionDec(fds)) => {
+            // return the same decs, with the new_fd pushed into fds
+            let mut new_decs: Vec<Dec> = vec![];
+            for dec in cloned_decs {
+                new_decs.push(dec);
+            }
+
+            let mut new_fds = vec![new_fd[0].clone()];
+            for fd in fds {
+                new_fds.push(fd);
+            }
+
+            new_decs[0] = Dec::FunctionDec(new_fds);
+
+            new_decs
+        },
+        (Dec::TypeDec(new_td), Dec::TypeDec(tds)) => {
+            // return the same decs, with the new_td pushed into tds
+            let mut new_decs: Vec<Dec> = vec![];
+            for dec in cloned_decs {
+                new_decs.push(dec);
+            }
+
+            let mut new_tds = vec![new_td[0].clone()];
+            for td in tds {
+                new_tds.push(td);
+            }
+
+            new_decs[0] = Dec::TypeDec(new_tds);
+
+            new_decs
+        },
+        (_, _) => {
+            // return [new_dec, ...decs]
+            let mut new_decs: Vec<Dec> = vec![cloned_new_dec];
+
+            for dec in cloned_decs {
+                new_decs.push(dec);
+            }
+
+            new_decs
+        }
+    }
+}
+
+// Crazy hack brought from the yacc/bison parser
+pub fn var_name(var: Var) -> Symbol {
+    match var {
+        Var { kind: VarKind::Simple(n), .. } => n,
+        _ => panic!("Crazy hack to catch array names was intersected by crappy code!"),
+    }
 }
