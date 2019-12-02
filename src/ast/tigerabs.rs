@@ -29,7 +29,7 @@ pub enum _Exp {
     VarExp(Var),
     UnitExp,
     NilExp,
-    IntExp(i32),
+    IntExp(i64),
     StringExp(String),
     CallExp {
         func: Symbol,

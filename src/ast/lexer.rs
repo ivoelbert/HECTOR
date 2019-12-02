@@ -241,7 +241,7 @@ impl<'input> Lexer<'input> {
 }
 
 impl<'input> Iterator for Lexer<'input> {
-    type Item = Result<Tok, LexicalError>;
+    type Item = Spanned<Tok, usize, LexicalError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
@@ -282,7 +282,7 @@ impl<'input> Iterator for Lexer<'input> {
                             match self.state.clone() {
                                 LexerState::LexingString(s) => {
                                     self.transition(LexerState::LexingTokens);
-                                    return Some(Ok(Tok::Str(s)));
+                                    return Some(Ok((0, Tok::Str(s), 1)));
                                 }
                                 _ => self.transition(LexerState::LexingString(String::from("")))
                             };
@@ -291,7 +291,7 @@ impl<'input> Iterator for Lexer<'input> {
                         }
                         _ => {
                             self.transition(state_transition);
-                            return Some(Ok(t));
+                            return Some(Ok((0, t, 1)));
                         }
                     };
                 }
