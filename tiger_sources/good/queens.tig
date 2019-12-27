@@ -21,12 +21,12 @@ let
 ( /*  for i := 0 to c do print ("."); print ("\n"); flush ();*/
      if c=N
      then printboard ()
-     else for r := 0 to N-1
+     else (for r := 0 to N-1
 	   do if row[r]=0 & diag1[r+c]=0 & diag2[r+7-c]=0
 	           then (row[r] :=1; diag1[r+c] :=1; diag2[r+7-c] :=1;
 		         col[c] :=r;
 	                 try (c+1);
-			 row[r] :=0; diag1[r+c] :=0; diag2[r+7-c] :=0)
+			 row[r] :=0; diag1[r+c] :=0; diag2[r+7-c] :=0))
 
 )
  in try (0); 0
