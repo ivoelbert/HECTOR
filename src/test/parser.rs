@@ -5,6 +5,9 @@ use crate::ast::position::Pos;
 use crate::ast::*;
 use crate::typecheck::{TigerType};
 
+/*
+*   Naaaa naaa na na na na naaaaa, test good
+*/
 #[test]
 fn good() {
     let good_path = "./tiger_sources/good/";
@@ -12,10 +15,12 @@ fn good() {
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
+        let string_path = path.into_os_string().into_string().unwrap();
+        println!("{:?}", string_path);
         let res = parse(contents.clone());
         match res {
             Ok(..) => (),
-            Err(error) => panic!("Source {:?}\n Error: {:?}", contents, error),
+            Err(error) => panic!("Source {:?}\n Error: {:?}", string_path, error),
         }
     }
 }

@@ -329,6 +329,12 @@ DecEx: Dec = {
 }
 
 FundecEx: Dec = {
+    "function" <name: Sym> "(" ")" "=" <body: Expr> => {
+        Dec::FunctionDec(vec![(_FunctionDec::new(name, vec![], None, body), Pos::new(0, 0))])
+    },
+    "function" <name: Sym> "(" ")" ":" <result: Sym> "=" <body: Expr> => {
+        Dec::FunctionDec(vec![(_FunctionDec::new(name, vec![], Some(result), body), Pos::new(0, 0))])
+    },
     "function" <name: Sym> "(" <params: TyFieldsEx> ")" "=" <body: Expr> => {
         Dec::FunctionDec(vec![(_FunctionDec::new(name, params, None, body), Pos::new(0, 0))])
     },

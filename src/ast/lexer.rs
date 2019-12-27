@@ -192,7 +192,7 @@ fn get_token(string_token: String) -> Option<Tok> {
     }
 }
 
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, Debug)]
 pub enum LexerState {
     LexingTokens,
     LexingLineComment,
@@ -250,6 +250,7 @@ impl<'input> Iterator for Lexer<'input> {
                     token: Some(t),
                     state_transition,
                 })) => {
+                    println!("WE GOT A TOKEN AT TOP LEVEL: {:?}", t);
                     // We got a token and possibly a state transition!
                     match t {
                         Tok::OpenComen => {
@@ -299,12 +300,20 @@ impl<'input> Iterator for Lexer<'input> {
                     token: None,
                     state_transition,
                 })) => {
+
+                    println!("WE GOT NO TOKEN AT TOP LEVEL");
                     // We just got a state transition!
                     self.transition(state_transition);
                     continue;
-                }
-                Some(Err(e)) => return Some(Err(e)),
+                },
+                Some(Err(e)) => {
+                    println!("WE GOT AN ERROR AT TOP LEVEL :(");
+                    return Some(Err(e));
+                },
                 None => {
+
+                    println!("WE NOTHING AT TOP LEVEL");
+
                     if let LexerState::LexingString(s) = self.state.clone() {
                         let mut new_string = s.clone();
                         new_string.push_str(&self.current_string);
@@ -416,7 +425,8 @@ impl<'input> Iterator for LineLexer<'input> {
                     let string_part = &self.current_word[..(position - 1)];
 
                     // From the quote to the end
-                    let rest = &self.current_word[position..];
+                    self.current_word = &self.current_word[position..];
+                    let rest = &self.current_word;
 
                     let mut full_string = s.clone();
                     full_string.push_str(string_part);
@@ -447,10 +457,11 @@ impl<'input> Iterator for LineLexer<'input> {
                 })) => {
                     // We don't need to transition explicitly, just lift the new state.
                     if token == Some(Tok::Quote) {
+
                         // We'll transition into LexingString, crop the current_word to the first quote.
                         let quote_loc = quote_location(self.current_word) as usize;
                         self.current_word = &self.current_word[quote_loc..];
-                    } else {
+                    } else if token == Some(Tok::CloseComen) {
                         self.current_word = "";
                     }
                     return Some(Ok(Consumpion::new(token, state_transition)));
@@ -512,6 +523,12 @@ impl<'input> Iterator for CharLexer<'input> {
                     if let Some(prev_token) = get_token(self.current_string.clone()) {
                         self.current_string = String::from("");
                         self.current_string.push(current_char);
+
+                        /*
+                        println!("PREV TOKEN: {:?}", prev_token);
+                        println!("CURRENT STRING: {:?}", self.current_string);
+                        println!("STATE: {:?}", self.state);
+                        */
 
                         match (self.state.clone(), prev_token.clone()) {
                             (LexerState::LexingBlockComment(_), Tok::OpenComen)
