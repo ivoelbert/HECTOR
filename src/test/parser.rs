@@ -8,19 +8,15 @@ use crate::ast::*;
 *   Naaaa naaa na na na na naaaaa, test good
 */
 #[test]
-fn good() {
+fn parser_good() {
     let good_path = "./tiger_sources/good/";
     let source_files = read_dir(good_path).expect("read_dir");
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
-<<<<<<< HEAD
         let string_path = path.into_os_string().into_string().unwrap();
         println!("{:?}", string_path);
         let res = parse(contents.clone());
-=======
-        let res = parse(&contents);
->>>>>>> serialization
         match res {
             Ok(..) => (),
             Err(error) => panic!("Source {:?}\n Error: {:?}", string_path, error),
@@ -29,22 +25,23 @@ fn good() {
 }
 
 #[test]
-fn bad_type() {
+fn parser_bad_type() {
     let type_path = "./tiger_sources/type/";
     let source_files = read_dir(type_path).expect("read_dir");
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
-        let res = parse(&contents);
+        let string_path = path.into_os_string().into_string().unwrap();
+        let res = parse(contents.clone());
         match res {
-            Err(..) => (),
-            Ok(ast) => panic!("Source: {:?}\n AST: {:?}", contents, ast),
+            Ok(..) => (),
+            Err(error) => panic!("Source {:?}\n Error: {:?}", string_path, error),
         }
     }
 }
 
 #[test]
-fn bad_syntax() {
+fn parser_bad_syntax() {
     let syntax_path = "./tiger_sources/syntax/";
     let source_files = read_dir(syntax_path).expect("read_dir");
     for direntry in source_files {

@@ -1,4 +1,3 @@
-
 #![allow(
     clippy::missing_docs_in_private_items,
     clippy::use_debug,
@@ -34,6 +33,7 @@ use std::str::{Chars, Lines, SplitWhitespace};
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
+const DEBUG: bool = false;
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Tok {
@@ -250,7 +250,9 @@ impl<'input> Iterator for Lexer<'input> {
                     token: Some(t),
                     state_transition,
                 })) => {
-                    println!("WE GOT A TOKEN AT TOP LEVEL: {:?}", t);
+                    if DEBUG {
+                        println!("WE GOT A TOKEN AT TOP LEVEL: {:?}", t);
+                    }
                     // We got a token and possibly a state transition!
                     match t {
                         Tok::OpenComen => {
@@ -285,7 +287,7 @@ impl<'input> Iterator for Lexer<'input> {
                                     self.transition(LexerState::LexingTokens);
                                     return Some(Ok((0, Tok::Str(s), 1)));
                                 }
-                                _ => self.transition(LexerState::LexingString(String::from("")))
+                                _ => self.transition(LexerState::LexingString(String::from(""))),
                             };
 
                             continue;
@@ -300,19 +302,23 @@ impl<'input> Iterator for Lexer<'input> {
                     token: None,
                     state_transition,
                 })) => {
-
-                    println!("WE GOT NO TOKEN AT TOP LEVEL");
+                    if DEBUG {
+                        println!("WE GOT NO TOKEN AT TOP LEVEL");
+                    }
                     // We just got a state transition!
                     self.transition(state_transition);
                     continue;
-                },
+                }
                 Some(Err(e)) => {
-                    println!("WE GOT AN ERROR AT TOP LEVEL :(");
+                    if DEBUG {
+                        println!("WE GOT AN ERROR AT TOP LEVEL :(");
+                    }
                     return Some(Err(e));
-                },
+                }
                 None => {
-
-                    println!("WE NOTHING AT TOP LEVEL");
+                    if DEBUG {
+                        println!("WE NOTHING AT TOP LEVEL");
+                    }
 
                     if let LexerState::LexingString(s) = self.state.clone() {
                         let mut new_string = s.clone();
@@ -348,7 +354,6 @@ impl<'input> Iterator for Lexer<'input> {
         }
     }
 }
-
 
 /* Lex each individual line */
 struct LineLexer<'input> {
@@ -432,7 +437,10 @@ impl<'input> Iterator for LineLexer<'input> {
                     full_string.push_str(string_part);
 
                     self.char_lexer = CharLexer::new(rest.chars(), self.state.clone());
-                    return Some(Ok(Consumpion::new(Some(Tok::Str(full_string)), LexerState::LexingTokens)));
+                    return Some(Ok(Consumpion::new(
+                        Some(Tok::Str(full_string)),
+                        LexerState::LexingTokens,
+                    )));
                 } else {
                     // No unescaped quote...
                     let mut new_string = s.clone();
@@ -457,7 +465,6 @@ impl<'input> Iterator for LineLexer<'input> {
                 })) => {
                     // We don't need to transition explicitly, just lift the new state.
                     if token == Some(Tok::Quote) {
-
                         // We'll transition into LexingString, crop the current_word to the first quote.
                         let quote_loc = quote_location(self.current_word) as usize;
                         self.current_word = &self.current_word[quote_loc..];
@@ -481,7 +488,6 @@ impl<'input> Iterator for LineLexer<'input> {
         }
     }
 }
-
 
 /* Try lexing tokens from each individual char */
 struct CharLexer<'input> {

@@ -1,7 +1,6 @@
 #![warn(
      clippy::all,
      clippy::restriction,
-     clippy::pedantic,
  )]
 #![allow(
     clippy::missing_docs_in_private_items, // esto es una verdadera paja
@@ -13,7 +12,6 @@
 )]
 #![feature(inner_deref)]
 #![feature(try_trait)]
-#![feature(bind_by_move_pattern_guards)]
 mod ast;
 mod typecheck;
 mod tree;

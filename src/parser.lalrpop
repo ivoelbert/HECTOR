@@ -162,13 +162,22 @@ MultExp: Box<AST> = {
         let no_pos_exp = Exp::Op {left: l, oper: o, right: r};
         return posed_exp(no_pos_exp, 0, 0);
     },
-    Term,
+    NegTerm,
 };
 
 MultOp: Oper = {
     "*" => Oper::TimesOp,
     "/" => Oper::DivideOp,
 };
+
+NegTerm: Box<AST> = {
+    "-" <t: Term> => {
+        let posed_zero_exp = posed_exp(Exp::Int(0), 0, 0);
+        let no_pos_exp = Exp::Op {left: posed_zero_exp, oper: Oper::MinusOp, right: t};
+        return posed_exp(no_pos_exp, 0, 0);
+    },
+    Term,
+}
 
 Term: Box<AST> = {
     "(" ")" => {

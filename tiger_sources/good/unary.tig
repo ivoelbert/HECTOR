@@ -1,0 +1,5 @@
+let
+    var N := -1
+in
+    N
+end

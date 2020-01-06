@@ -33,7 +33,7 @@ pub fn parse(source : &str) -> Result<AST, ParseError> {
 
 #[test]
 fn parsed_test() {
-    let good_path = "./tiger_sources/good/queens.tig";
+    let good_path = "./tiger_sources/good/merge.tig";
     let contents: String = read_to_string(&good_path).unwrap();
 
     match parse(contents) {
@@ -46,7 +46,7 @@ fn parsed_test() {
 
 #[test]
 fn lexed_test() {
-    let good_path = "./tiger_sources/good/queens.tig";
+    let good_path = "./tiger_sources/good/merge.tig";
     let contents: String = read_to_string(&good_path).unwrap();
 
     let str_src: &str = &*contents;
