@@ -16,3 +16,7 @@ By Federico Badaloni & Ivo Elbert, Licenciatura en Ciencias de la Computación, 
 - Build using: `wasm-pack build`
 - Run tests with: `garco test`
 - Build the Web App: `cd www & npm install`
+
+## Run
+
+- Run the Web App in hte www folder using: `npm run start`
