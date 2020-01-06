@@ -30,7 +30,7 @@ pub fn typecheck(
                                         typ: array_of_symbol
                                     },
                                     pos,
-                                    typ: Arc::new(TArray(array_of_type.clone(), *type_id))})
+                                    typ: Arc::new(TArray(array_of_type.clone(), type_id.clone()))})
                             } else {
                                 Err(TypeError::TypeMismatch(pos))
                             }

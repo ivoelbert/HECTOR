@@ -14,7 +14,7 @@ fn good() {
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
-        let ast =  parse(contents).expect("parser error");
+        let ast =  parse(&contents).expect("parser error");
         let type_env = TypeEnviroment::new();
         let value_env = ValueEnviroment::new();
         let res = type_exp(ast.clone() , &type_env, &value_env);
@@ -32,7 +32,7 @@ fn bad_type() {
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
-        let ast =  parse(contents).expect("falla el parser");
+        let ast =  parse(&contents).expect("falla el parser");
         let type_env = TypeEnviroment::new();
         let value_env = ValueEnviroment::new();
         let res = type_exp(ast.clone() , &type_env, &value_env);

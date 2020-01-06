@@ -48,7 +48,7 @@ pub fn trans_var(
         VarKind::Simple(name) => {
             if let Some(EnvEntry::Var{access, depth}) = value_env.get(name) {
                 Ok((
-                    simplevar(*access, *depth, &level),
+                    simplevar(access.clone(), *depth, &level),
                     level,
                     frags
                 ))

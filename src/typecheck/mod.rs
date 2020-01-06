@@ -1,5 +1,4 @@
 #![allow(clippy::pub_enum_variant_names)]
-extern crate uid;
 use std::collections::HashMap;
 use serde::{Serialize, Serializer};
 
@@ -29,7 +28,10 @@ pub enum R {
     RW
 }
 
-pub type TypeId = uid::Id<u16>;
+pub type TypeId = String;
+pub fn newtypeid() -> String {
+    nanoid::simple()
+}
 
 #[derive(Debug, Clone)]
 pub enum TigerType {

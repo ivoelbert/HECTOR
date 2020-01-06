@@ -44,7 +44,7 @@ fn ty_to_tigertype(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<Arc<T
         Ty::Array(symbol) => match type_env.get(symbol) {
             Some(tipo) => Ok(Arc::new(TigerType::TArray(
                 (*tipo).clone(),
-                uid::Id::new(),
+                newtypeid(),
             ))),
             None => Err(TypeError::UndeclaredType(pos)),
         },
@@ -58,7 +58,7 @@ fn ty_to_tigertype(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<Arc<T
                 ));
             }
             // let type_id = match type_env.remove(k: &Q)
-            Ok(Arc::new(TigerType::TRecord(record, uid::Id::new())))
+            Ok(Arc::new(TigerType::TRecord(record, newtypeid())))
         }
     }
 }
@@ -317,7 +317,7 @@ fn typecheck_typedec_batch(
                         ));
                     }
                     let type_id = match type_env.remove(name).as_deref() {
-                        Some(TigerType::TRecord(_, id)) => *id,
+                        Some(TigerType::TRecord(_, id)) => id.clone(),
                         _ => panic!("There should be a record header in the env")
                     };
                     type_env.insert(name.clone(), Arc::new(TigerType::TRecord(record, type_id)));

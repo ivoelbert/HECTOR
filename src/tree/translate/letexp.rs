@@ -13,11 +13,11 @@ pub fn vardec(
     // We don't want the variable to be in the env when we translate the initialization
     let access = init_level.alloc_local(*escape);
     value_env.insert(name.clone(), EnvEntry::Var{
-        access,
+        access: access.clone(),
         depth: init_level.nesting_depth
     });
 
-    Ok((Move!(simplevar(access, init_level.nesting_depth, &init_level), init_exp), init_level, value_env, init_frags))
+    Ok((Move!(simplevar(access.clone(), init_level.nesting_depth, &init_level), init_exp), init_level, value_env, init_frags))
 }
 
 pub fn fundecs(
@@ -36,7 +36,7 @@ pub fn fundecs(
     let mut new_value_env = value_env.clone();
     funcs.iter().for_each(|(_FunctionDec {name, ..}, _)| {
         new_value_env.insert(name.clone(), EnvEntry::Func{
-            label: Label::new(),
+            label: newlabel(),
             external: false,
         });
     });
@@ -53,7 +53,7 @@ pub fn fundecs(
                 label
             } else {panic!()};
             let formals : Vec<bool> = params.iter().map(|field| field.escape).collect();
-            let mut level = Level::new(depth, *label, formals);  // formals?
+            let mut level = Level::new(depth, label.clone(), formals);  // formals?
             let mut dec_value_env = new_value_env.clone();
             level.alloc_arg(false); //Static Link
             params
@@ -71,14 +71,14 @@ pub fn fundecs(
                     let (body_exp, body_level, mut body_frags) = super::trans_exp(body, level, &dec_value_env, &new_breaks_stack, frags)?;
                     let move_exp = Move!(TEMP(Temp::RV), body_exp);
                     let fragment = Fragment::new(move_exp, body_level);
-                    body_frags.push(Fragment::ConstString(*label, String::new()));
+                    body_frags.push(Fragment::ConstString(label.clone(), String::new()));
                     body_frags.push(fragment);
                     Ok(body_frags)
                 }
                 None => {
                     let (body_stm, body_level, mut body_frags) = super::trans_stm(body, level, &dec_value_env, &new_breaks_stack, frags)?;
                     let fragment = Fragment::new(body_stm, body_level);
-                    body_frags.push(Fragment::ConstString(*label, String::new()));
+                    body_frags.push(Fragment::ConstString(label.clone(), String::new()));
                     body_frags.push(fragment);
                     Ok(body_frags)
                 }

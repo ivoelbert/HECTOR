@@ -3,8 +3,9 @@
 
 use super::{Label};
 use crate::tree::*;
+use serde::{Serialize};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Frame {
     name: Label,
     formals: Vec<bool>,
@@ -19,13 +20,13 @@ pub static LOCAL_GAP: i64 = 4;
 pub static STATIC_LINK_OFFSET: i64 = 1337;
 pub static WORD_SIZE: i64 = 4;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub enum Access {
     InFrame(i64),
     InReg(Temp)
 }
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub enum Frag {
     Proc {
         body: Tree::Stm,

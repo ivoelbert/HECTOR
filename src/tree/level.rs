@@ -2,35 +2,33 @@
 // A frame is wrapped in a level as it's being built and when finished it's stored in a fragment
 // Registers are wrapped in temporaries.
 
-extern crate uid;
+extern crate nanoid;
 
 pub use super::frame::{Frame};
 use super::Access;
-pub type Label = uid::Id<u16>;
-type LocalTemp = uid::Id<u16>;
+pub type Label = String;
+type LocalTemp = String;
+use serde::{Serialize, Serializer};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 pub enum Temp {
     FRAME_POINTER,
     RV, // Return Value
     // Other special temps.
     Local(LocalTemp),
 }
-// unsafe? Is there a pure way?
-// YES - use unique ids again.
-// But, not sure how to make string from uid.
+
 pub fn newtemp() -> Temp {
-    //String::from("Not_implemented")
-    Temp::Local(LocalTemp::new())
+    Temp::Local(nanoid::simple())
 }
 
 pub fn newlabel() -> Label {
-    //String::from("Not_implemented")
-    Label::new()
+    nanoid::simple()
 }
 
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Level {
     pub frame: Frame,
     pub nesting_depth: i64,
@@ -40,7 +38,7 @@ impl Level {
     pub fn outermost() -> Level {
         Level {
             frame: Frame::new(
-                Label::new(),
+                newlabel(),
                 vec![],
             ),
             nesting_depth: -1,

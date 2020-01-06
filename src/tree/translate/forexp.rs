@@ -42,7 +42,7 @@ pub fn trans_stm(
                 lo_frags,
             )?;
             let (start_label, continue_label, done_label) = (newlabel(), newlabel(), newlabel());
-            new_breaks_stack.push(Some(done_label));
+            new_breaks_stack.push(Some(done_label.clone()));
             let (body_stm, body_level, body_frags) =
                 super::trans_stm(body, hi_level, value_env, &new_breaks_stack, hi_frags)?;
             Ok((
@@ -51,16 +51,16 @@ pub fn trans_stm(
                         LE,
                         lo_exp.clone(),
                         hi_exp.clone(),
-                        start_label,
-                        done_label,
+                        start_label.clone(),
+                        done_label.clone(),
                     ),
-                    LABEL(start_label),
+                    LABEL(start_label.clone()),
                     body_stm,
-                    CJUMP(LT, lo_exp, hi_exp, start_label, done_label),
+                    CJUMP(LT, lo_exp, hi_exp, start_label.clone(), done_label.clone()),
                     LABEL(continue_label),
                     Move!(var_exp.clone(), plus!(var_exp, CONST(1))),
-                    JUMP(NAME(start_label), vec![start_label]),
-                    LABEL(done_label),
+                    JUMP(NAME(start_label.clone()), vec![start_label.clone()]),
+                    LABEL(done_label.clone()),
                 ]),
                 body_level,
                 body_frags,

@@ -23,7 +23,7 @@ fn trans_str_oper(ast_oper: &Oper, value_env: &ValueEnviroment) -> Box<Tree::Exp
     // use names imposible to form to avoid overloading without typechecking
     let entry = value_env.get(&String::from("unimplemented"));
     if let Some(EnvEntry::Func {label, external: true}) = entry {
-        Box::new(NAME(*label))
+        Box::new(NAME(label.clone()))
     } else {
         panic!("should be in initial value env")
     }

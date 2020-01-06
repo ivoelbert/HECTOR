@@ -13,7 +13,7 @@ default = ["console_error_panic_hook"]
 [dependencies]
 lalrpop-util = "0.17.1"
 regex = "1.2.0"
-uid = "0.1.4"
+nanoid = "0.2.0"
 pathfinding = "1.1.12"
 console_error_panic_hook = { version = "0.1.1", optional = true }
 wee_alloc = { version = "0.4.2", optional = true }

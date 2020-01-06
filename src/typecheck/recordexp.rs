@@ -53,7 +53,7 @@ pub fn typecheck(
                                 .collect::<Result<Vec<(Symbol, Box<AST>)>, TypeError>>()?,
                             typ: record_type_symbol,
                         },
-                        typ: Arc::new(TigerType::TRecord(formals.clone(), *type_id)),
+                        typ: Arc::new(TigerType::TRecord(formals.clone(), type_id.clone())),
                         pos
                     })
                 },

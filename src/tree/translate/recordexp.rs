@@ -11,7 +11,7 @@ fn gen_init_stm(temp: Temp, typ: Arc<TigerType>, mut fields: HashMap<String, Tre
             .map(|(name, _, order)| {
                 Move!(
                     MEM(Box::new(plus!(
-                        TEMP(temp),
+                        TEMP(temp.clone()),
                         CONST(*order * frame::WORD_SIZE)
                     ))),
                     fields.remove(name).expect("typechecking should handle this")
@@ -50,13 +50,13 @@ pub fn trans_exp(
                     ESEQ(
                         Box::new(SEQ(
                             Box::new(Move!(
-                                TEMP(temp),
+                                TEMP(temp.clone()),
                                 // This returns the memory address of the malloc result
-                                Frame::external_call(*label, vec![CONST(fields_exps.len().try_into().unwrap())])
+                                Frame::external_call(label.clone(), vec![CONST(fields_exps.len().try_into().unwrap())])
                             )),
-                            Box::new(gen_init_stm(temp, typ.clone(), fields_exps))
+                            Box::new(gen_init_stm(temp.clone(), typ.clone(), fields_exps))
                         )),
-                        Box::new(TEMP(temp))
+                        Box::new(TEMP(temp.clone()))
                     ),
                     fields_level, fields_frags
                 ))

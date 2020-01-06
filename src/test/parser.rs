@@ -3,7 +3,6 @@ use std::fs::{read_dir, read_to_string};
 use crate::ast::parser::{parse};
 use crate::ast::position::Pos;
 use crate::ast::*;
-use crate::typecheck::{TigerType};
 
 /*
 *   Naaaa naaa na na na na naaaaa, test good
@@ -15,9 +14,13 @@ fn good() {
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
+<<<<<<< HEAD
         let string_path = path.into_os_string().into_string().unwrap();
         println!("{:?}", string_path);
         let res = parse(contents.clone());
+=======
+        let res = parse(&contents);
+>>>>>>> serialization
         match res {
             Ok(..) => (),
             Err(error) => panic!("Source {:?}\n Error: {:?}", string_path, error),
@@ -32,7 +35,7 @@ fn bad_type() {
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
-        let res = parse(contents.clone());
+        let res = parse(&contents);
         match res {
             Err(..) => (),
             Ok(ast) => panic!("Source: {:?}\n AST: {:?}", contents, ast),
@@ -47,7 +50,7 @@ fn bad_syntax() {
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
-        let parsed = parse(contents);
+        let parsed = parse(&contents);
         match parsed {
             Err(..) => (),
             Ok(..) => panic!("{:?} should fail, but parses ok", path),
@@ -58,7 +61,7 @@ fn bad_syntax() {
 #[test]
 fn number() {
     let input = String::from("0");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node: Exp::Int(0),
@@ -72,7 +75,7 @@ fn number() {
 #[test]
 fn string() {
     let input = String::from("\"perro\"");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node: Exp::String(_),
@@ -86,7 +89,7 @@ fn string() {
 #[test]
 fn breakexp() {
     let input = String::from("break");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node: Exp::Break,
@@ -100,7 +103,7 @@ fn breakexp() {
 #[test]
 fn simplevar() {
     let input = String::from("foo");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node: Exp::Var(Var{kind: VarKind::Simple(_), ..}),
@@ -114,7 +117,7 @@ fn simplevar() {
 #[test]
 fn subscriptvar() {
     let input = String::from("foo[0]");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node: Exp::Var(Var{kind: VarKind::Subscript(..), ..}),
@@ -128,7 +131,7 @@ fn subscriptvar() {
 #[test]
 fn fieldvar() {
     let input = String::from("foo.baz");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node: Exp::Var(Var{kind: VarKind::Field(..), ..}),
@@ -142,7 +145,7 @@ fn fieldvar() {
 #[test]
 fn callexp() {
     let input = String::from("foo(1, \"perro\", baz)");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node: Exp::Call {..},
@@ -156,7 +159,7 @@ fn callexp() {
 #[test]
 fn custom() {
     let input = String::from("(2 * 2 = 2 + 2) & 2 - 2 <> 2 + 2");
-    let parsed = parse(input);
+    let parsed = parse(&input);
 
     match parsed {
         Ok(exp) => println!("Parsed expresion:\n\n{:?}\n\n", exp),
@@ -167,7 +170,7 @@ fn custom() {
 #[test]
 fn simple_sum() {
     let input = String::from("2 + 2");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node:
@@ -186,7 +189,7 @@ fn simple_sum() {
 #[test]
 fn simple_mult() {
     let input = String::from("2 * 2");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node:
@@ -205,7 +208,7 @@ fn simple_mult() {
 #[test]
 fn simple_comp() {
     let input = String::from("2 >= 2");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node:
@@ -224,7 +227,7 @@ fn simple_comp() {
 #[test]
 fn recordexp() {
     let input = String::from("{first_name: \"Jhon\", last_name: \"doe\", age: 42}");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node: Exp::Record {..},
@@ -238,7 +241,7 @@ fn recordexp() {
 #[test]
 fn seqexp() {
     let input = String::from("(1;2)");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node: Exp::Seq(_),
@@ -252,7 +255,7 @@ fn seqexp() {
 #[test]
 fn assignexp() {
     let input = String::from("foo = 42");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node:
@@ -270,7 +273,7 @@ fn assignexp() {
 #[test]
 fn ifexp() {
     let input = String::from("if 1 then 2 else 3");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node:
@@ -287,7 +290,7 @@ fn ifexp() {
 #[test]
 fn whileexp() {
     let input = String::from("for i :=0 to 100 do 1");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node: Exp::While {..},
@@ -301,7 +304,7 @@ fn whileexp() {
 #[test]
 fn forexp() {
     let input = String::from("for i :=0 to 100 do 1");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node:
@@ -318,7 +321,7 @@ fn forexp() {
 #[test]
 fn letexp_functiondec() {
     let input = String::from("let function foo() = 1 in 2 ");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node:
@@ -336,7 +339,7 @@ fn letexp_functiondec() {
 #[test]
 fn letexp_typedec_namety() {
     let input = String::from("let type numeritos = int in 2 ");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node:
@@ -353,7 +356,7 @@ fn letexp_typedec_namety() {
 #[test]
 fn letexp_typedec_recordty() {
     let input = String::from("let type name = {first_name: string, last_name: string} in 2 ");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node:
@@ -370,7 +373,7 @@ fn letexp_typedec_recordty() {
 #[test]
 fn letexp_typedec_arrayty() {
     let input = String::from("let type intArray = array of int in 2 ");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node:
@@ -388,7 +391,7 @@ fn letexp_typedec_arrayty() {
 #[test]
 fn letexp_arrayexp() {
     let input = String::from("arrtype [10] of 0");
-    let parsed = parse(input);
+    let parsed = parse(&input);
     match parsed {
         Ok(AST {
             node:

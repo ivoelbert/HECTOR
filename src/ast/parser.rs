@@ -12,9 +12,15 @@ pub enum ParseError {
     UnexpectedToken(Pos),
 }
 
+<<<<<<< HEAD
 pub fn parse(source : String) -> Result<AST, ParseError> {
     let str_src: &str = &*source;
     let lexed = Lexer::new(str_src.lines());
+=======
+pub fn parse(source : &str) -> Result<AST, ParseError> {
+    let lexed = Lexer::new(source.lines());
+    let box_exp = parser::ExprParser::new().parse(lexed).unwrap();
+>>>>>>> serialization
 
     match parser::ExprParser::new().parse(lexed) {
         Ok(box_exp) => Ok(*box_exp),

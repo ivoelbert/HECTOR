@@ -1,4 +1,3 @@
-extern crate uid;
 pub mod escape;
 pub mod frame;
 #[allow(non_snake_case)]
@@ -40,43 +39,43 @@ fn initial_value_env() -> ValueEnviroment {
     use EnvEntry::*;
     let mut value_env = ValueEnviroment::new();
     value_env.insert(Symbol::from("print"), Func {
-        label: Label::new(),
+        label: newlabel(),
         external: true,
     });
     value_env.insert(Symbol::from("flush"), Func {
-        label: Label::new(),
+        label: newlabel(),
         external: true,
     });
     value_env.insert(Symbol::from("getchar"), Func {
-        label: Label::new(),
+        label: newlabel(),
         external: true,
     });
     value_env.insert(Symbol::from("ord"), Func {
-        label: Label::new(),
+        label: newlabel(),
         external: true,
     });
     value_env.insert(Symbol::from("chr"), Func {
-        label: Label::new(),
+        label: newlabel(),
         external: true,
     });
     value_env.insert(Symbol::from("size"), Func {
-        label: Label::new(),
+        label: newlabel(),
         external: true,
     });
     value_env.insert(Symbol::from("substring"), Func {
-        label: Label::new(),
+        label: newlabel(),
         external: true,
     });
     value_env.insert(Symbol::from("concat"), Func {
-        label: Label::new(),
+        label: newlabel(),
         external: true,
     });
     value_env.insert(Symbol::from("not"), Func {
-        label: Label::new(),
+        label: newlabel(),
         external: true,
     });
     value_env.insert(Symbol::from("exit"), Func {
-        label: Label::new(),
+        label: newlabel(),
         external: true,
     });
     value_env

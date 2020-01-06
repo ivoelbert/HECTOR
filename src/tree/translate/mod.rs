@@ -88,17 +88,18 @@ fn translate_many_exp(
     Ok((interm_exps, level, frags))
 }
 
-pub fn translate(exp: &AST) -> Result<(Vec<Fragment>), TransError> {
-    // let tiger_main = boxed_ast(Exp::Let {
-    //         decs: vec![Dec::FunctionDec(vec![(_FunctionDec{
-    //             name: Label::from("_tigermain"),
-    //             params: vec![],
-    //             body: Box::new(exp),
-    //             result: None,
-    //         }, Pos{line: 0, column: 0})])],
-    //         body: boxed_ast(Exp::Unit)
-    //     });
+pub fn translate(exp: AST) -> Result<(Vec<Fragment>), TransError> {
     let level = Level::outermost();
     let value_env = initial_value_env();
-    Ok(trans_exp(exp, level.clone(), &value_env, &vec![], vec![])?.2)
+    let tiger_main = make_ast(Exp::Let {
+        decs: vec![Dec::FunctionDec(vec![(_FunctionDec{
+            name: String::from("_tigermain"),
+            params: vec![],
+            body: Box::new(exp),
+            result: None,
+        }, Pos{line: 0, column: 0})])],
+        body: boxed_ast(Exp::Unit)
+    });
+    let (_, _, main_frags) = trans_exp(&tiger_main, level, &value_env, &vec![], vec![])?;
+    return Ok(main_frags);
 }

@@ -1,6 +1,7 @@
 use super::level::{Label, Temp};
+use serde::{Serialize};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub enum Exp {
     CONST(i64),
     NAME(Label),
@@ -11,7 +12,7 @@ pub enum Exp {
     ESEQ(Box<Stm>, Box<Exp>)
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub enum Stm {
     EXP(Box<Exp>),
     MOVE(Box<Exp>, Box<Exp>),
@@ -21,7 +22,7 @@ pub enum Stm {
     LABEL(Label)
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub enum BinOp {
     PLUS,
     MINUS,

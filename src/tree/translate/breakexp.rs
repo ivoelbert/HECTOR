@@ -15,7 +15,7 @@ pub fn trans_stm(
                 _ => return Err(TransError::BreakError(*pos)),
             };
             Ok((
-                JUMP(NAME(*loop_end_label), vec![*loop_end_label]),
+                JUMP(NAME(loop_end_label.clone()), vec![loop_end_label.clone()]),
                 level,
                 frags,
             ))
