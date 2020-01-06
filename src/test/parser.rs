@@ -16,7 +16,7 @@ fn parser_good() {
         let contents = read_to_string(&path).expect("read_to_string");
         let string_path = path.into_os_string().into_string().unwrap();
         println!("{:?}", string_path);
-        let res = parse(contents.clone());
+        let res = parse(&contents.clone());
         match res {
             Ok(..) => (),
             Err(error) => panic!("Source {:?}\n Error: {:?}", string_path, error),
@@ -32,7 +32,7 @@ fn parser_bad_type() {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
         let string_path = path.into_os_string().into_string().unwrap();
-        let res = parse(contents.clone());
+        let res = parse(&contents.clone());
         match res {
             Ok(..) => (),
             Err(error) => panic!("Source {:?}\n Error: {:?}", string_path, error),

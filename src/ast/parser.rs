@@ -12,8 +12,7 @@ pub enum ParseError {
     UnexpectedToken(Pos),
 }
 
-pub fn parse(source : String) -> Result<AST, ParseError> {
-    let str_src: &str = &*source;
+pub fn parse(str_src : &str) -> Result<AST, ParseError> {
     let lexed = Lexer::new(str_src.lines());
 
     match parser::ExprParser::new().parse(lexed) {
@@ -30,7 +29,7 @@ fn parsed_test() {
     let good_path = "./tiger_sources/good/merge.tig";
     let contents: String = read_to_string(&good_path).unwrap();
 
-    match parse(contents) {
+    match parse(&contents) {
         Ok(_) => println!("\n\nVamo ñubel\n\n"),
         _ => println!("\n\n:(\n\n"),
     }
