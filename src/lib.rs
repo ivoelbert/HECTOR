@@ -29,31 +29,65 @@ mod utils;
 mod ast;
 mod typecheck;
 mod tree;
+mod test;
 
 use ast::*;
 use typecheck::{initial_type_env, initial_value_env, type_exp};
 
+#[wasm_bindgen]
+extern "C" {
+    // Use `js_namespace` here to bind `console.log(..)` instead of just
+    // `log(..)`
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+
+    // The `console.log` is quite polymorphic, so we can bind it with multiple
+    // signatures. Note that we need to use `js_name` to ensure we always call
+    // `log` in JS.
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn log_u32(a: u32);
+
+    // Multiple arguments too!
+    #[wasm_bindgen(js_namespace = console, js_name = log)]
+    fn log_many(a: &str, b: &str);
+}
+
+macro_rules! console_log {
+    // Note that this is using the `log` function imported above during
+    // `bare_bones`
+    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
+}
 
 #[wasm_bindgen]
 pub fn main(source_code: &str) -> JsValue {
+    if source_code == "" {
+        console_log!("OH SHIT!");
+        return JsValue::from(-1)
+    }
+    console_log!("source: {}", source_code);
+    console_log!("Inicio");
     let ast = match ast::parser::parse(source_code) {
         Ok(ast) => ast,
         Err(parse_error) => {
             panic!()
         }
     };
+    console_log!("Parse OK");
     let typed_ast = match type_exp(ast, &initial_type_env(), &initial_value_env()) {
         Ok(ast) => ast,
         Err(typecheck_error) => {
             panic!()
         }
     };
+    console_log!("Typecheck OK");
     let escaped_ast = tree::escape::find_escapes(typed_ast);
-    let tree_frags = match tree::translate(escaped_ast.clone()) {
-        Ok(ast) => ast,
-        Err(parse_error) => {
-            panic!()
-        }
-    };
-    JsValue::from_serde(&(escaped_ast, tree_frags)).unwrap()
+    console_log!("Escape OK");
+    // let tree_frags = match tree::translate(escaped_ast.clone()) {
+    //     Ok(ast) => ast,
+    //     Err(parse_error) => {
+    //         panic!()
+    //     }
+    // };
+    // console_log!("Translate OK");
+    JsValue::from_serde(&escaped_ast).unwrap()
 }

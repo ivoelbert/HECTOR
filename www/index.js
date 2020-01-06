@@ -1,2 +1,9 @@
 import { main } from "tigerust";
-console.log(JSON.parse(main()));
+import beautify from "json-beautify";
+
+document.getElementById("compile-button").addEventListener("click", e => {
+  const code = document.getElementById("code").value;
+  const ast = main(code);
+
+  document.getElementById("compiled-ast").textContent = beautify(ast, null, 2, 80);
+});

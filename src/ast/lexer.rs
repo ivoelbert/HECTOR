@@ -250,9 +250,6 @@ impl<'input> Iterator for Lexer<'input> {
                     token: Some(t),
                     state_transition,
                 })) => {
-                    if DEBUG {
-                        println!("WE GOT A TOKEN AT TOP LEVEL: {:?}", t);
-                    }
                     // We got a token and possibly a state transition!
                     match t {
                         Tok::OpenComen => {
@@ -302,23 +299,14 @@ impl<'input> Iterator for Lexer<'input> {
                     token: None,
                     state_transition,
                 })) => {
-                    if DEBUG {
-                        println!("WE GOT NO TOKEN AT TOP LEVEL");
-                    }
                     // We just got a state transition!
                     self.transition(state_transition);
                     continue;
                 }
                 Some(Err(e)) => {
-                    if DEBUG {
-                        println!("WE GOT AN ERROR AT TOP LEVEL :(");
-                    }
                     return Some(Err(e));
                 }
                 None => {
-                    if DEBUG {
-                        println!("WE NOTHING AT TOP LEVEL");
-                    }
 
                     if let LexerState::LexingString(s) = self.state.clone() {
                         let mut new_string = s.clone();
@@ -529,12 +517,6 @@ impl<'input> Iterator for CharLexer<'input> {
                     if let Some(prev_token) = get_token(self.current_string.clone()) {
                         self.current_string = String::from("");
                         self.current_string.push(current_char);
-
-                        /*
-                        println!("PREV TOKEN: {:?}", prev_token);
-                        println!("CURRENT STRING: {:?}", self.current_string);
-                        println!("STATE: {:?}", self.state);
-                        */
 
                         match (self.state.clone(), prev_token.clone()) {
                             (LexerState::LexingBlockComment(_), Tok::OpenComen)
