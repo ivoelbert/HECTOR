@@ -83,4 +83,5 @@ pub fn main(source_code: &str) -> JsValue {
     };
     console_log!("Translate OK");
     JsValue::from_serde(&tree_frags).unwrap()
+    */
 }
