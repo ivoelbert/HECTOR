@@ -40,16 +40,6 @@ pub use utils::{log, set_panic_hook};
 #[wasm_bindgen]
 pub fn main(source_code: &str) -> JsValue {
     set_panic_hook();
-    console_log!("Running WASM!");
-
-    if source_code == "" {
-        console_log!("No code to compile, bye bye!");
-        return JsValue::from(-1)
-    }
-
-    JsValue::from("Chorizo")
-
-    /*
     if source_code == "" {
         console_log!("OH SHIT!");
         return JsValue::from(-1)
@@ -83,5 +73,4 @@ pub fn main(source_code: &str) -> JsValue {
     };
     console_log!("Translate OK");
     JsValue::from_serde(&tree_frags).unwrap()
-    */
 }
