@@ -9,6 +9,7 @@
    clippy::use_debug, // para debuguear el parser
    clippy::print_stdout,
    clippy::needless_pass_by_value, // para tener los translate muertos
+   clippy::missing_inline_in_public_items,
    dead_code,
 )]
 #![feature(inner_deref)]
@@ -39,6 +40,16 @@ pub use utils::{log, set_panic_hook};
 #[wasm_bindgen]
 pub fn main(source_code: &str) -> JsValue {
     set_panic_hook();
+    console_log!("Running WASM!");
+
+    if source_code == "" {
+        console_log!("No code to compile, bye bye!");
+        return JsValue::from(-1)
+    }
+
+    JsValue::from("Chorizo")
+
+    /*
     if source_code == "" {
         console_log!("OH SHIT!");
         return JsValue::from(-1)
@@ -72,4 +83,5 @@ pub fn main(source_code: &str) -> JsValue {
     };
     console_log!("Translate OK");
     JsValue::from_serde(&tree_frags).unwrap()
+    */
 }
