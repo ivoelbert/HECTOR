@@ -2,6 +2,7 @@ use crate::ast::*;
 use crate::typecheck::*;
 use pathfinding::directed::topological_sort;
 use std::convert::TryInto;
+use crate::utils::log;
 
 fn typecheck_vardec(
     _VarDec {
@@ -18,10 +19,14 @@ fn typecheck_vardec(
                 if **table_type == *init_ast.typ {
                     (*table_type).clone()
                 } else {
+                    console_log!("let vardec mismatch");
                     return Err(TypeError::TypeMismatch(pos));
                 }
             }
-            None => return Err(TypeError::UndeclaredType(pos)),
+            None => {
+                console_log!("let vardec undeclared");
+                return Err(TypeError::UndeclaredType(pos))
+            }
         }
     } else {
         init_ast.typ.clone()
@@ -39,14 +44,20 @@ fn ty_to_tigertype(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<Arc<T
     match ty {
         Ty::Name(symbol) => match type_env.get(symbol) {
             Some(tipo) => Ok((*tipo).clone()),
-            None => Err(TypeError::UndeclaredType(pos)),
+            None => {
+                console_log!("let ty name undeclared");
+                Err(TypeError::UndeclaredType(pos))
+            },
         },
         Ty::Array(symbol) => match type_env.get(symbol) {
             Some(tipo) => Ok(Arc::new(TigerType::TArray(
                 (*tipo).clone(),
                 newtypeid(),
             ))),
-            None => Err(TypeError::UndeclaredType(pos)),
+            None => {
+                console_log!("let ty array undeclared");
+                Err(TypeError::UndeclaredType(pos))
+            },
         },
         Ty::Record(fields_vector) => {
             let mut record: Vec<(String, Arc<TigerType>, i64)> = vec![];
@@ -79,7 +90,10 @@ fn add_prototype_to_env(
         None => Arc::new(TigerType::TUnit),
         Some(result_name) => match type_env.get(result_name) {
             Some(result_table_type) => result_table_type.clone(),
-            None => return Err(TypeError::UndeclaredType(pos)),
+            None => {
+                console_log!("let prototype undeclared");
+                return Err(TypeError::UndeclaredType(pos))
+            },
         },
     };
     // Check that argument names are not repeated
@@ -128,7 +142,10 @@ fn typecheck_functiondec(
         None => Arc::new(TigerType::TUnit),
         Some(result_name) => match type_env.get(result_name) {
             Some(result_table_type) => result_table_type.clone(),
-            None => return Err(TypeError::UndeclaredType(pos)),
+            None => {
+                console_log!("let typecheck functiondec undeclared");
+                return Err(TypeError::UndeclaredType(pos))
+            },
         },
     };
 
@@ -158,6 +175,7 @@ fn typecheck_functiondec(
             body: Box::new(body_ast)
         })
     } else {
+        console_log!("let functiondec mismatch");
         Err(TypeError::TypeMismatch(pos))
     }
 }

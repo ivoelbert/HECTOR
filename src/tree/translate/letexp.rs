@@ -26,7 +26,7 @@ pub fn fundecs(
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,
-) -> Result<Vec<Fragment>, TransError> {
+) -> Result<(ValueEnviroment, Vec<Fragment>), TransError> {
     // Add a new entry to the breaks stack (so that a break fails)
     // Add all functions to a new env, declaring labels for each one.
     // Translate each funtion
@@ -40,7 +40,7 @@ pub fn fundecs(
             external: false,
         });
     });
-    funcs
+    let new_frags = funcs
         .iter()
         .try_fold(frags, |frags, (_FunctionDec{name, params, body, result}, _)|
         -> Result<Vec<Fragment>, TransError> {
@@ -53,7 +53,7 @@ pub fn fundecs(
                 label
             } else {panic!()};
             let formals : Vec<bool> = params.iter().map(|field| field.escape).collect();
-            let mut level = Level::new(depth, label.clone(), formals);  // formals?
+            let mut level = Level::new(depth + 1, label.clone(), formals);  // formals?
             let mut dec_value_env = new_value_env.clone();
             level.alloc_arg(false); //Static Link
             params
@@ -62,7 +62,7 @@ pub fn fundecs(
                     let access = level.alloc_arg(*escape);
                     dec_value_env.insert(name.clone(), EnvEntry::Var{
                         access,
-                        depth
+                        depth: depth + 1
                     });
                 });
             match result {
@@ -83,7 +83,8 @@ pub fn fundecs(
                     Ok(body_frags)
                 }
             }
-        })
+        })?;
+    Ok((new_value_env, new_frags))
 }
 
 pub fn trans_exp(
@@ -108,12 +109,14 @@ pub fn trans_exp(
                         frags = f;
                     },
                     Dec::FunctionDec(fd) => {
-                        frags = fundecs(fd, level.nesting_depth + 1, value_env, breaks_stack, frags)?;
+                        let (ve, f) = fundecs(fd, level.nesting_depth + 1, value_env, breaks_stack, frags)?;
+                        new_value_env = ve;
+                        frags = f;
                     },
                     Dec::TypeDec(_) => (),
                 }
             }
-            let (body_exp, body_level, body_frags) = super::trans_exp(body, level, value_env, breaks_stack, frags)?;
+            let (body_exp, body_level, body_frags) = super::trans_exp(body, level, &new_value_env, breaks_stack, frags)?;
             let let_exp = ESEQ(Box::new(seq(vardec_stms)), Box::new(body_exp));
             Ok((let_exp, body_level, body_frags))
         },

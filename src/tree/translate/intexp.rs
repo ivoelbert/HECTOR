@@ -9,7 +9,9 @@ pub fn trans_exp(
     frags: Vec<Fragment>,
 ) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
     match node {
-        Exp::Int(i) => Ok((CONST(*i), level, frags)),
+        Exp::Int(i) => {
+            Ok((CONST(*i), level, frags))
+        },
         _ => panic!()
     }
 }

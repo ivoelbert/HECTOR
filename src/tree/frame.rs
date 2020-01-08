@@ -4,7 +4,6 @@
 use super::{Label};
 use crate::tree::*;
 use serde::{Serialize};
-use crate::utils::log;
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Frame {

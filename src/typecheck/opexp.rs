@@ -1,4 +1,5 @@
 use super::*;
+use crate::utils::log;
 
 pub fn typecheck(
     AST{node, pos, ..}: AST,
@@ -25,6 +26,7 @@ pub fn typecheck(
                     if left_type == right_type && *left_type != TigerType::TNil && *right_type != TigerType::TNil {
                         Ok(op_ast)
                     } else {
+                        console_log!("op eq mismatch");
                         Err(TypeError::TypeMismatch(pos))
                     }
                 },
@@ -32,6 +34,7 @@ pub fn typecheck(
                     if es_int(&left_type) && es_int(&right_type)  {
                         Ok(op_ast)
                     } else {
+                        console_log!("op plus mismatch");
                         Err(TypeError::TypeMismatch(pos))
                     }
                 },
@@ -39,6 +42,7 @@ pub fn typecheck(
                     if (es_int(&left_type) && es_int(&right_type)) || (*left_type == TigerType::TString && *right_type == TigerType::TString) {
                         Ok(op_ast)
                     } else {
+                        console_log!("op lt mismatch");
                         Err(TypeError::TypeMismatch(pos))
                     }
                 }

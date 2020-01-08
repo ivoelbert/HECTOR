@@ -56,7 +56,7 @@ fn initial_value_env() -> ValueEnviroment {
         label: newlabel(),
         external: true,
     });
-    value_env.insert(Symbol::from("chr"), Func {
+    value_env.insert(Symbol::from("+chr"), Func {
         label: newlabel(),
         external: true,
     });
@@ -77,6 +77,14 @@ fn initial_value_env() -> ValueEnviroment {
         external: true,
     });
     value_env.insert(Symbol::from("exit"), Func {
+        label: newlabel(),
+        external: true,
+    });
+    value_env.insert(Symbol::from("+allocArray"), Func {
+        label: newlabel(),
+        external: true,
+    });
+    value_env.insert(Symbol::from("+allocRecord"), Func {
         label: newlabel(),
         external: true,
     });

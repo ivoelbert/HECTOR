@@ -1,4 +1,5 @@
 use super::*;
+use crate::utils::log;
 
 pub fn typecheck(
     ast: AST,
@@ -26,6 +27,7 @@ pub fn typecheck(
                 })
             }
             else {
+                console_log!("assign mismatch");
                 Err(TypeError::TypeMismatch(pos))
             }
         },

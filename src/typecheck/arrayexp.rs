@@ -1,4 +1,5 @@
 use crate::typecheck::*;
+use crate::utils::log;
 
 pub fn typecheck(
     AST {node, pos, ..}: AST,
@@ -14,7 +15,10 @@ pub fn typecheck(
         Exp::Array {typ: array_of_symbol, size: size_exp, init: init_exp, } => {
             let array_type = match type_env.get(&array_of_symbol) {
                 Some(tiger_type) => &**tiger_type,
-                None => return Err(TypeError::UndeclaredType(pos)),
+                None => {
+                    console_log!("array undeclared");
+                    return Err(TypeError::UndeclaredType(pos))
+                },
             };
             match array_type {
                 TArray(array_of_type, type_id) => {
@@ -32,6 +36,7 @@ pub fn typecheck(
                                     pos,
                                     typ: Arc::new(TArray(array_of_type.clone(), type_id.clone()))})
                             } else {
+                                console_log!("array mismatch");
                                 Err(TypeError::TypeMismatch(pos))
                             }
                         }

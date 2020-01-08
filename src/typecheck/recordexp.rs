@@ -1,5 +1,6 @@
 use crate::ast::*;
 use crate::typecheck::*;
+use crate::utils::log;
 
 pub fn typecheck(
     AST{node, pos, ..}: AST,
@@ -24,7 +25,10 @@ pub fn typecheck(
             let mut typed_fields = type_fields(fields)?;
             let record_type = match type_env.get(&record_type_symbol) {
                 Some(tipo) => tipo_real(tipo.clone(), type_env),
-                None => return Err(TypeError::UndeclaredType(pos))
+                None => {
+                    console_log!("arrayexp undeclared");
+                    return Err(TypeError::UndeclaredType(pos))
+                }
             };
             match &*record_type {
                 TigerType::TRecord(formals, type_id) => {
@@ -44,6 +48,7 @@ pub fn typecheck(
                                             if *ast.typ == **typ {
                                                 Ok((name.clone(), Box::new(ast)))
                                             } else {
+                                                console_log!("record mismatch");
                                                 Err(TypeError::TypeMismatch(pos))
                                             }
                                         }

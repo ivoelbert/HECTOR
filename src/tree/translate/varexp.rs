@@ -24,7 +24,7 @@ pub fn simplevar(access: Access, nesting_depth: i64, current_level: &Level) -> T
             if delta_depth == 0 {
                 TEMP(t)
             } else {
-                panic!("escaped InReg!")
+                panic!("escaped InReg! current: {:?}, var: {:?}", &current_level.nesting_depth, &nesting_depth)
             }
         }
         Access::InFrame(offset) => {

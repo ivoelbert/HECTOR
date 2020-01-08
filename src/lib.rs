@@ -34,7 +34,7 @@ mod tree;
 mod test;
 
 use typecheck::{initial_type_env, initial_value_env, type_exp};
-use utils::{log, set_panic_hook};
+pub use utils::{log, set_panic_hook};
 
 #[wasm_bindgen]
 pub fn main(source_code: &str) -> JsValue {

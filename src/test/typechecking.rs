@@ -8,7 +8,7 @@ use super::super::ast::parser::parse;
 use crate::typecheck::*;
 
 #[test]
-fn good() {
+fn typecheck_good() {
     let good_path = "./tiger_sources/good/";
     let source_files = read_dir(good_path).expect("read_dir");
     for direntry in source_files {
@@ -20,7 +20,7 @@ fn good() {
         let res = type_exp(ast.clone() , &type_env, &value_env);
         match res {
             Ok(..) => (),
-            Err(type_error) => panic!("ASTresion: {:?}\n Type Error: {:?}", ast, type_error)
+            Err(type_error) => panic!("Source: {:?}\n, AST: {:?}, Type Error: {:?}", &path, ast, type_error)
         }
     }
 }
@@ -35,10 +35,10 @@ fn bad_type() {
         let ast =  parse(&contents).expect("falla el parser");
         let type_env = TypeEnviroment::new();
         let value_env = ValueEnviroment::new();
-        let res = type_exp(ast.clone() , &type_env, &value_env);
-        match res {
+        let typed = type_exp(ast.clone() , &type_env, &value_env);
+        match typed {
             Err(..) => (),
-            Ok(tiger_type) => panic!("ASTresion: {:?}\n Type: {:?}", ast, tiger_type),
+            Ok(res) => panic!("Source: {:?}, AST: {:?}\n Type: {:?}", &path, ast, res.typ),
         }
     }
 }

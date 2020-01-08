@@ -1,4 +1,5 @@
 use super::*;
+use crate::utils::log;
 
 pub fn typecheck(
     AST{node, pos, ..}: AST,
@@ -16,6 +17,7 @@ pub fn typecheck(
                 Some(else_exp) => {
                     let else_ast = type_exp(*else_exp, type_env, value_env)?;
                     if else_ast.typ != then_ast.typ {
+                        console_log!("if mismatch");
                         return Err(TypeError::ThenElseTypeMismatch(pos))
                     }
                     let typ = then_ast.typ.clone();

@@ -15,7 +15,6 @@ fn parser_good() {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
         let string_path = path.into_os_string().into_string().unwrap();
-        println!("{:?}", string_path);
         let res = parse(&contents.clone());
         match res {
             Ok(..) => (),

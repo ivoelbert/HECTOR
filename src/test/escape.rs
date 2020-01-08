@@ -2,6 +2,25 @@ use crate::ast::*;
 use crate::ast::position::*;
 use crate::tree::escape::*;
 
+use std::fs::{read_dir, read_to_string};
+use crate::ast::parser::parse;
+use crate::typecheck::*;
+
+#[test]
+fn escape_good() {
+    let good_path = "./tiger_sources/good/";
+    let source_files = read_dir(good_path).expect("read_dir");
+    for direntry in source_files {
+        let path = direntry.expect("direntry").path();
+        let contents = read_to_string(&path).expect("read_to_string");
+        let ast =  parse(&contents).expect("parser error");
+        let type_env = TypeEnviroment::new();
+        let value_env = ValueEnviroment::new();
+        let typed = type_exp(ast.clone() , &type_env, &value_env).unwrap();
+        let _ = find_escapes(typed);
+    }
+}
+
 #[test]
 fn escaped_arguments() {
     let exp = make_ast(Exp::Let {
