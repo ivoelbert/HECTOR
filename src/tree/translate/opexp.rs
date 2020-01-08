@@ -17,8 +17,8 @@ fn trans_int_oper(ast_oper: &Oper) -> Tree::BinOp {
     }
 }
 
-fn trans_str_oper(ast_oper: &Oper, value_env: &ValueEnviroment) -> Box<Tree::Exp> {
-    use Oper::*;
+fn trans_str_oper(_ast_oper: &Oper, value_env: &ValueEnviroment) -> Box<Tree::Exp> {
+    //use Oper::*;
     // TODO
     // use names imposible to form to avoid overloading without typechecking
     let entry = value_env.get(&String::from("unimplemented"));

@@ -1,7 +1,7 @@
 #![allow(clippy::pub_enum_variant_names)]
 use std::collections::HashMap;
 use serde::{Serialize, Serializer};
-
+extern crate snowflake;
 pub use std::sync::{Arc, Weak};
 use crate::ast::*;
 
@@ -28,9 +28,9 @@ pub enum R {
     RW
 }
 
-pub type TypeId = String;
-pub fn newtypeid() -> String {
-    nanoid::simple()
+pub type TypeId = snowflake::ProcessUniqueId;
+pub fn newtypeid() -> TypeId {
+    snowflake::ProcessUniqueId::new()
 }
 
 #[derive(Debug, Clone)]
@@ -167,7 +167,7 @@ pub fn initial_value_env() -> ValueEnviroment {
     value_env
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum TypeError {
     UndeclaredSimpleVar(Pos),
     UndeclaredFunction(Pos),

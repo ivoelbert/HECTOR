@@ -4,6 +4,7 @@
 use super::{Label};
 use crate::tree::*;
 use serde::{Serialize};
+use crate::utils::log;
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Frame {
@@ -65,7 +66,7 @@ impl Frame {
             false => Access::InReg(newtemp())
         }
     }
-    pub fn alloc_arg(self: &mut Self, escape: bool) -> Access {
+    pub fn alloc_arg(self: &mut Self, _escape: bool) -> Access {
         // TODO: alloc_arg
         Access::InReg(newtemp())
     }

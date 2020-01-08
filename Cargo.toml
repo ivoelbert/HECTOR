@@ -14,6 +14,7 @@ default = ["console_error_panic_hook"]
 lalrpop-util = "0.17.1"
 regex = "1.2.0"
 nanoid = "0.2.0"
+snowflake = { version = "1.2", features = ["serde_support"] }
 pathfinding = "1.1.12"
 console_error_panic_hook = { version = "0.1.1", optional = true }
 wee_alloc = { version = "0.4.2", optional = true }

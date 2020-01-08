@@ -1,13 +1,13 @@
 use super::{AST};
-use super::position::{Pos, WithPos};
+use super::position::{Pos};
 use super::lexer::Lexer;
-use std::fs::{read_dir, read_to_string};
 use lalrpop_util::lalrpop_mod;
+use serde::{Serialize};
 
 #[macro_use]
 lalrpop_mod!(pub parser);
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub enum ParseError {
     UnexpectedToken(Pos),
 }
@@ -17,7 +17,7 @@ pub fn parse(str_src : &str) -> Result<AST, ParseError> {
 
     match parser::ExprParser::new().parse(lexed) {
         Ok(box_exp) => Ok(*box_exp),
-        Err(e) => {
+        Err(..) => {
             Err(ParseError::UnexpectedToken(Pos {column: 0, line: 0}))
         }
     }

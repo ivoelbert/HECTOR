@@ -2,16 +2,18 @@
 // A frame is wrapped in a level as it's being built and when finished it's stored in a fragment
 // Registers are wrapped in temporaries.
 
-extern crate nanoid;
+extern crate snowflake;
 
 pub use super::frame::{Frame};
 use super::Access;
-pub type Label = String;
-type LocalTemp = String;
-use serde::{Serialize, Serializer};
+pub type Label = snowflake::ProcessUniqueId;
+type LocalTemp = snowflake::ProcessUniqueId;
+use serde::{Serialize};
+use crate::utils::log;
 
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[allow(non_camel_case_types)]
 pub enum Temp {
     FRAME_POINTER,
     RV, // Return Value
@@ -20,11 +22,11 @@ pub enum Temp {
 }
 
 pub fn newtemp() -> Temp {
-    Temp::Local(nanoid::simple())
+    Temp::Local(snowflake::ProcessUniqueId::new())
 }
 
 pub fn newlabel() -> Label {
-    nanoid::simple()
+    snowflake::ProcessUniqueId::new()
 }
 
 
@@ -36,6 +38,7 @@ pub struct Level {
 
 impl Level {
     pub fn outermost() -> Level {
+        console_log!("Level::outermost");
         Level {
             frame: Frame::new(
                 newlabel(),

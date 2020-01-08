@@ -7,11 +7,13 @@ mod translate;
 mod level;
 
 use crate::ast::position::Pos;
+use serde::{Serialize};
 #[allow(non_snake_case)]
 use level::*;
 type Access = frame::Access;
 pub type Fragment = frame::Frag;
 
+#[derive(Debug, Serialize)]
 pub enum TransError {
     BreakError(Pos),
     DivByZero(Pos),

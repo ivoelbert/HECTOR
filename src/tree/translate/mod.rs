@@ -1,6 +1,8 @@
 use crate::ast::*;
 use crate::tree::*;
 
+use crate::utils::log;
+
 mod arrayexp;
 mod assignexp;
 mod breakexp;
@@ -28,6 +30,7 @@ fn trans_exp(
     breaks_stack: &Vec<Option<Label>>,
     prev_frags: Vec<Fragment>,
 ) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
+    console_log!("exp: {:?}", &exp);
     match exp {
         AST { node, .. } => match node {
             Exp::Var(var) => varexp::trans_var(var, level, value_env, breaks_stack, prev_frags),
@@ -90,7 +93,9 @@ fn translate_many_exp(
 
 pub fn translate(exp: AST) -> Result<(Vec<Fragment>), TransError> {
     let level = Level::outermost();
+    console_log!("Outermost");
     let value_env = initial_value_env();
+    console_log!("Value Env");
     let tiger_main = make_ast(Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(_FunctionDec{
             name: String::from("_tigermain"),
@@ -100,6 +105,7 @@ pub fn translate(exp: AST) -> Result<(Vec<Fragment>), TransError> {
         }, Pos{line: 0, column: 0})])],
         body: boxed_ast(Exp::Unit)
     });
+    console_log!("Arrancando traduccion.");
     let (_, _, main_frags) = trans_exp(&tiger_main, level, &value_env, &vec![], vec![])?;
     return Ok(main_frags);
 }
