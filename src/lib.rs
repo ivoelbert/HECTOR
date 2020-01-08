@@ -39,9 +39,7 @@ use utils::{log, set_panic_hook};
 
 #[wasm_bindgen]
 pub fn main(source_code: &str) -> JsValue {
-<<<<<<< HEAD
     set_panic_hook();
-=======
     console_log!("Running WASM!");
 
     if source_code == "" {
@@ -52,7 +50,6 @@ pub fn main(source_code: &str) -> JsValue {
     JsValue::from("Chorizo")
 
     /*
->>>>>>> Webapp linked to compiler code
     if source_code == "" {
         console_log!("OH SHIT!");
         return JsValue::from(-1)
