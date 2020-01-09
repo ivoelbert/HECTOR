@@ -5,7 +5,7 @@ use crate::utils::log;
 
 mod arrayexp;
 mod assignexp;
-mod breakexp;
+pub mod breakexp;
 mod callexp;
 mod forexp;
 mod ifexp;
@@ -15,7 +15,7 @@ mod nilexp;
 mod opexp;
 mod recordexp;
 mod seqexp;
-mod stringexp;
+pub mod stringexp;
 mod unitexp;
 mod varexp;
 mod whileexp;

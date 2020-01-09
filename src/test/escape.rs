@@ -1,3 +1,6 @@
+extern crate wasm_bindgen_test;
+use wasm_bindgen_test::*;
+
 use crate::ast::*;
 use crate::ast::position::*;
 use crate::tree::escape::*;
@@ -7,6 +10,7 @@ use crate::ast::parser::parse;
 use crate::typecheck::*;
 
 #[test]
+#[wasm_bindgen_test]
 fn escape_good() {
     let good_path = "./tiger_sources/good/";
     let source_files = read_dir(good_path).expect("read_dir");
@@ -22,6 +26,7 @@ fn escape_good() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn escaped_arguments() {
     let exp = make_ast(Exp::Let {
         decs: vec![
@@ -85,6 +90,7 @@ fn escaped_arguments() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn not_escaped_arguments() {
     let exp = make_ast(Exp::Let {
         decs: vec![
@@ -148,6 +154,7 @@ fn not_escaped_arguments() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn escaped_var() {
     let exp = make_ast(Exp::Let {
         decs: vec![
@@ -186,6 +193,7 @@ fn escaped_var() {
     panic!("wrong structure")
 }
 #[test]
+#[wasm_bindgen_test]
 fn not_escaped_var() {
     let exp = make_ast(Exp::Let {
         decs: vec![
@@ -225,8 +233,8 @@ fn not_escaped_var() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn escaped_for() {
-    // TODO
     let exp = make_ast(Exp::For {
         var: Symbol::from("i"), // iterator defined here
         lo: boxed_ast(Exp::Int(1)),
@@ -259,8 +267,8 @@ fn escaped_for() {
     }
 }
 #[test]
+#[wasm_bindgen_test]
 fn not_escaped_for() {
-    // TODO
     let exp = make_ast(Exp::For {
         var: Symbol::from("i"), // iterator defined here
         lo: boxed_ast(Exp::Int(1)),

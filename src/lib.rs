@@ -15,16 +15,11 @@
 #![feature(inner_deref)]
 #![feature(try_trait)]
 #![feature(bind_by_move_pattern_guards)]
+#![feature(start)]
 extern crate lalrpop_util;
 extern crate pathfinding;
 extern crate snowflake;
 
-
-use wasm_bindgen::prelude::*;
-extern crate serde_derive;
-#[cfg(feature = "wee_alloc")]
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[macro_use]
 mod utils;
@@ -32,13 +27,20 @@ mod ast;
 mod typecheck;
 mod tree;
 #[allow(unused_imports)]
+#[cfg(test)]
 mod test;
 
 use typecheck::{initial_type_env, initial_value_env, type_exp};
 pub use utils::{log, set_panic_hook};
 
+use wasm_bindgen::prelude::*;
+extern crate serde_derive;
+#[cfg(feature = "wee_alloc")]
+#[global_allocator]
+static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
 #[wasm_bindgen]
-pub fn main(source_code: &str) -> JsValue {
+pub fn compile(source_code: &str) -> JsValue {
     set_panic_hook();
     if source_code == "" {
         console_log!("OH SHIT!");

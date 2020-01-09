@@ -96,7 +96,7 @@ pub fn trans_exp(
 ) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
     match node {
         Exp::Let { decs, body } => {
-            // TODO: this should be a fold
+            // REFACTOR: this should be a fold
             let mut vardec_stms = vec![];
             let mut new_value_env = value_env.clone();
             for dec in decs {
@@ -123,13 +123,3 @@ pub fn trans_exp(
         _ => panic!("delegation error"),
     }
 }
-
-
-// TODO: unit tests
-//      declaring variable modifies the level
-//      declaring a function inside a variable adds a fragment
-//      declaring a type doesn't modify anything
-//      declaring a variable inside a function doesn't modify the current level
-//      can declare arrays
-//      can declare records
-//      a function body with a break inside a while fails

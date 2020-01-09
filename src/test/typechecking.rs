@@ -1,5 +1,9 @@
+extern crate wasm_bindgen_test;
+use wasm_bindgen_test::*;
+
 use std::fs::{read_dir, read_to_string};
 use std::sync::Arc;
+use crate::utils::log;
 
 use crate::ast::*;
 use crate::ast::position::*;
@@ -8,6 +12,7 @@ use super::super::ast::parser::parse;
 use crate::typecheck::*;
 
 #[test]
+#[wasm_bindgen_test]
 fn typecheck_good() {
     let good_path = "./tiger_sources/good/";
     let source_files = read_dir(good_path).expect("read_dir");
@@ -18,6 +23,7 @@ fn typecheck_good() {
         let type_env = TypeEnviroment::new();
         let value_env = ValueEnviroment::new();
         let res = type_exp(ast.clone() , &type_env, &value_env);
+        crate::utils::log(&format_args!("next src: {:?}", &path).to_string());
         match res {
             Ok(..) => (),
             Err(type_error) => panic!("Source: {:?}\n, AST: {:?}, Type Error: {:?}", &path, ast, type_error)
@@ -26,6 +32,7 @@ fn typecheck_good() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn bad_type() {
     let syntax_path = "./tiger_sources/type/";
     let source_files = read_dir(syntax_path).expect("read_dir");
@@ -48,6 +55,7 @@ fn make_ast(exp: Exp) -> AST {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn unitexp() {
     let ast = make_ast(Exp::Unit);
     let type_env = initial_type_env();
@@ -61,6 +69,7 @@ fn unitexp() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn nilexp() {
     let ast = make_ast(Exp::Nil);
     let type_env = initial_type_env();
@@ -76,6 +85,7 @@ fn nilexp() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn breakexp() {
     let ast =  make_ast(Exp::Break);
     let type_env = initial_type_env();
@@ -89,6 +99,7 @@ fn breakexp() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn intexp() {
     let ast =  make_ast(Exp::Int(1));
     let type_env = initial_type_env();
@@ -102,6 +113,7 @@ fn intexp() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn stringexp() {
     let ast =  make_ast(Exp::String(String::from("lorem ipsum")));
     let type_env = initial_type_env();
@@ -115,6 +127,7 @@ fn stringexp() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn varexp_simplevar_ok() {
     let ast =  make_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("foo")))));
     let type_env = initial_type_env();
@@ -129,6 +142,7 @@ fn varexp_simplevar_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn varexp_simplevar_no_declarada() {
     let ast =  make_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("foo")))));
     let type_env = initial_type_env();
@@ -142,6 +156,7 @@ fn varexp_simplevar_no_declarada() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn varexp_simplevar_no_es_simple() {
     let ast =  make_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("f")))));
     let type_env = initial_type_env();
@@ -159,6 +174,7 @@ fn varexp_simplevar_no_es_simple() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn varexp_fieldvar_ok() {
     let ast = make_ast(Exp::Var(
         make_var(VarKind::Field(
@@ -185,6 +201,7 @@ fn varexp_fieldvar_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn varexp_fieldvar_field_inexistente() {
     let ast = make_ast(Exp::Var(
         make_var(VarKind::Field(
@@ -210,6 +227,7 @@ fn varexp_fieldvar_field_inexistente() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn varexp_fieldvar_sobre_tipo_no_record() {
     let ast = make_ast(Exp::Var(
         make_var(VarKind::Field(
@@ -232,6 +250,7 @@ fn varexp_fieldvar_sobre_tipo_no_record() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn varexp_subscriptvar_ok() {
     let ast = make_ast(Exp::Var(
         make_var(VarKind::Subscript(boxed_var(VarKind::Simple(Symbol::from("foo"))),
@@ -256,6 +275,7 @@ fn varexp_subscriptvar_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn varexp_subscriptvar_indice_no_entero() {
     let ast = make_ast(Exp::Var(
         make_var(VarKind::Subscript(
@@ -282,6 +302,7 @@ fn varexp_subscriptvar_indice_no_entero() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn varexp_subscriptvar_no_array() {
     let ast = make_ast(Exp::Var(
         make_var(VarKind::Subscript(boxed_var(VarKind::Simple(Symbol::from("foo"))),
@@ -303,6 +324,7 @@ fn varexp_subscriptvar_no_array() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn callexp_ok() {
     let ast = make_ast(Exp::Call {
         func: Symbol::from("f"),
@@ -323,6 +345,7 @@ fn callexp_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn callexp_args_de_mas() {
     let ast = make_ast(Exp::Call {
         func: Symbol::from("f"),
@@ -343,6 +366,7 @@ fn callexp_args_de_mas() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn callexp_args_de_menos() {
     let ast = make_ast(Exp::Call {
         func: Symbol::from("f"),
@@ -363,6 +387,7 @@ fn callexp_args_de_menos() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn callexp_funcion_no_declarada() {
     let ast = make_ast(Exp::Call {
         func: Symbol::from("f"),
@@ -379,6 +404,7 @@ fn callexp_funcion_no_declarada() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn opexp_ok() {
     let ast = make_ast(Exp::Op {
         left: boxed_ast(Exp::Int(1)),
@@ -396,6 +422,7 @@ fn opexp_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn opexp_tipos_distintos() {
     let ast = make_ast(Exp::Op {
         left: boxed_ast(Exp::Int(1)),
@@ -413,6 +440,7 @@ fn opexp_tipos_distintos() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn recordexp_ok() {
     let ast = make_ast(Exp::Record {
         fields: vec![(Symbol::from("baz"), boxed_ast(Exp::Int(1)))],
@@ -435,6 +463,7 @@ fn recordexp_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn recordexp_tipo_inexistente() {
     let ast = make_ast(Exp::Record {
         fields: vec![(Symbol::from("baz"), boxed_ast(Exp::Int(1)))],
@@ -451,6 +480,7 @@ fn recordexp_tipo_inexistente() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn recordexp_con_tipo_no_record() {
     let ast = make_ast(Exp::Record {
         fields: vec![(Symbol::from("baz"), boxed_ast(Exp::Int(1)))],
@@ -468,6 +498,7 @@ fn recordexp_con_tipo_no_record() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn arrayexp_ok() {
     let ast = make_ast(Exp::Array {
         typ: Symbol::from("FooType"),
@@ -490,6 +521,7 @@ fn arrayexp_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn arrayexp_size_no_int() {
     let ast = make_ast(Exp::Array {
         typ: Symbol::from("FooType"),
@@ -512,6 +544,7 @@ fn arrayexp_size_no_int() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn arrayexp_tipos_distintos() {
     let ast = make_ast(Exp::Array {
         typ: Symbol::from("FooType"),
@@ -534,6 +567,7 @@ fn arrayexp_tipos_distintos() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn arrayexp_tipo_no_array() {
     let ast = make_ast(Exp::Array {
         typ: Symbol::from("FooType"),
@@ -553,6 +587,7 @@ fn arrayexp_tipo_no_array() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn arrayexp_tipo_no_existe() {
     let ast = make_ast(Exp::Array {
         typ: Symbol::from("FooType"),
@@ -570,6 +605,7 @@ fn arrayexp_tipo_no_existe() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn seqexp_ok() {
     let ast = make_ast(Exp::Seq(vec![
         make_ast(Exp::Int(1)),
@@ -587,6 +623,7 @@ fn seqexp_ok() {
 // Se puede testear algo mas de Exp::Seq? Hay alguna condicion del ultimo tipo?
 
 #[test]
+#[wasm_bindgen_test]
 fn assignexp_ok() {
     let ast = make_ast(Exp::Assign{
         var: make_var(VarKind::Simple(Symbol::from("foo"))),
@@ -607,6 +644,7 @@ fn assignexp_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn assignexp_variable_no_existe() {
     let ast = make_ast(Exp::Assign{
         var: make_var(VarKind::Simple(Symbol::from("foo"))),
@@ -623,6 +661,7 @@ fn assignexp_variable_no_existe() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn assignexp_tipos_distintos() {
     let ast = make_ast(Exp::Assign{
         var: make_var(VarKind::Simple(Symbol::from("foo"))),
@@ -643,6 +682,7 @@ fn assignexp_tipos_distintos() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn assignexp_variable_read_only() {
     let ast = make_ast(Exp::Assign{
         var: make_var(VarKind::Simple(Symbol::from("i"))),
@@ -663,6 +703,7 @@ fn assignexp_variable_read_only() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn ifexp_ok() {
     let ast = make_ast(Exp::If {
         test: boxed_ast(Exp::Int(0)),
@@ -680,6 +721,7 @@ fn ifexp_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn ifexp_test_no_entero() {
     let ast = make_ast(Exp::If {
         test: boxed_ast(Exp::String(String::from("perro"))),
@@ -697,6 +739,7 @@ fn ifexp_test_no_entero() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn ifexp_tipos_then_else_distintos() {
     let ast = make_ast(Exp::If {
         test: boxed_ast(Exp::Int(0)),
@@ -714,6 +757,7 @@ fn ifexp_tipos_then_else_distintos() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn ifexp_sin_else_no_unit() {
     let ast = make_ast(Exp::If {
         test: boxed_ast(Exp::Int(0)),
@@ -731,6 +775,7 @@ fn ifexp_sin_else_no_unit() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn whileexp_ok() {
     let ast = make_ast(Exp::While {
         test: boxed_ast(Exp::Int(0)),
@@ -747,6 +792,7 @@ fn whileexp_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn whileexp_condicion_no_entera() {
     let ast = make_ast(Exp::While {
         test: boxed_ast(Exp::Unit),
@@ -763,6 +809,7 @@ fn whileexp_condicion_no_entera() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn forexp_ok() {
     let ast = make_ast(Exp::For {
         var: Symbol::from("i"),
@@ -782,6 +829,7 @@ fn forexp_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn forexp_iterador_es_usable() {
     let ast = make_ast(Exp::For {
         var: Symbol::from("i"),
@@ -803,6 +851,7 @@ fn forexp_iterador_es_usable() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn forexp_body_no_es_unit() {
     let ast = make_ast(Exp::For {
         var: Symbol::from("i"),
@@ -822,6 +871,7 @@ fn forexp_body_no_es_unit() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn forexp_lo_no_es_int() {
     let ast = make_ast(Exp::For {
         var: Symbol::from("i"),
@@ -841,6 +891,7 @@ fn forexp_lo_no_es_int() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn forexp_hi_no_es_int() {
     let ast = make_ast(Exp::For {
         var: Symbol::from("i"),
@@ -860,6 +911,7 @@ fn forexp_hi_no_es_int() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_vardec_sin_tipo_ok() {
     let ast =  make_ast(Exp::Let {
         decs: vec![Dec::VarDec(
@@ -883,6 +935,7 @@ fn letexp_vardec_sin_tipo_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_vardec_con_tipo_ok() {
     let ast =  make_ast(Exp::Let {
         decs: vec![Dec::VarDec(
@@ -907,6 +960,7 @@ fn letexp_vardec_con_tipo_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_vardec_tipo_no_esta_declarado() {
     let ast =  make_ast(Exp::Let {
         decs: vec![Dec::VarDec(
@@ -930,6 +984,7 @@ fn letexp_vardec_tipo_no_esta_declarado() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_vardec_tipos_distintos() {
     let ast =  make_ast(Exp::Let {
         decs: vec![Dec::VarDec(
@@ -953,6 +1008,7 @@ fn letexp_vardec_tipos_distintos() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_typedec_name_ok() {
     let ast =  make_ast(Exp::Let {
         decs: vec![
@@ -985,6 +1041,7 @@ fn letexp_typedec_name_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_typedec_array_ok() {
     let ast =  make_ast(Exp::Let {
         decs: vec![
@@ -1026,6 +1083,7 @@ fn letexp_typedec_array_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_typedec_record_ok() {
     let ast =  make_ast(Exp::Let {
         decs: vec![
@@ -1071,6 +1129,7 @@ fn letexp_typedec_record_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_typedec_recursion_infinita() {
    let ast =  make_ast(Exp::Let {
         decs: vec![Dec::TypeDec(vec![
@@ -1089,6 +1148,7 @@ fn letexp_typedec_recursion_infinita() {
     }
 }
 #[test]
+#[wasm_bindgen_test]
 fn test_recursive_ok() {
    let ast =  make_ast(Exp::Let {
         decs: vec![Dec::TypeDec(vec![
@@ -1109,6 +1169,7 @@ fn test_recursive_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_typedec_referencia_tipo_inexistente() {
     let ast =  make_ast(Exp::Let {
         decs: vec![Dec::TypeDec(vec![(
@@ -1131,6 +1192,7 @@ fn letexp_typedec_referencia_tipo_inexistente() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn record_type_cycle_ok() {
     let ast =  make_ast(Exp::Let {
         decs: vec![
@@ -1202,6 +1264,7 @@ fn record_type_cycle_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_functiondec_ok() {
     let ast =  make_ast(Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
@@ -1230,6 +1293,7 @@ fn letexp_functiondec_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_functiondec_llamada_en_bloque_ok() {
     let ast =  make_ast(Exp::Let {
         decs: vec![
@@ -1279,6 +1343,7 @@ fn letexp_functiondec_llamada_en_bloque_ok() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_functiondec_body_no_tipa() {
     let ast =  make_ast(Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
@@ -1307,6 +1372,7 @@ fn letexp_functiondec_body_no_tipa() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_functiondec_body_distinto_result() {
     let ast =  make_ast(Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
@@ -1335,6 +1401,7 @@ fn letexp_functiondec_body_distinto_result() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_functiondec_params_repetidos() {
     let ast =  make_ast(Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
@@ -1363,6 +1430,7 @@ fn letexp_functiondec_params_repetidos() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_functiondec_nombres_repetidos() {
     let ast =  make_ast(Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
@@ -1391,6 +1459,7 @@ fn letexp_functiondec_nombres_repetidos() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_functiondec_recursivas() {
     let ast =  make_ast(Exp::Let {
         decs: vec![Dec::FunctionDec(vec![(
@@ -1418,6 +1487,7 @@ fn letexp_functiondec_recursivas() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_todas_las_decs_ok() {
     let ast =  make_ast(Exp::Let {
         decs: vec![

@@ -18,25 +18,3 @@ pub fn trans_exp(
         _ => panic!()
     }
 }
-
-#[test]
-fn ok() {
-    let exp = AST {
-        node: Exp::String(String::from("lorem ipsum")),
-        pos: Pos {
-            line: 0,
-            column: 0,
-        },
-        typ: Arc::new(TigerType::TString)
-    };
-    let level = Level::outermost();
-    let value_env = initial_value_env();
-    let res = trans_exp(&exp, level, &value_env, &vec![], vec![]);
-    match res {
-        Ok((NAME(_), _level, fragments)) => {
-            assert!(!fragments.is_empty());
-        },
-        Ok(..) => panic!("wrong result"),
-        Err(..) => panic!("should translate"),
-    }
-}

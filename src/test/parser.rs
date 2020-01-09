@@ -1,3 +1,6 @@
+extern crate wasm_bindgen_test;
+use wasm_bindgen_test::*;
+
 use std::fs::{read_dir, read_to_string};
 
 use crate::ast::parser::{parse};
@@ -8,6 +11,7 @@ use crate::ast::*;
 *   Naaaa naaa na na na na naaaaa, test good
 */
 #[test]
+#[wasm_bindgen_test]
 fn parser_good() {
     let good_path = "./tiger_sources/good/";
     let source_files = read_dir(good_path).expect("read_dir");
@@ -24,6 +28,7 @@ fn parser_good() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn parser_bad_type() {
     let type_path = "./tiger_sources/type/";
     let source_files = read_dir(type_path).expect("read_dir");
@@ -40,6 +45,7 @@ fn parser_bad_type() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn parser_bad_syntax() {
     let syntax_path = "./tiger_sources/syntax/";
     let source_files = read_dir(syntax_path).expect("read_dir");
@@ -55,6 +61,7 @@ fn parser_bad_syntax() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn number() {
     let input = String::from("0");
     let parsed = parse(&input);
@@ -69,6 +76,7 @@ fn number() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn string() {
     let input = String::from("\"perro\"");
     let parsed = parse(&input);
@@ -83,6 +91,7 @@ fn string() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn breakexp() {
     let input = String::from("break");
     let parsed = parse(&input);
@@ -97,6 +106,7 @@ fn breakexp() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn simplevar() {
     let input = String::from("foo");
     let parsed = parse(&input);
@@ -111,6 +121,7 @@ fn simplevar() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn subscriptvar() {
     let input = String::from("foo[0]");
     let parsed = parse(&input);
@@ -125,6 +136,7 @@ fn subscriptvar() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn fieldvar() {
     let input = String::from("foo.baz");
     let parsed = parse(&input);
@@ -139,6 +151,7 @@ fn fieldvar() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn callexp() {
     let input = String::from("foo(1, \"perro\", baz)");
     let parsed = parse(&input);
@@ -153,6 +166,7 @@ fn callexp() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn custom() {
     let input = String::from("(2 * 2 = 2 + 2) & 2 - 2 <> 2 + 2");
     let parsed = parse(&input);
@@ -164,6 +178,7 @@ fn custom() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn simple_sum() {
     let input = String::from("2 + 2");
     let parsed = parse(&input);
@@ -183,6 +198,7 @@ fn simple_sum() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn simple_mult() {
     let input = String::from("2 * 2");
     let parsed = parse(&input);
@@ -202,6 +218,7 @@ fn simple_mult() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn simple_comp() {
     let input = String::from("2 >= 2");
     let parsed = parse(&input);
@@ -221,6 +238,7 @@ fn simple_comp() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn recordexp() {
     let input = String::from("{first_name: \"Jhon\", last_name: \"doe\", age: 42}");
     let parsed = parse(&input);
@@ -235,6 +253,7 @@ fn recordexp() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn seqexp() {
     let input = String::from("(1;2)");
     let parsed = parse(&input);
@@ -249,6 +268,7 @@ fn seqexp() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn assignexp() {
     let input = String::from("foo = 42");
     let parsed = parse(&input);
@@ -267,6 +287,7 @@ fn assignexp() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn ifexp() {
     let input = String::from("if 1 then 2 else 3");
     let parsed = parse(&input);
@@ -284,6 +305,7 @@ fn ifexp() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn whileexp() {
     let input = String::from("for i :=0 to 100 do 1");
     let parsed = parse(&input);
@@ -298,6 +320,7 @@ fn whileexp() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn forexp() {
     let input = String::from("for i :=0 to 100 do 1");
     let parsed = parse(&input);
@@ -315,6 +338,7 @@ fn forexp() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_functiondec() {
     let input = String::from("let function foo() = 1 in 2 ");
     let parsed = parse(&input);
@@ -333,6 +357,7 @@ fn letexp_functiondec() {
 
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_typedec_namety() {
     let input = String::from("let type numeritos = int in 2 ");
     let parsed = parse(&input);
@@ -350,6 +375,7 @@ fn letexp_typedec_namety() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_typedec_recordty() {
     let input = String::from("let type name = {first_name: string, last_name: string} in 2 ");
     let parsed = parse(&input);
@@ -367,6 +393,7 @@ fn letexp_typedec_recordty() {
 }
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_typedec_arrayty() {
     let input = String::from("let type intArray = array of int in 2 ");
     let parsed = parse(&input);
@@ -385,6 +412,7 @@ fn letexp_typedec_arrayty() {
 
 
 #[test]
+#[wasm_bindgen_test]
 fn letexp_arrayexp() {
     let input = String::from("arrtype [10] of 0");
     let parsed = parse(&input);

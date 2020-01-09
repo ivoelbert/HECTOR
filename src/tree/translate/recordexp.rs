@@ -45,7 +45,7 @@ pub fn trans_exp(
                 })?;
             let temp = newtemp();
             // use a name not posible in Tiger
-            if let EnvEntry::Func {label, ..} = value_env.get("+allocRecord").expect("should be in initial value env") {
+            if let EnvEntry::Func {label, ..} = value_env.get("+alloc_record").expect("should be in initial value env") {
                 Ok((
                     ESEQ(
                         Box::new(SEQ(

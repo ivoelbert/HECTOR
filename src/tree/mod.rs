@@ -3,8 +3,8 @@ pub mod frame;
 #[allow(non_snake_case)]
 #[macro_use]
 pub mod Tree;
-mod translate;
-mod level;
+pub mod translate;
+pub mod level;
 
 use crate::ast::position::Pos;
 use serde::{Serialize};
@@ -35,9 +35,7 @@ use std::collections::HashMap;
 use crate::ast::Symbol;
 type ValueEnviroment = HashMap<Symbol, EnvEntry>;
 
-
-// TODO: check for correctnes
-fn initial_value_env() -> ValueEnviroment {
+pub fn initial_value_env() -> ValueEnviroment {
     use EnvEntry::*;
     let mut value_env = ValueEnviroment::new();
     value_env.insert(Symbol::from("print"), Func {
@@ -56,7 +54,7 @@ fn initial_value_env() -> ValueEnviroment {
         label: newlabel(),
         external: true,
     });
-    value_env.insert(Symbol::from("+chr"), Func {
+    value_env.insert(Symbol::from("chr"), Func {
         label: newlabel(),
         external: true,
     });
@@ -80,11 +78,36 @@ fn initial_value_env() -> ValueEnviroment {
         label: newlabel(),
         external: true,
     });
-    value_env.insert(Symbol::from("+allocArray"), Func {
+    // Runtime functions are preceded by a + to avoid collision with user-defined functions/variables.
+    value_env.insert(Symbol::from("+alloc_array"), Func {
         label: newlabel(),
         external: true,
     });
-    value_env.insert(Symbol::from("+allocRecord"), Func {
+    value_env.insert(Symbol::from("+alloc_record"), Func {
+        label: newlabel(),
+        external: true,
+    });
+    value_env.insert(Symbol::from("+str_equals"), Func {
+        label: newlabel(),
+        external: true,
+    });
+    value_env.insert(Symbol::from("+str_not_equals"), Func {
+        label: newlabel(),
+        external: true,
+    });
+    value_env.insert(Symbol::from("+str_lower"), Func {
+        label: newlabel(),
+        external: true,
+    });
+    value_env.insert(Symbol::from("+str_lower_or_equals"), Func {
+        label: newlabel(),
+        external: true,
+    });
+    value_env.insert(Symbol::from("+str_greater"), Func {
+        label: newlabel(),
+        external: true,
+    });
+    value_env.insert(Symbol::from("+str_greater_or_equals"), Func {
         label: newlabel(),
         external: true,
     });
