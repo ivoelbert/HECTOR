@@ -77,5 +77,5 @@ pub fn compile(source_code: &str) -> JsValue {
         }
     };
     console_log!("Translate OK");
-    JsValue::from_serde(&tree_frags).unwrap()
+    JsValue::from_serde(&(&escaped_ast, &tree_frags)).unwrap()
 }

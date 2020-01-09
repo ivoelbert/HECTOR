@@ -1,6 +1,8 @@
 import React, { Suspense } from 'react';
 import { CompilerInterface } from './CompilerInterface';
 
+import './Compiler.scss';
+
 const AsyncCompiler = React.lazy(
     async (): Promise<any> => {
         const wasm = await import('tigerust');
@@ -12,8 +14,10 @@ const AsyncCompiler = React.lazy(
 
 export const Compiler: React.FC = () => {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <AsyncCompiler />
-        </Suspense>
+        <div className="compiler-container">
+            <Suspense fallback={<div>Loading...</div>}>
+                <AsyncCompiler />
+            </Suspense>
+        </div>
     );
 };

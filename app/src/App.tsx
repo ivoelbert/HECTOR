@@ -1,9 +1,11 @@
 import React from 'react';
-import { Compiler } from './Components/Compiler';
+import { Compiler } from './components/Compiler';
+import { Header } from './components/Header/Header';
 
 const App: React.FC = () => {
     return (
         <div className="App">
+            <Header />
             <Compiler />
         </div>
     );

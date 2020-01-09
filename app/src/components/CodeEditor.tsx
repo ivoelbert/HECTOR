@@ -1,14 +1,14 @@
 import React from 'react';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/theme-monokai';
-import "ace-builds/src-noconflict/mode-golang";
+import 'ace-builds/src-noconflict/mode-golang';
 
 interface CodeEditorProps {
     code: string;
-    setCode: React.Dispatch<React.SetStateAction<string>>
+    setCode: React.Dispatch<React.SetStateAction<string>>;
 }
 
-export const CodeEditor: React.FC<CodeEditorProps> = (props) => {
+export const CodeEditor: React.FC<CodeEditorProps> = props => {
     const { code, setCode } = props;
 
     return (
@@ -20,6 +20,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = (props) => {
             name="code-editor"
             editorProps={{ $blockScrolling: true }}
             fontSize={14}
+            width="100%"
+            showPrintMargin={false}
         />
     );
 };

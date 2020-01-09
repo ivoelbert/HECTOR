@@ -21,7 +21,6 @@ export const ASTViewer: React.FC<ASTViewerProps> = props => {
 
     return (
         <div>
-            <p>Here's the AST</p>
             <ReactJson src={prettyAst} theme="monokai" enableClipboard={false} displayObjectSize={false} displayDataTypes={false} />
         </div>
     );
