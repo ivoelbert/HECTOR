@@ -1,6 +1,5 @@
 import React from 'react';
-import './App.css';
-import { Compiler } from './Compiler';
+import { Compiler } from './Components/Compiler';
 
 const App: React.FC = () => {
     return (

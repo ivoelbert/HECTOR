@@ -47,13 +47,6 @@ pub fn main(source_code: &str) -> JsValue {
         return JsValue::from(-1)
     }
 
-    JsValue::from("Chorizo")
-
-    /*
-    if source_code == "" {
-        console_log!("OH SHIT!");
-        return JsValue::from(-1)
-    }
     console_log!("source: {}", source_code);
     console_log!("Inicio");
     let ast = match ast::parser::parse(source_code) {
@@ -74,14 +67,6 @@ pub fn main(source_code: &str) -> JsValue {
     console_log!("Typecheck OK");
     let escaped_ast = tree::escape::find_escapes(typed_ast);
     console_log!("Escape OK");
-    let tree_frags = match tree::translate(escaped_ast.clone()) {
-        Ok(interm_exp) => interm_exp,
-        Err(trans_error) => {
-            console_log!("Translation Error: {:?}", trans_error);
-            return JsValue::from_serde(&trans_error).unwrap()
-        }
-    };
-    console_log!("Translate OK");
-    JsValue::from_serde(&tree_frags).unwrap()
-    */
+
+    JsValue::from_serde(&escaped_ast).unwrap()
 }
