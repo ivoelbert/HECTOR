@@ -42,10 +42,13 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 #[wasm_bindgen]
 pub fn compile(source_code: &str) -> JsValue {
     set_panic_hook();
+    console_log!("Running WASM!");
+
     if source_code == "" {
-        console_log!("OH SHIT!");
+        console_log!("No code to compile, bye bye!");
         return JsValue::from(-1)
     }
+
     console_log!("source: {}", source_code);
     console_log!("Inicio");
     let ast = match ast::parser::parse(source_code) {
