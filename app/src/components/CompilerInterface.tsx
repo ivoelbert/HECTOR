@@ -27,6 +27,7 @@ export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
     const tabs = {
         Editor: <CodeEditor code={code} setCode={setCode} />,
         AST: <ASTViewer ast={ast} />,
+        Result: <p>3</p>
     };
 
     return (
