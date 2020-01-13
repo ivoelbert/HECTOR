@@ -1,5 +1,7 @@
 use wasm_bindgen::prelude::*;
 
+pub static WASM : bool = true;
+
 pub fn set_panic_hook() {
     // When the `console_error_panic_hook` feature is enabled, we can call the
     // `set_panic_hook` function at least once during initialization, and then
@@ -32,5 +34,9 @@ extern "C" {
 macro_rules! console_log {
     // Note that this is using the `log` function imported above during
     // `bare_bones`
-    ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
+    ($($t:tt)*) => (
+        if crate::utils::WASM {
+            log(&format_args!($($t)*).to_string())
+        }
+    )
 }

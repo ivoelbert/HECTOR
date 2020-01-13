@@ -23,7 +23,6 @@ fn typecheck_good() {
         let type_env = TypeEnviroment::new();
         let value_env = ValueEnviroment::new();
         let res = type_exp(ast.clone() , &type_env, &value_env);
-        crate::utils::log(&format_args!("next src: {:?}", &path).to_string());
         match res {
             Ok(..) => (),
             Err(type_error) => panic!("Source: {:?}\n, AST: {:?}, Type Error: {:?}", &path, ast, type_error)

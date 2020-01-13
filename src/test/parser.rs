@@ -307,7 +307,7 @@ fn ifexp() {
 #[test]
 #[wasm_bindgen_test]
 fn whileexp() {
-    let input = String::from("for i :=0 to 100 do 1");
+    let input = String::from("for i := 0 to 100 do 1");
     let parsed = parse(&input);
     match parsed {
         Ok(AST {

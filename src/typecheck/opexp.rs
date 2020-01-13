@@ -23,10 +23,10 @@ pub fn typecheck(
             };
             match oper {
                 Oper::EqOp | Oper::NeqOp => {
-                    if left_type == right_type && *left_type != TigerType::TNil && *right_type != TigerType::TNil {
+                    if left_type == right_type {
                         Ok(op_ast)
                     } else {
-                        console_log!("op eq mismatch");
+                        console_log!("op eq mismatch. node: {:?}, lt: {:?}, rt: {:?}", &op_ast, &left_type, &right_type);
                         Err(TypeError::TypeMismatch(pos))
                     }
                 },

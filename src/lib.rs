@@ -35,9 +35,20 @@ pub use utils::{log, set_panic_hook};
 
 use wasm_bindgen::prelude::*;
 extern crate serde_derive;
+use serde::{Serialize};
 #[cfg(feature = "wee_alloc")]
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
+
+#[derive(Serialize)]
+pub struct CompilerResult {
+    parse: Result<ast::AST, ast::parser::ParseError>,
+    typecheck: Option<Result<ast::AST, typecheck::TypeError>>,
+    escape: Option<ast::AST>,
+    translate: Option<Result<Vec<tree::frame::Frag>, tree::TransError>>,
+    canon: Option<Vec<tree::frame::Frag>>,
+    wasm: Option<Vec<tree::frame::Frag>>
+}
 
 #[wasm_bindgen]
 pub fn compile(source_code: &str) -> JsValue {
@@ -49,33 +60,23 @@ pub fn compile(source_code: &str) -> JsValue {
         return JsValue::from(-1)
     }
 
-    console_log!("source: {}", source_code);
-    console_log!("Inicio");
-    let ast = match ast::parser::parse(source_code) {
-        Ok(ast) => ast,
-        Err(parse_error) => {
-            console_log!("Parse Error: {:?}", parse_error);
-            return JsValue::from_serde(&parse_error).unwrap()
-        }
-    };
-    console_log!("Parse OK");
-    let typed_ast = match type_exp(ast, &initial_type_env(), &initial_value_env()) {
-        Ok(ast) => ast,
-        Err(typecheck_error) => {
-            console_log!("Typechecking Error: {:?}", typecheck_error);
-            return JsValue::from_serde(&typecheck_error).unwrap()
-        }
-    };
-    console_log!("Typecheck OK");
-    let escaped_ast = tree::escape::find_escapes(typed_ast);
-    console_log!("Escape OK");
-    let tree_frags = match tree::translate(escaped_ast.clone()) {
-        Ok(interm_exp) => interm_exp,
-        Err(trans_error) => {
-            console_log!("Translation Error: {:?}", trans_error);
-            return JsValue::from_serde(&trans_error).unwrap()
-        }
-    };
-    console_log!("Translate OK");
-    JsValue::from_serde(&(&escaped_ast, &tree_frags)).unwrap()
+    let parse_result = ast::parser::parse(source_code);
+    let typecheck_result = if let Ok(ast) = &parse_result {
+        Some(type_exp(ast.clone(), &initial_type_env(), &initial_value_env()))
+    } else {None};
+    let escape_result = if let Some(Ok(ast)) = &typecheck_result {
+        Some(tree::escape::find_escapes(ast.clone()))
+    } else {None};
+    let translate_result = if let Some(ast) = &escape_result {
+        Some(tree::translate(ast.clone()))
+    } else {None};
+
+    JsValue::from_serde(&CompilerResult{
+        parse: parse_result,
+        typecheck: typecheck_result,
+        escape: escape_result,
+        translate: translate_result,
+        canon: None,
+        wasm: None
+    }).unwrap()
 }
