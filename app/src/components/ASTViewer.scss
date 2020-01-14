@@ -1,0 +1,43 @@
+
+.ast-viewer {
+    position: relative;
+}
+
+.clean-controls-container {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+
+    .collapse-button {
+        width: 100%;
+        background: #f4f4f4;
+        border: solid 1px #d4d4d4;
+        height: 28px;
+        color: #2b2b2b;
+        outline: none;
+
+        &:hover {
+            background-color: #dadada;
+        }
+    }
+
+    .option-checkbox {
+        padding: 8px 0;
+    }
+}
+
+.options-container {
+    transform-origin: center top;
+    overflow: hidden;
+    transition: transform 100ms;
+    background-color: #f4f4f4;
+    padding: 0 1rem;
+
+    &.collapsed {
+        transform: scaleY(0);
+    }
+
+    &.expanded {
+        transform: scaleY(1);
+    }
+}
