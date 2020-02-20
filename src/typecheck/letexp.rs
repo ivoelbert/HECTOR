@@ -45,7 +45,7 @@ fn ty_to_tigertype(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<Arc<T
         Ty::Name(symbol) => match type_env.get(symbol) {
             Some(tipo) => Ok((*tipo).clone()),
             None => {
-                console_log!("let ty name undeclared");
+                console_log!("let ty name undeclared - ty: {:?}, type_env: {:?}", ty, type_env);
                 Err(TypeError::UndeclaredType(pos))
             },
         },
@@ -187,12 +187,14 @@ fn typecheck_functiondec_batch(
 ) -> Result<(Vec<(_FunctionDec, Pos)>, ValueEnviroment), TypeError> {
 
     // Add prototypes to ValueEnviroment
+    let mut added_names = vec![];
     for (dec, pos) in &decs {
-        // Check for repeated names
-        if value_env.get(&dec.name).is_some() {
+        // Check for repeated names, in a very inneficient way.
+        if added_names.contains(&dec.name) {
             return Err(TypeError::DuplicatedDefinitions(*pos))
         }
         value_env = add_prototype_to_env(dec, value_env, type_env, *pos)?;
+        added_names.push(dec.name.clone())
     }
 
     // Type the functions with the new ValueEnviroment
@@ -309,18 +311,18 @@ fn typecheck_typedec_batch(
         }
     };
     // Insert placeholders for recursive records in TypeEnviroment
+    let mut added_names = vec![];
     for (_TypeDec { name, .. }, pos) in &records {
-        if type_env.get(name).is_some() {
-            return Err(TypeError::DuplicatedDefinitions(*pos))
-        }
         type_env.insert(name.clone(), Arc::new(TigerType::TRecord(vec![], TypeId::new())));
     }
     // Insert declarations, except recursive records.
     for (_TypeDec { name, ty, .. }, pos) in sorted_decs {
-        if type_env.get(name).is_some() {
+        // Check for repeated names, ineficiently.
+        if added_names.contains(name) {
             return Err(TypeError::DuplicatedDefinitions(*pos))
         }
         type_env.insert(name.clone(), ty_to_tigertype(&ty, &type_env, *pos)?);
+        added_names.push(name.clone())
     }
 
     for (_TypeDec { name, ty }, pos) in records {

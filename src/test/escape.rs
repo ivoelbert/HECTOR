@@ -18,8 +18,8 @@ fn escape_good() {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
         let ast =  parse(&contents).expect("parser error");
-        let type_env = TypeEnviroment::new();
-        let value_env = ValueEnviroment::new();
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
         let typed = type_exp(ast.clone() , &type_env, &value_env).unwrap();
         let _ = find_escapes(typed);
     }

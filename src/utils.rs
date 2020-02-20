@@ -1,7 +1,5 @@
 use wasm_bindgen::prelude::*;
 
-pub static WASM : bool = true;
-
 pub fn set_panic_hook() {
     // When the `console_error_panic_hook` feature is enabled, we can call the
     // `set_panic_hook` function at least once during initialization, and then
@@ -31,12 +29,20 @@ extern "C" {
     fn log_many(a: &str, b: &str);
 }
 
+#[cfg(target_arch = "wasm32")]
 macro_rules! console_log {
     // Note that this is using the `log` function imported above during
     // `bare_bones`
     ($($t:tt)*) => (
-        if crate::utils::WASM {
-            log(&format_args!($($t)*).to_string())
-        }
+        log(&format_args!($($t)*).to_string())
+    )
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+macro_rules! console_log {
+    // Note that this is using the `log` function imported above during
+    // `bare_bones`
+    ($($t:tt)*) => (
+        println!($($t)*)
     )
 }
