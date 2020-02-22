@@ -1,11 +1,9 @@
 import { useEffect } from 'react';
 
-export const useCtrlEnter = (handler: () => void): void => {
+export const useCtrlAltKeys = (compileKeyCodes: number[], handler: () => void): void => {
     useEffect(() => {
         const keyHandler = (e: KeyboardEvent): void => {
-            const compileKeyCodes = [13, 83];
-
-            if (compileKeyCodes.includes(e.keyCode) && e.ctrlKey) {
+            if (compileKeyCodes.includes(e.keyCode) && e.ctrlKey && e.altKey) {
                 handler();
                 e.preventDefault();
             }
@@ -16,5 +14,5 @@ export const useCtrlEnter = (handler: () => void): void => {
         return () => {
             document.removeEventListener('keydown', keyHandler);
         };
-    }, [handler]);
+    }, [handler, compileKeyCodes]);
 };

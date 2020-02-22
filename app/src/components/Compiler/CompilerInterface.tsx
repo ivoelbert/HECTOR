@@ -4,7 +4,7 @@ import { ASTViewer } from '../ASTViewer/ASTViewer';
 import { useLocalStorageState } from '../../hooks/useLocalStorageState';
 import { Tabs } from '../Tabs/Tabs';
 import { TREEViewer } from '../TREEViewer/TREEViewer';
-import { useCtrlEnter } from '../../hooks/useCtrlEnter';
+import { useCtrlKeys } from '../../hooks/useCtrlKeys';
 
 const baseCode = `
 /* Enter your tiger code */
@@ -54,7 +54,7 @@ export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
         console.log(result);
     }, [compile, code]);
 
-    useCtrlEnter(compileCode);
+    useCtrlKeys([13, 83], compileCode);
 
     // THIS IS SHIT. MAKE IT RIGHT. COMPOSE COMPONENTS LIKE YOU'RE SUPPOSED TO.
     const tabs = {
