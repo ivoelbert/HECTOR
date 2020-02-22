@@ -1,5 +1,5 @@
 import React from 'react';
-import { Compiler } from './components/Compiler';
+import { Compiler } from './components/Compiler/Compiler';
 import { Header } from './components/Header/Header';
 
 const App: React.FC = () => {
