@@ -1,5 +1,6 @@
 use crate::ast::*;
 use crate::tree::*;
+use crate::utils::log;
 
 mod arrayexp;
 mod assignexp;
