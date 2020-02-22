@@ -58,7 +58,13 @@ export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
 
     // THIS IS SHIT. MAKE IT RIGHT. COMPOSE COMPONENTS LIKE YOU'RE SUPPOSED TO.
     const tabs = {
-        Editor: <CodeEditor code={code} setCode={setCode} />,
+        Editor: (
+            <CodeEditor
+                code={code}
+                setCode={setCode}
+                compileCode={compileCode}
+            />
+        ),
         AST: <ASTViewer ast={ast} />,
         TREE: <TREEViewer fragments={fragments} />,
         Result: <p>not implemented</p>,
@@ -68,7 +74,8 @@ export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
         <div className="compiler-interface">
             <Tabs tabs={tabs} />
             <p className="compile-instructions">
-                Psst! compile the code with <strong>Ctrl + enter</strong> or <strong>Ctrl + s</strong>
+                Psst! compile the code with <strong>Ctrl + enter</strong> or{' '}
+                <strong>Ctrl + s</strong>
             </p>
         </div>
     );

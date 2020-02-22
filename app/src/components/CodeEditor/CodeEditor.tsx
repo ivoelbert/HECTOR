@@ -6,10 +6,11 @@ import 'ace-builds/src-noconflict/mode-golang';
 interface CodeEditorProps {
     code: string;
     setCode: React.Dispatch<React.SetStateAction<string>>;
+    compileCode: () => void;
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = props => {
-    const { code, setCode } = props;
+    const { code, setCode, compileCode } = props;
 
     return (
         <AceEditor
@@ -23,6 +24,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = props => {
             width="100%"
             showPrintMargin={false}
             onLoad={(editor: IEditorProps) => editor.focus()}
+            onBlur={compileCode}
         />
     );
 };
