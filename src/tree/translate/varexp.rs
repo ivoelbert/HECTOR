@@ -71,8 +71,9 @@ pub fn trans_var(
         VarKind::Field(record, field) => {
             // Similar to array
             // but you use the record's field order as "index"
+            let record_typ = record.typ.clone();
             let (record_exp, record_level, record_frags) = trans_var(record, level, value_env, breaks_stack, frags)?;
-            let formals = if let TigerType::TRecord(formals, ..) = &**typ {
+            let formals = if let TigerType::TRecord(formals, ..) = &*record_typ {
                 formals.clone()
             } else {
                 panic!("not a record. kind: {:?}, typ: {:?}, field: {:?}", kind, typ, field)

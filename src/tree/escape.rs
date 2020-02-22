@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use crate::ast::*;
+use crate::utils::log;
 
 type EscapeTable = HashMap<Symbol, (u32, bool)>;
 
@@ -48,7 +49,7 @@ fn trav_decs(mut decs: Vec<Dec>, table: EscapeTable, current_depth: u32) -> (Vec
         match dec {
             Dec::VarDec(_VarDec{name, typ, init, ..}, pos) => {
                 // traverse the init
-                let (r_init, init_table) = trav_exp(*init, table, current_depth);
+                let (r_init, init_table) = trav_exp(*init.clone(), table, current_depth);
                 // Add this dec to an inner table
                 let mut inner_table = init_table.clone();
                 inner_table.insert(name.clone(), (current_depth, false));
@@ -58,7 +59,8 @@ fn trav_decs(mut decs: Vec<Dec>, table: EscapeTable, current_depth: u32) -> (Vec
                 let escape = later_decs_inner_table.remove(&name).unwrap();
                 let r_dec = Dec::VarDec(_VarDec{name: name.clone(), typ, init: Box::new(r_init), escape: escape.1}, pos);
                 r_later_decs.push(r_dec);
-                // Add the dec to the outer table, so that it can be escaped in the body
+                // Add the dec to the outer table, so that it can be escaped in the body.
+                // If dec is repeated in we
                 later_decs_inner_table.insert(name, escape);
                 (r_later_decs, later_decs_outer_table, later_decs_inner_table)
             },
@@ -97,14 +99,14 @@ fn trav_decs(mut decs: Vec<Dec>, table: EscapeTable, current_depth: u32) -> (Vec
 fn post_decs(decs: Vec<Dec>, table: EscapeTable) -> (Vec<Dec>, EscapeTable) {
     // Declarations have allready been traversed.
     // We need to set escapes and clean the table.
-    fn post_decs_internal(mut decs: Vec<Dec>, mut table: EscapeTable, mut prev: Vec<Dec>) -> (Vec<Dec>, EscapeTable) {
+    fn post_decs_internal(mut decs: Vec<Dec>, table: EscapeTable, mut prev: Vec<Dec>) -> (Vec<Dec>, EscapeTable) {
         let maybe_dec = decs.pop();
         match maybe_dec {
             Some(dec) => {
                 match dec {
                     Dec::VarDec(_VarDec{name, init, typ, ..}, pos) => {
-                        // TODO: this panics
-                        let escape = table.remove(&name).unwrap().1;
+                        // We don't remove to not break test37
+                        let escape = table.get(&name).expect("post_decs").1;
                         prev.push(Dec::VarDec(_VarDec{name, init, typ, escape}, pos))
                     },
                     Dec::FunctionDec(fd) => {
@@ -136,7 +138,7 @@ fn merge_tables(outer_table: EscapeTable, inner_table: EscapeTable) -> EscapeTab
 
 fn trav_exp(AST {node, typ, pos}: AST, table: EscapeTable, current_depth: u32) -> (AST, EscapeTable) {
     // This function consumes consumes an AST and generates a new one with correct variable escapes.
-    // If a variable is declared, then a new entry is inserted in the table with a false value (replacing if necesary).
+    // If a variable is declared, then a new entry is inserted in the table with a False value (replacing if we are hiding a previous variable).
     //      Then, the lower branches are computed and the resulting table is checked for escapes.
     // If a variable is called, then the escape will be checked and set to true in the returned table if needed.
     // Function declarations have + 1 depth (a new frame is created)
