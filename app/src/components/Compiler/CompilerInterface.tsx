@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { CodeEditor } from '../CodeEditor/CodeEditor';
 import { ASTViewer } from '../ASTViewer/ASTViewer';
 import { useLocalStorageState } from '../../hooks/useLocalStorageState';
 import { Tabs } from '../Tabs/Tabs';
 import { TREEViewer } from '../TREEViewer/TREEViewer';
+import { useCtrlEnter } from '../../hooks/useCtrlEnter';
 
 const baseCode = `
 /* Enter your tiger code */
@@ -44,12 +45,16 @@ export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
     const [ast, setAst] = useState<EscapeResult>(null);
     const [fragments, setFragments] = useState<TranslateResult>(null);
 
-    const onClick = () => {
+    const compileCode = useCallback(() => {
         const result = compile(code);
-        console.log(result);
         setAst(result.escape);
         setFragments(result.translate);
-    };
+
+        // Log the results, errors are not displayed yet.
+        console.log(result);
+    }, [compile, code]);
+
+    useCtrlEnter(compileCode);
 
     // THIS IS SHIT. MAKE IT RIGHT. COMPOSE COMPONENTS LIKE YOU'RE SUPPOSED TO.
     const tabs = {
@@ -60,11 +65,11 @@ export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
     };
 
     return (
-        <>
-            <div className="compiler-interface">
-                <Tabs tabs={tabs} />
-            </div>
-            <button onClick={onClick}>Compile</button>
-        </>
+        <div className="compiler-interface">
+            <Tabs tabs={tabs} />
+            <p className="compile-instructions">
+                Psst! compile the code with <strong>Ctrl + enter</strong> or <strong>Ctrl + s</strong>
+            </p>
+        </div>
     );
 };

@@ -1,5 +1,5 @@
 import React from 'react';
-import AceEditor from 'react-ace';
+import AceEditor, { IEditorProps } from 'react-ace';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/mode-golang';
 
@@ -22,6 +22,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = props => {
             fontSize={14}
             width="100%"
             showPrintMargin={false}
+            onLoad={(editor: IEditorProps) => editor.focus()}
         />
     );
 };
