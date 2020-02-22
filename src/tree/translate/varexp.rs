@@ -5,7 +5,7 @@ use Tree::Exp::*;
 
 pub fn generate_static_link(remaining_depth: i64) -> Tree::Exp {
     match remaining_depth {
-        1 => MEM(Box::new(plus!(
+        0 => MEM(Box::new(plus!(
             TEMP(Temp::FRAME_POINTER),
             CONST(STATIC_LINK_OFFSET)
         ))),
@@ -53,7 +53,7 @@ pub fn trans_var(
                     frags
                 ))
             } else {
-                panic!("typechecking should handle this")
+                panic!("var not in env. value_env: {:?}, name {:?}", value_env, name)
             }
         },
         VarKind::Subscript(array, index) => {
@@ -75,7 +75,7 @@ pub fn trans_var(
             let formals = if let TigerType::TRecord(formals, ..) = &**typ {
                 formals.clone()
             } else {
-                panic!("typechecking should handle this")
+                panic!("not a record. kind: {:?}, typ: {:?}, field: {:?}", kind, typ, field)
             };
             let (_, _, order) = formals
                 .iter()

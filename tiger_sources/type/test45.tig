@@ -1,5 +1,5 @@
 /* error : initializing nil expressions not constrained by record type */
-let 
+let
 	type rectype = {name : string, id : int}
 
 	var a := nil

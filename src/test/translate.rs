@@ -1,6 +1,3 @@
-extern crate wasm_bindgen_test;
-use wasm_bindgen_test::*;
-
 use std::fs::{read_dir, read_to_string};
 use std::sync::Arc;
 
@@ -18,13 +15,15 @@ use Tree::Stm::*;
 use Tree::BinOp::*;
 use Tree::seq;
 
+use crate::utils::log;
+
 #[test]
-#[wasm_bindgen_test]
 fn translate_good() {
     let good_path = "./tiger_sources/good/";
     let source_files = read_dir(good_path).expect("read_dir");
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
+        println!("NOW TRANSLATING: {:?}", &path);
         let contents = read_to_string(&path).expect("read_to_string");
         let ast =  parse(&contents).expect("parser error");
         let type_env = crate::typecheck::initial_type_env();
@@ -40,7 +39,6 @@ fn translate_good() {
 }
 
 #[test]
-#[wasm_bindgen_test]
 fn break_no_labels_error() {
     let exp = AST {
         node: ast::Exp::Break,
@@ -57,7 +55,6 @@ fn break_no_labels_error() {
 }
 
 #[test]
-#[wasm_bindgen_test]
 fn break_none_label_error() {
     let exp = AST {
         node: ast::Exp::Break,
@@ -74,7 +71,6 @@ fn break_none_label_error() {
 }
 
 #[test]
-#[wasm_bindgen_test]
 fn break_ok() {
     let exp = AST {
         node: ast::Exp::Break,
@@ -93,7 +89,6 @@ fn break_ok() {
 }
 
 #[test]
-#[wasm_bindgen_test]
 fn stringexp_ok() {
     let exp = AST {
         node: ast::Exp::String(String::from("lorem ipsum")),

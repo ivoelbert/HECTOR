@@ -9,7 +9,6 @@ use super::Access;
 pub type Label = snowflake::ProcessUniqueId;
 type LocalTemp = snowflake::ProcessUniqueId;
 use serde::{Serialize};
-use crate::utils::log;
 
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]

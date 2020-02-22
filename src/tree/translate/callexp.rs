@@ -1,8 +1,6 @@
 use crate::ast::*;
 use crate::tree::*;
 
-use crate::utils::log;
-
 pub fn trans_exp(
     AST { node, .. }: &AST,
     level: Level,
@@ -12,25 +10,20 @@ pub fn trans_exp(
 ) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
     match node {
         Exp::Call { func, args } => {
-            console_log!("value env: {:?}", value_env);
             let entry = value_env
                 .get(func)
                 .expect("typecheck should make sure this is found");
-            console_log!("callexp found");
             match entry {
                 EnvEntry::Func {label, external: _} => {
-                    console_log!("many_exp");
                     let (mut arg_exps, args_level, frags) = super::translate_many_exp(args, level, value_env, breaks_stack, frags)?;
                     console_log!("static link, nesting_depth: {:?}", &args_level.nesting_depth);
                     let sl = super::varexp::generate_static_link(args_level.nesting_depth);
-                    console_log!("insert");
                     arg_exps.insert(0, sl);
                     Ok((CALL(Box::new(NAME(label.clone())), arg_exps), args_level, frags))
 
                     // TODO: external calls
                 }
                 EnvEntry::Var { .. } => {
-                    console_log!("callexp not a function");
                     panic!("typecheck should make sure this is a function")
                 },
             }

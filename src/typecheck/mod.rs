@@ -192,6 +192,8 @@ pub enum TypeError {
     NonIntegerOperand(Pos),
     TypeCycle(Pos),
     DuplicatedDefinitions(Pos),
+    InvalidNilAssignment(Pos),
+    UnconstrainedNilInitialization(Pos)
 }
 
 impl PartialEq for TigerType {

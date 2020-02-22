@@ -44,7 +44,7 @@ fn bad_type() {
         let typed = type_exp(ast.clone() , &type_env, &value_env);
         match typed {
             Err(..) => (),
-            Ok(res) => panic!("Source: {:?}, AST: {:?}\n Type: {:?}", &path, ast, res.typ),
+            Ok(res) => panic!("Source: {:?}, AST: {:?}\n Type: {:?}", &path, ast, res),
         }
     }
 }

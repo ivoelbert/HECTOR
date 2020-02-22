@@ -16,6 +16,7 @@ fn escape_good() {
     let source_files = read_dir(good_path).expect("read_dir");
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
+        println!("NOW ESCAPING: {:?}", &path);
         let contents = read_to_string(&path).expect("read_to_string");
         let ast =  parse(&contents).expect("parser error");
         let type_env = initial_type_env();

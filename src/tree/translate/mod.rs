@@ -1,8 +1,6 @@
 use crate::ast::*;
 use crate::tree::*;
 
-use crate::utils::log;
-
 mod arrayexp;
 mod assignexp;
 pub mod breakexp;
@@ -30,7 +28,7 @@ fn trans_exp(
     breaks_stack: &Vec<Option<Label>>,
     prev_frags: Vec<Fragment>,
 ) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
-    console_log!("exp: {:?}", &exp);
+    // console_log!("exp: {:?}", &exp);
     match exp {
         AST { node, .. } => match node {
             Exp::Var(var) => varexp::trans_var(var, level, value_env, breaks_stack, prev_frags),
@@ -51,23 +49,24 @@ fn trans_exp(
 }
 
 fn trans_stm(
-    exp: &AST,
+    stm: &AST,
     levels: Level,
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
     prev_frags: Vec<Fragment>,
 ) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
-    match exp {
+    // console_log!("stm: {:?}", &stm);
+    match stm {
         AST { node, .. } => match node {
-            Exp::Break => breakexp::trans_stm(exp, levels, value_env, breaks_stack, prev_frags),
-            Exp::Call { .. } => callexp::trans_stm(exp, levels, value_env, breaks_stack, prev_frags),
-            Exp::Assign { .. } => assignexp::trans_stm(exp, levels, value_env, breaks_stack, prev_frags),
-            Exp::Seq(_) => seqexp::trans_stm(exp, levels, value_env, breaks_stack, prev_frags),
-            Exp::If { .. } => ifexp::trans_stm(exp, levels, value_env, breaks_stack, prev_frags),
-            Exp::While { .. } => whileexp::trans_stm(exp, levels, value_env, breaks_stack, prev_frags),
-            Exp::For { .. } => forexp::trans_stm(exp, levels, value_env, breaks_stack, prev_frags),
+            Exp::Break => breakexp::trans_stm(stm, levels, value_env, breaks_stack, prev_frags),
+            Exp::Call { .. } => callexp::trans_stm(stm, levels, value_env, breaks_stack, prev_frags),
+            Exp::Assign { .. } => assignexp::trans_stm(stm, levels, value_env, breaks_stack, prev_frags),
+            Exp::Seq(_) => seqexp::trans_stm(stm, levels, value_env, breaks_stack, prev_frags),
+            Exp::If { .. } => ifexp::trans_stm(stm, levels, value_env, breaks_stack, prev_frags),
+            Exp::While { .. } => whileexp::trans_stm(stm, levels, value_env, breaks_stack, prev_frags),
+            Exp::For { .. } => forexp::trans_stm(stm, levels, value_env, breaks_stack, prev_frags),
             _ => {
-                let (exp, level, frags) = trans_exp(exp, levels, value_env, breaks_stack, prev_frags)?;
+                let (exp, level, frags) = trans_exp(stm, levels, value_env, breaks_stack, prev_frags)?;
                 Ok((Tree::Stm::EXP(Box::new(exp)), level, frags))
             }
         },

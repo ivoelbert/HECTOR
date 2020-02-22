@@ -26,6 +26,14 @@ pub fn typecheck(
                     type_exp(arg, type_env, value_env)
                 })
                 .collect::<Result<Vec<AST>, TypeError>>()?;
+            // If any argument is not of it's formal type, fail.
+            if formals.iter()
+                .zip(typed_args.iter())
+                .any(|(formal, typed_arg)| -> bool {
+                    **formal != *typed_arg.typ
+                }){
+                return Err(TypeError::InvalidCallArgument(pos));
+            };
             Ok(AST {
                 node: Exp::Call {
                     func: function_symbol,

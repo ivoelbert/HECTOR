@@ -109,7 +109,7 @@ pub fn trans_exp(
                         frags = f;
                     },
                     Dec::FunctionDec(fd) => {
-                        let (ve, f) = fundecs(fd, level.nesting_depth + 1, value_env, breaks_stack, frags)?;
+                        let (ve, f) = fundecs(fd, level.nesting_depth + 1, &new_value_env, breaks_stack, frags)?;
                         new_value_env = ve;
                         frags = f;
                     },

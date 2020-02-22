@@ -104,6 +104,7 @@ fn post_decs(decs: Vec<Dec>, table: EscapeTable) -> (Vec<Dec>, EscapeTable) {
             Some(dec) => {
                 match dec {
                     Dec::VarDec(_VarDec{name, init, typ, ..}, pos) => {
+                        // TODO: this panics
                         let escape = table.remove(&name).unwrap().1;
                         prev.push(Dec::VarDec(_VarDec{name, init, typ, escape}, pos))
                     },

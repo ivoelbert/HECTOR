@@ -2,7 +2,6 @@ use crate::ast::*;
 use crate::typecheck::*;
 use pathfinding::directed::topological_sort;
 use std::convert::TryInto;
-use crate::utils::log;
 
 fn typecheck_vardec(
     _VarDec {
@@ -29,6 +28,13 @@ fn typecheck_vardec(
             }
         }
     } else {
+        match *init_ast.typ {
+            // We can't find NILs with ==
+            TigerType::TNil => {
+                return Err(TypeError::UnconstrainedNilInitialization(pos))
+            }
+            _ => ()
+        };
         init_ast.typ.clone()
     };
     value_env.insert(name.clone(), EnvEntry::Var { ty: dec_type });
@@ -185,6 +191,10 @@ fn typecheck_functiondec_batch(
     type_env: &TypeEnviroment,
     mut value_env: ValueEnviroment,
 ) -> Result<(Vec<(_FunctionDec, Pos)>, ValueEnviroment), TypeError> {
+    let names = decs.iter().map(|(_FunctionDec{name, ..}, ..)| -> String {name.clone()}).collect::<Vec<String>>();
+    if (1..decs.len()).any(|i| names[i..].contains(&names[i - 1])) {
+        return Err(TypeError::DuplicatedDefinitions(decs[0].1))
+    }
 
     // Add prototypes to ValueEnviroment
     let mut added_names = vec![];
@@ -298,6 +308,10 @@ fn typecheck_typedec_batch(
     mut type_env: TypeEnviroment,
 ) -> Result<TypeEnviroment, TypeError> {
     // Sort by type dependency
+    let names = decs.iter().map(|(_TypeDec{name, ..}, ..)| -> String {name.clone()}).collect::<Vec<String>>();
+    if (1..decs.len()).any(|i| names[i..].contains(&names[i - 1])) {
+        return Err(TypeError::DuplicatedDefinitions(decs[0].1))
+    }
     let (sorted_decs, records) = match sort_type_decs(decs) {
         Ok((sd, rr)) => (sd, rr),
         Err(s) => {
@@ -311,18 +325,12 @@ fn typecheck_typedec_batch(
         }
     };
     // Insert placeholders for recursive records in TypeEnviroment
-    let mut added_names = vec![];
-    for (_TypeDec { name, .. }, pos) in &records {
+    for (_TypeDec { name, .. }, ..) in &records {
         type_env.insert(name.clone(), Arc::new(TigerType::TRecord(vec![], TypeId::new())));
     }
     // Insert declarations, except recursive records.
     for (_TypeDec { name, ty, .. }, pos) in sorted_decs {
-        // Check for repeated names, ineficiently.
-        if added_names.contains(name) {
-            return Err(TypeError::DuplicatedDefinitions(*pos))
-        }
         type_env.insert(name.clone(), ty_to_tigertype(&ty, &type_env, *pos)?);
-        added_names.push(name.clone())
     }
 
     for (_TypeDec { name, ty }, pos) in records {
