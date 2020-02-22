@@ -44,7 +44,7 @@ pub fn trans_stm(
             let (start_label, continue_label, done_label) = (newlabel(), newlabel(), newlabel());
             new_breaks_stack.push(Some(done_label.clone()));
             let (body_stm, body_level, body_frags) =
-                super::trans_stm(body, hi_level, value_env, &new_breaks_stack, hi_frags)?;
+                super::trans_stm(body, hi_level, &new_value_env, &new_breaks_stack, hi_frags)?;
             Ok((
                 Tree::seq(vec![
                     CJUMP(

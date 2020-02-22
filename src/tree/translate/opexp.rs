@@ -62,7 +62,28 @@ pub fn trans_exp(
                     right_level,
                     right_frags
                 )),
-                _ => panic!("typechecking should not allow this")
+                TigerType::TNil => Ok((
+                    CONST(0),
+                    right_level,
+                    right_frags
+                )),
+                TigerType::TRecord(..) => if let TigerType::TNil = *right.typ {
+                    Ok((
+                        CONST(0),
+                        right_level,
+                        right_frags
+                    ))
+                } else {
+                    Ok((
+                        BINOP(trans_int_oper(oper), Box::new(left_exp), Box::new(right_exp)),
+                        right_level,
+                        right_frags
+                    ))
+                },
+                _ => {
+                    console_log!("left.typ: {:?}, right.typ: {:?}, oper: {:?}", *left.typ, *right.typ, oper);
+                    panic!("typechecking should not allow this")
+                }
             }
         }
         _ => panic!("delegation error")

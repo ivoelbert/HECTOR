@@ -52,11 +52,14 @@ pub fn trans_stm(
                 let (prev_stms, prev_level, seq_frags) =
                     trans_seq(rest, level, value_env, breaks_stack, frags)?;
                 let (last, last_level, last_frags) =
-                    trans_stm(last, prev_level, value_env, breaks_stack, seq_frags)?;
+                    super::trans_stm(last, prev_level, value_env, breaks_stack, seq_frags)?;
                 Ok((SEQ(Box::new(prev_stms), Box::new(last)), last_level, last_frags))
             }
             None => panic!("empty seq"),
         },
-        _ => panic!(),
+        _ => {
+            console_log!("node: {:?}", node);
+            panic!("delegation error")
+        },
     }
 }
