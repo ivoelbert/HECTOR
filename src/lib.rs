@@ -26,6 +26,7 @@ mod utils;
 mod ast;
 mod typecheck;
 mod tree;
+mod canonization;
 #[allow(unused_imports)]
 #[cfg(test)]
 mod test;

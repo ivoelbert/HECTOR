@@ -1,5 +1,6 @@
 use crate::ast::*;
 use crate::tree::*;
+use crate::utils::log;
 
 fn trans_int_oper(ast_oper: &Oper) -> Tree::BinOp {
     use Oper::*;

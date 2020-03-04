@@ -46,20 +46,6 @@ pub enum BinOp {
     UGE
 }
 
-// #[derive(Debug, Clone, PartialEq, Eq)]
-// pub enum RelOp {
-//     EQ,
-//     NE,
-//     LT,
-//     GT,
-//     LE,
-//     GE,
-//     ULT,
-//     ULE,
-//     UGT,
-//     UGE
-// }
-
 pub fn not_rel(ro : &BinOp) -> BinOp {
     use BinOp::*;
     match ro {

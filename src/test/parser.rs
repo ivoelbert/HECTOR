@@ -239,21 +239,6 @@ fn simple_comp() {
 
 #[test]
 #[wasm_bindgen_test]
-fn recordexp() {
-    let input = String::from("{first_name: \"Jhon\", last_name: \"doe\", age: 42}");
-    let parsed = parse(&input);
-    match parsed {
-        Ok(AST {
-            node: Exp::Record {..},
-            ..
-        }) => (),
-        Ok(..) => panic!("wrong parsing"),
-        Err(..) => panic!("parser fails in a well-formed expression"),
-    }
-}
-
-#[test]
-#[wasm_bindgen_test]
 fn seqexp() {
     let input = String::from("(1;2)");
     let parsed = parse(&input);
@@ -270,7 +255,7 @@ fn seqexp() {
 #[test]
 #[wasm_bindgen_test]
 fn assignexp() {
-    let input = String::from("foo = 42");
+    let input = String::from("foo := 42");
     let parsed = parse(&input);
     match parsed {
         Ok(AST {
@@ -306,21 +291,6 @@ fn ifexp() {
 
 #[test]
 #[wasm_bindgen_test]
-fn whileexp() {
-    let input = String::from("for i := 0 to 100 do 1");
-    let parsed = parse(&input);
-    match parsed {
-        Ok(AST {
-            node: Exp::While {..},
-            ..
-        }) => (),
-        Ok(..) => panic!("wrong parsing"),
-        Err(..) => panic!("parser fails in a well-formed expression"),
-    }
-}
-
-#[test]
-#[wasm_bindgen_test]
 fn forexp() {
     let input = String::from("for i :=0 to 100 do 1");
     let parsed = parse(&input);
@@ -340,7 +310,7 @@ fn forexp() {
 #[test]
 #[wasm_bindgen_test]
 fn letexp_functiondec() {
-    let input = String::from("let function foo() = 1 in 2 ");
+    let input = String::from("let function foo() = 1 in 2 end");
     let parsed = parse(&input);
     match parsed {
         Ok(AST {
@@ -359,7 +329,7 @@ fn letexp_functiondec() {
 #[test]
 #[wasm_bindgen_test]
 fn letexp_typedec_namety() {
-    let input = String::from("let type numeritos = int in 2 ");
+    let input = String::from("let type numeritos = int in 2  end");
     let parsed = parse(&input);
     match parsed {
         Ok(AST {
@@ -377,7 +347,7 @@ fn letexp_typedec_namety() {
 #[test]
 #[wasm_bindgen_test]
 fn letexp_typedec_recordty() {
-    let input = String::from("let type name = {first_name: string, last_name: string} in 2 ");
+    let input = String::from("let type name = {first_name: string, last_name: string} in 2  end");
     let parsed = parse(&input);
     match parsed {
         Ok(AST {
@@ -395,7 +365,7 @@ fn letexp_typedec_recordty() {
 #[test]
 #[wasm_bindgen_test]
 fn letexp_typedec_arrayty() {
-    let input = String::from("let type intArray = array of int in 2 ");
+    let input = String::from("let type intArray = array of int in 2  end");
     let parsed = parse(&input);
     match parsed {
         Ok(AST {

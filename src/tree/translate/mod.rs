@@ -29,7 +29,6 @@ fn trans_exp(
     breaks_stack: &Vec<Option<Label>>,
     prev_frags: Vec<Fragment>,
 ) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
-    // console_log!("exp: {:?}", &exp);
     match exp {
         AST { node, .. } => match node {
             Exp::Var(var) => varexp::trans_var(var, level, value_env, breaks_stack, prev_frags),
@@ -56,7 +55,6 @@ fn trans_stm(
     breaks_stack: &Vec<Option<Label>>,
     prev_frags: Vec<Fragment>,
 ) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
-    // console_log!("stm: {:?}", &stm);
     match stm {
         AST { node, .. } => match node {
             Exp::Break => breakexp::trans_stm(stm, levels, value_env, breaks_stack, prev_frags),
