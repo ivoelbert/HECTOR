@@ -11,8 +11,11 @@ type LocalTemp = snowflake::ProcessUniqueId;
 use serde::{Serialize};
 use crate::utils::log;
 
+use typescript_definitions::TypeScriptify;
+use crate::typescript_definitions::TypeScriptifyTrait;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, TypeScriptify)]
 #[allow(non_camel_case_types)]
 pub enum Temp {
     FRAME_POINTER,

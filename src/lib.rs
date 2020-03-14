@@ -19,7 +19,10 @@
 extern crate lalrpop_util;
 extern crate pathfinding;
 extern crate snowflake;
+extern crate typescript_definitions;
 
+use typescript_definitions::TypeScriptify;
+use crate::typescript_definitions::TypeScriptifyTrait;
 
 #[macro_use]
 mod utils;
@@ -40,7 +43,7 @@ use serde::{Serialize};
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-#[derive(Serialize)]
+#[derive(Serialize, TypeScriptify)]
 pub struct CompilerResult {
     parse: Result<ast::AST, ast::parser::ParseError>,
     typecheck: Option<Result<ast::AST, typecheck::TypeError>>,
@@ -79,4 +82,18 @@ pub fn compile(source_code: &str) -> JsValue {
         canon: None,
         wasm: None
     }).unwrap()
+}
+
+use tree::level::{Label, Temp};
+
+#[test]
+fn log_types() {
+    println!("{}", CompilerResult::type_script_ify());
+    println!("{}", tree::frame::Frag::type_script_ify());
+    println!("{}", tree::Tree::Stm::type_script_ify());
+    println!("{}", tree::frame::Frame::type_script_ify());
+    println!("{}", tree::Tree::Exp::type_script_ify());
+    println!("{}", tree::Tree::BinOp::type_script_ify());
+    println!("{}", Temp::type_script_ify());
+    // prints "export type MyStruct = { v: number };"
 }

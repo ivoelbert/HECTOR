@@ -39,6 +39,8 @@ export const OkTREEViewer: React.FC<TREEViewerProps> = props => {
     // We're sure this is NOT null
     const { fragments } = props;
 
+    console.log(fragments)
+
     return (
         <div className="tree-viewer">
             <ReactJson

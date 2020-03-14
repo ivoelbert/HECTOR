@@ -5,7 +5,10 @@ use super::{Label};
 use crate::tree::*;
 use serde::{Serialize};
 
-#[derive(Clone, Debug, Serialize)]
+use typescript_definitions::TypeScriptify;
+use crate::typescript_definitions::TypeScriptifyTrait;
+
+#[derive(Clone, Debug, Serialize, TypeScriptify)]
 pub struct Frame {
     name: Label,
     formals: Vec<bool>,
@@ -26,7 +29,7 @@ pub enum Access {
     InReg(Temp)
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, TypeScriptify)]
 pub enum Frag {
     Proc {
         body: Tree::Stm,

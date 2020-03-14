@@ -1,7 +1,10 @@
 use super::level::{Label, Temp};
 use serde::{Serialize};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+use typescript_definitions::TypeScriptify;
+use crate::typescript_definitions::TypeScriptifyTrait;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, TypeScriptify)]
 pub enum Exp {
     CONST(i64),
     NAME(Label),
@@ -12,7 +15,7 @@ pub enum Exp {
     ESEQ(Box<Stm>, Box<Exp>)
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, TypeScriptify)]
 pub enum Stm {
     EXP(Box<Exp>),
     MOVE(Box<Exp>, Box<Exp>),
@@ -22,7 +25,7 @@ pub enum Stm {
     LABEL(Label)
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, TypeScriptify)]
 pub enum BinOp {
     PLUS,
     MINUS,
