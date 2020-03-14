@@ -53,7 +53,7 @@ pub fn fundecs(
                 label
             } else {panic!()};
             let formals : Vec<bool> = params.iter().map(|field| field.escape).collect();
-            let mut level = Level::new(depth + 1, label.clone(), formals);  // formals?
+            let mut level = Level::new(depth + 1, name.clone(), label.clone(), formals);  // formals?
             let mut dec_value_env = new_value_env.clone();
             level.alloc_arg(false); //Static Link
             params

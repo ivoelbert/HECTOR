@@ -41,6 +41,7 @@ impl Level {
         console_log!("Level::outermost");
         Level {
             frame: Frame::new(
+                String::from("outermost"),
                 newlabel(),
                 vec![],
             ),
@@ -48,9 +49,9 @@ impl Level {
         }
     }
 
-    pub fn new(depth: i64, name: Label, formals: Vec<bool>) -> Level {
+    pub fn new(depth: i64, name: String, label: Label, formals: Vec<bool>) -> Level {
         Level {
-            frame: Frame::new(name, formals),
+            frame: Frame::new(name, label, formals),
             nesting_depth: depth,
         }
     }

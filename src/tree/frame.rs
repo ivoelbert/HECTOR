@@ -7,7 +7,8 @@ use serde::{Serialize};
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Frame {
-    name: Label,
+    name: String,
+    label: Label,
     formals: Vec<bool>,
     locals: Vec<bool>,
     actual_arg: i64,
@@ -45,9 +46,10 @@ impl Frag {
 }
 
 impl Frame {
-    pub fn new(name: Label, formals: Vec<bool>) -> Self {
+    pub fn new(name: String, label: Label, formals: Vec<bool>) -> Self {
         Frame {
             name,
+            label,
             formals,
             locals: vec![],
             actual_arg: 0,
