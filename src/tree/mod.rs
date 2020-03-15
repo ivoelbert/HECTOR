@@ -95,11 +95,11 @@ pub fn initial_value_env() -> ValueEnviroment {
         label: newlabel(),
         external: true,
     });
-    value_env.insert(Symbol::from("+str_lower"), Func {
+    value_env.insert(Symbol::from("+str_less"), Func {
         label: newlabel(),
         external: true,
     });
-    value_env.insert(Symbol::from("+str_lower_or_equals"), Func {
+    value_env.insert(Symbol::from("+str_less_or_equals"), Func {
         label: newlabel(),
         external: true,
     });
