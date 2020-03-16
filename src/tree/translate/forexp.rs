@@ -45,18 +45,20 @@ pub fn trans_stm(
             new_breaks_stack.push(Some(done_label.clone()));
             let (body_stm, body_level, body_frags) =
                 super::trans_stm(body, hi_level, &new_value_env, &new_breaks_stack, hi_frags)?;
+            // This is super inefficient. It repeats computacion of lo and hi.
+            // We should move them to temps but....
+            let compare_exp_1 = BINOP(LE, Box::new(lo_exp.clone()), Box::new(hi_exp.clone()));
+            let compare_exp_2 = BINOP(LT, Box::new(lo_exp), Box::new(hi_exp));
             Ok((
                 Tree::seq(vec![
                     CJUMP(
-                        LE,
-                        lo_exp.clone(),
-                        hi_exp.clone(),
+                        compare_exp_1,
                         start_label.clone(),
                         done_label.clone(),
                     ),
                     LABEL(start_label.clone()),
                     body_stm,
-                    CJUMP(LT, lo_exp, hi_exp, start_label.clone(), done_label.clone()),
+                    CJUMP(compare_exp_2, start_label.clone(), done_label.clone()),
                     LABEL(continue_label),
                     Move!(var_exp.clone(), plus!(var_exp, CONST(1))),
                     JUMP(NAME(start_label.clone()), vec![start_label.clone()]),

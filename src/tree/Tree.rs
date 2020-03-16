@@ -17,7 +17,7 @@ pub enum Stm {
     EXP(Box<Exp>),
     MOVE(Box<Exp>, Box<Exp>),
     JUMP(Exp, Vec<Label>),
-    CJUMP(BinOp, Exp, Exp, Label, Label),
+    CJUMP(Exp, Label, Label),
     SEQ(Box<Stm>, Box<Stm>),
     LABEL(Label)
 }
