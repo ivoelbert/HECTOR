@@ -66,19 +66,18 @@ pub fn fundecs(
                     });
                 });
             match result {
+                // TODO: label on function start
                 // If the function doesn't have a return value, then don't move a return value
                 Some(_) => {
                     let (body_exp, body_level, mut body_frags) = super::trans_exp(body, level, &dec_value_env, &new_breaks_stack, frags)?;
                     let move_exp = Move!(TEMP(Temp::RV), body_exp);
                     let fragment = Fragment::new(move_exp, body_level);
-                    body_frags.push(Fragment::ConstString(label.clone(), String::new()));
                     body_frags.push(fragment);
                     Ok(body_frags)
                 }
                 None => {
                     let (body_stm, body_level, mut body_frags) = super::trans_stm(body, level, &dec_value_env, &new_breaks_stack, frags)?;
                     let fragment = Fragment::new(body_stm, body_level);
-                    body_frags.push(Fragment::ConstString(label.clone(), String::new()));
                     body_frags.push(fragment);
                     Ok(body_frags)
                 }
