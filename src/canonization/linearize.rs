@@ -111,14 +111,14 @@ fn do_stm(stm: Tree::Stm) -> Tree::Stm {
             })
         ),
         MOVE(dest, src) => match (*dest, *src) {
-            (TEMP(t), CALL(function_label, args)) => {
+            (TEMP(t), CALL(function_name, function_label, args)) => {
                 let mut exps = args;
                 exps.push(*function_label);
                 reorder_stm(
                     exps,
                     Box::new(|mut l| {
                         let dest = Box::new(TEMP(t));
-                        let src = Box::new(CALL(Box::new(l.pop().expect("move canonization")), l));
+                        let src = Box::new(CALL(function_name, Box::new(l.pop().expect("move canonization")), l));
                         MOVE(dest, src)
                     })
                 )
@@ -145,12 +145,12 @@ fn do_stm(stm: Tree::Stm) -> Tree::Stm {
             (a, b) => reorder_stm(vec![], Box::new(|_| MOVE(Box::new(a), Box::new(b))))
         },
         EXP(boxed_exp) => match *boxed_exp {
-            CALL(function_label, args) => {
+            CALL(function_name, function_label, args) => {
                 let mut exps = args;
                 exps.push(*function_label);
                 reorder_stm(
                     exps,
-                    Box::new(|mut l| EXP(Box::new(CALL(Box::new(l.pop().expect("exp call canonization")), l))))
+                    Box::new(|mut l| EXP(Box::new(CALL(function_name, Box::new(l.pop().expect("exp call canonization")), l))))
                 )
             },
             e => reorder_stm(vec![e], Box::new(|mut l| EXP(Box::new(l.pop().expect("exp canonization")))))
@@ -180,10 +180,10 @@ fn do_exp(exp: Tree::Exp) -> (Tree::Stm, Tree::Exp) {
             let (stms_, exps) = do_exp(*e);
             (seq(stms, stms_), exps)
         },
-        CALL(function_label, args) =>{
+        CALL(function_name, function_label, args) =>{
             let mut exps = args;
             exps.push(*function_label);
-            reorder_exp(exps, Box::new(|mut l| CALL(Box::new(l.pop().expect("call canonization")), l)))
+            reorder_exp(exps, Box::new(|mut l| CALL(function_name, Box::new(l.pop().expect("call canonization")), l)))
         }
         e => reorder_exp(vec![], Box::new(|_| e))
     }

@@ -18,7 +18,7 @@ fn trans_int_oper(ast_oper: &Oper) -> Tree::BinOp {
     }
 }
 
-fn trans_str_oper(ast_oper: &Oper, value_env: &ValueEnviroment) -> Box<Tree::Exp> {
+fn trans_str_oper(ast_oper: &Oper, value_env: &ValueEnviroment) -> (String, Box<Tree::Exp>) {
     // Selects the correct runtime function to handle a string operation
     // Translate to a NAME of that function.
     use Oper::*;
@@ -35,7 +35,7 @@ fn trans_str_oper(ast_oper: &Oper, value_env: &ValueEnviroment) -> Box<Tree::Exp
     };
     let entry = value_env.get(external_name);
     if let Some(EnvEntry::Func {label, external: true}) = entry {
-        Box::new(NAME(label.clone()))
+        (String::from(external_name), Box::new(NAME(label.clone())))
     } else {
         panic!("should be in initial value env")
     }
@@ -58,11 +58,14 @@ pub fn trans_exp(
                     right_level,
                     right_frags
                 )),
-                TigerType::TString => Ok((
-                    CALL(trans_str_oper(oper, value_env), vec![left_exp, right_exp]),
-                    right_level,
-                    right_frags
-                )),
+                TigerType::TString => {
+                    let (proc_name, proc_label) = trans_str_oper(oper, value_env);
+                    Ok((
+                        CALL(proc_name, proc_label, vec![left_exp, right_exp]),
+                        right_level,
+                        right_frags
+                    ))
+                },
                 TigerType::TNil => Ok((
                     CONST(0),
                     right_level,

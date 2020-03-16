@@ -52,7 +52,7 @@ pub fn trans_exp(
                             Box::new(Move!(
                                 TEMP(temp.clone()),
                                 // This returns the memory address of the malloc result
-                                Frame::external_call(label.clone(), vec![CONST(fields_exps.len().try_into().unwrap())])
+                                Frame::external_call(String::from("+alloc_record"), label.clone(), vec![CONST(fields_exps.len().try_into().unwrap())])
                             )),
                             Box::new(gen_init_stm(temp.clone(), typ.clone(), fields_exps))
                         )),

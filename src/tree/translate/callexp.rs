@@ -20,7 +20,7 @@ pub fn trans_exp(
                     console_log!("static link, nesting_depth: {:?}", &args_level.nesting_depth);
                     let sl = super::varexp::generate_static_link(args_level.nesting_depth);
                     arg_exps.insert(0, sl);
-                    Ok((CALL(Box::new(NAME(label.clone())), arg_exps), args_level, frags))
+                    Ok((CALL(String::from(func), Box::new(NAME(label.clone())), arg_exps), args_level, frags))
 
                     // TODO: external calls
                 }

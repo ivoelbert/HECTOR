@@ -57,6 +57,7 @@ impl Frame {
             actual_reg: 1,
         }
     }
+
     pub fn alloc_local(self: &mut Self, escape: bool) -> Access {
         match escape {
             true => {
@@ -67,12 +68,28 @@ impl Frame {
             false => Access::InReg(newtemp())
         }
     }
-    pub fn alloc_arg(self: &mut Self, _escape: bool) -> Access {
-        // TODO: alloc_arg
-        Access::InReg(newtemp())
+
+    pub fn alloc_arg(self: &mut Self, escape: bool) -> Access {
+        match escape {
+            true => {
+                let r = Access::InFrame(self.actual_arg + LOCAL_GAP);
+                self.actual_arg = self.actual_arg -1;
+                r
+            }
+            false => Access::InReg(newtemp())
+        }
     }
-    // proc_name could be an str
-    pub fn external_call(proc_label: Label, args: Vec<Tree::Exp>) -> Tree::Exp {
-        CALL(Box::new(NAME(proc_label)), args)
+
+    // abstrae la llamada al runtime
+    pub fn external_call(proc_name: String, proc_label: Label, args: Vec<Tree::Exp>) -> Tree::Exp {
+        CALL(proc_name, Box::new(NAME(proc_label)), args)
     }
+
+    // la funcion formals va en typescript
+
+    // TODO: prologo y epilogo de funcion
+    // label de funcion
+    // guardar registros callee-saved
+    // o no hace NADA?
+    // pub fn add_function_prologue_epilogue()
 }

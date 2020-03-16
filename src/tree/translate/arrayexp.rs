@@ -14,7 +14,7 @@ pub fn trans_exp(
             if let EnvEntry::Func {label, ..} = value_env.get("+alloc_array").expect("should be in initial value env") {
                 Ok((
                     // This returns the memory address of the malloc result
-                    Frame::external_call(label.clone(), vec![size_exp, init_exp]),
+                    Frame::external_call(String::from("+alloc_array"), label.clone(), vec![size_exp, init_exp]),
                     size_level,
                     size_frags,
                 ))

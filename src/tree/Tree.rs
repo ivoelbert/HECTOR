@@ -8,7 +8,7 @@ pub enum Exp {
     TEMP(Temp),
     BINOP(BinOp, Box<Exp>, Box<Exp>),
     MEM(Box<Exp>),
-    CALL(Box<Exp>, Vec<Exp>),
+    CALL(String, Box<Exp>, Vec<Exp>),
     ESEQ(Box<Stm>, Box<Exp>)
 }
 
