@@ -28,8 +28,8 @@ fn trans_str_oper(ast_oper: &Oper, value_env: &ValueEnviroment) -> (String, Box<
         },
         EqOp => "+str_equals",
         NeqOp => "+str_not_equals",
-        LtOp => "+str_lower",
-        LeOp => "+str_lower_or_equals",
+        LtOp => "+str_less",
+        LeOp => "+str_less_or_equals",
         GtOp => "+str_greater",
         GeOp => "+str_greater_or_equals",
     };
