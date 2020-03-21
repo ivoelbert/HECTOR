@@ -32,12 +32,11 @@ pub fn trans_exp(
                 super::trans_exp(else_, then_level, value_env, breaks_stack, then_frags)?;
             let (then_label, join_label, else_label) = (newlabel(), newlabel(), newlabel());
             let result = newtemp();
-            let compare_exp = BINOP(GE, Box::new(test_exp), Box::new(CONST(1)));
             Ok((
                 ESEQ(
                     Box::new(Tree::seq(vec![
                         CJUMP(
-                            compare_exp,
+                            GE, Box::new(test_exp), Box::new(CONST(1)),
                             then_label.clone(),
                             else_label.clone(),
                         ),
@@ -81,11 +80,10 @@ pub fn trans_stm(
             let (then_stm, then_level, then_frags) =
                 super::trans_stm(then_, test_level, value_env, breaks_stack, test_frags)?;
             let (then_label, join_label) = (newlabel(), newlabel());
-            let compare_exp = BINOP(GE, Box::new(test_exp), Box::new(CONST(1)));
             Ok((
                 Tree::seq(vec![
                     CJUMP(
-                        compare_exp,
+                        GE, Box::new(test_exp), Box::new(CONST(1)),
                         then_label.clone(),
                         join_label.clone(),
                     ),
@@ -119,11 +117,10 @@ pub fn trans_stm(
             let (else_stm, else_level, else_frags) =
                 super::trans_stm(else_, then_level, value_env, breaks_stack, then_frags)?;
             let (then_label, join_label, else_label) = (newlabel(), newlabel(), newlabel());
-            let compare_exp = BINOP(GE, Box::new(test_exp), Box::new(CONST(1)));
             Ok((
                 Tree::seq(vec![
                     CJUMP(
-                        compare_exp,
+                        GE, Box::new(test_exp), Box::new(CONST(1)),
                         then_label.clone(),
                         else_label.clone(),
                     ),

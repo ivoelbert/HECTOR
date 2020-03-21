@@ -15,10 +15,9 @@ pub fn trans_stm(
             let mut new_breaks_stack = breaks_stack.clone();
             new_breaks_stack.push(Some(done_label.clone()));
             let (body_stm, body_level, body_frags) = super::trans_stm(body, test_level, value_env, &new_breaks_stack, test_frags)?;
-            let compare_exp = BINOP(GE, Box::new(test_exp), Box::new(CONST(1)));
             Ok((seq(vec![
                 LABEL(test_label.clone()),
-                CJUMP(compare_exp, body_label.clone(), done_label.clone()),
+                CJUMP(GE, Box::new(test_exp), Box::new(CONST(1)), body_label.clone(), done_label.clone()),
                 LABEL(body_label.clone()),
                 body_stm,
                 JUMP(NAME(test_label.clone()), vec![test_label.clone()]),

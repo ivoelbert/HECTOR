@@ -102,11 +102,12 @@ fn do_stm(stm: Tree::Stm) -> Tree::Stm {
                 JUMP(exp, labels)
             })
         ),
-        CJUMP(e, t, f) => reorder_stm(
-            vec![e],
+        CJUMP(o, a, b, t, f) => reorder_stm(
+            vec![*a, *b],
             Box::new(move |mut l| {
-                let e = l.pop().expect("cjump canonization");
-                CJUMP(e, t, f)
+                let b = l.pop().expect("cjump canonization");
+                let a = l.pop().expect("cjump canonization");
+                CJUMP(o, Box::new(a), Box::new(b), t, f)
             })
         ),
         MOVE(dest, src) => match (*dest, *src) {

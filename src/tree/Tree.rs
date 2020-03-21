@@ -17,7 +17,7 @@ pub enum Stm {
     EXP(Box<Exp>),
     MOVE(Box<Exp>, Box<Exp>),
     JUMP(Exp, Vec<Label>),
-    CJUMP(Exp, Label, Label),
+    CJUMP(BinOp, Box<Exp>, Box<Exp>, Label, Label),
     SEQ(Box<Stm>, Box<Stm>),
     LABEL(Label)
 }
@@ -46,7 +46,7 @@ pub enum BinOp {
     UGE
 }
 
-pub fn not_rel(ro : &BinOp) -> BinOp {
+pub fn not_rel(ro : BinOp) -> BinOp {
     use BinOp::*;
     match ro {
         EQ => NE,

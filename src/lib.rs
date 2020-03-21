@@ -46,8 +46,8 @@ pub struct CompilerResult {
     parse: Result<ast::AST, ast::parser::ParseError>,
     typecheck: Option<Result<ast::AST, typecheck::TypeError>>,
     escape: Option<ast::AST>,
-    translate: Option<Result<Vec<tree::frame::Frag>, tree::TransError>>,
-    canon: Option<Vec<tree::frame::Frag>>,
+    translate: Option<Result<Vec<tree::Fragment>, tree::TransError>>,
+    canon: Option<Vec<canonization::CanonFrag>>,
     wasm: Option<Vec<tree::frame::Frag>>
 }
 
@@ -71,13 +71,15 @@ pub fn compile(source_code: &str) -> JsValue {
     let translate_result = if let Some(ast) = &escape_result {
         Some(tree::translate(ast.clone()))
     } else {None};
-
+    let canon_result = if let Some(Ok(frags)) = &translate_result {
+        Some(canonization::canonize(frags.clone()))
+    } else {None};
     JsValue::from_serde(&CompilerResult{
         parse: parse_result,
         typecheck: typecheck_result,
         escape: escape_result,
         translate: translate_result,
-        canon: None,
+        canon: canon_result,
         wasm: None
     }).unwrap()
 }

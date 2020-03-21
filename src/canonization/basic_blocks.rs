@@ -32,8 +32,8 @@ pub fn basic_blocks(stms: Vec<Tree::Stm>) -> (Vec<Vec<Tree::Stm>>, Label) {
                     let new_block = vec![LABEL(newlabel())];
                     (blocks, new_block)
                 },
-                CJUMP(e, t, f) => {
-                    this_block.push(CJUMP(e, t, f));
+                CJUMP(o, a, b, t, f) => {
+                    this_block.push(CJUMP(o, a, b, t, f));
                     blocks.push(this_block);
                     let new_block = vec![LABEL(newlabel())];
                     (blocks, new_block)
