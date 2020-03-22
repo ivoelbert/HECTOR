@@ -32,6 +32,11 @@ export const Tabs: React.FC<TabsProps> = ({ tabs }) => {
     }, [keys])
     useCtrlAltKeys([52], moveTo4)
 
+    const moveTo5 = useCallback(() => {
+        setVisibleKey(keys[4])
+    }, [keys])
+    useCtrlAltKeys([52], moveTo5)
+
     return (
         <div className="tabs-container">
             <TabsButtons keys={keys} visibleKey={visibleKey} setVisibleKey={setVisibleKey} />

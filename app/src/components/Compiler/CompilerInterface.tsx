@@ -5,6 +5,8 @@ import { useLocalStorageState } from '../../hooks/useLocalStorageState';
 import { Tabs } from '../Tabs/Tabs';
 import { TREEViewer } from '../TREEViewer/TREEViewer';
 import { useCtrlKeys } from '../../hooks/useCtrlKeys';
+import { CanonViewer } from '../CanonViewer/CanonViewer';
+import { Interpreter } from '../Interpreter/Interpreter';
 
 const baseCode = `
 /* Enter your tiger code */
@@ -44,11 +46,13 @@ export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
     );
     const [ast, setAst] = useState<EscapeResult>(null);
     const [fragments, setFragments] = useState<TranslateResult>(null);
+    const [canon, setCanon] = useState<CanonResult>(null);
 
     const compileCode = useCallback(() => {
         const result = compile(code);
         setAst(result.escape);
         setFragments(result.translate);
+        setCanon(result.canon)
 
         // Log the results, errors are not displayed yet.
         console.log(result);
@@ -67,6 +71,8 @@ export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
         ),
         AST: <ASTViewer ast={ast} />,
         TREE: <TREEViewer fragments={fragments} />,
+        Canon: <CanonViewer canon={canon} />,
+        Interp: <Interpreter canon={canon} />,
         Result: <p>not implemented</p>,
     };
 
