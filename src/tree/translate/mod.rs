@@ -99,7 +99,7 @@ pub fn translate(exp: AST) -> Result<(Vec<Fragment>), TransError> {
             name: String::from("_tigermain"),
             params: vec![],
             body: Box::new(exp),
-            result: None,
+            result: Some(String::from("int")),
         }, Pos{line: 0, column: 0})])],
         body: boxed_ast(Exp::Unit)
     });
