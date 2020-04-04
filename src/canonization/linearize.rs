@@ -26,7 +26,8 @@ fn seq(x: Tree::Stm, y: Tree::Stm) -> Tree::Stm{
 fn commute(stm: &Tree::Stm, exp: &Tree::Exp) -> bool {
     fn inmut(exp: &Tree::Exp) -> bool {
         match exp {
-            CONST(..) | NAME(..) | TEMP(level::Temp::FRAME_POINTER) => true,
+            CONST(..) | NAME(..) => true,
+            GLOBAL(l) if *l == level::FRAME_POINTER => true, // Capaz que está al pedo
             BINOP(_, x, y) => inmut(x) && inmut(y),
             _ => false
         }
@@ -36,13 +37,7 @@ fn commute(stm: &Tree::Stm, exp: &Tree::Exp) -> bool {
         (_, CONST(..)) | (_, NAME(..)) => true,
         (EXP(x), y) => match *x.clone() {
             CONST(..) | NAME(..) => true,
-            // TODO
-            // CALL(boxed_exp, _) => match *boxed_exp {
-            //     NAME(label) => match &label {
-            //         "_checkIndexArray" | "_checkNil" => true,
-            //         _ => false,
-            //     },
-            // }
+            CALL(name, _, _) if name == "_checkIndexArray" || name == "_checkNil" => true,
             x => inmut(&x) || inmut(y)
         }
         _ => false,
@@ -57,13 +52,13 @@ fn reorder(mut exps: Vec<Tree::Exp>) -> (Tree::Stm, Vec<Tree::Exp>) {
     let first = exps.remove(0);
     match first {
         CALL(..) => {
-            let t = level::newtemp();
+            let t = level::newglobal();
             exps.insert(0, ESEQ(
                 Box::new(MOVE(
-                    Box::new(TEMP(t.clone())),
+                    Box::new(GLOBAL(t.clone())),
                     Box::new(first)
                 )),
-                Box::new(TEMP(t))
+                Box::new(GLOBAL(t))
             ));
             reorder(exps)
         }
@@ -74,9 +69,9 @@ fn reorder(mut exps: Vec<Tree::Exp>) -> (Tree::Stm, Vec<Tree::Exp>) {
                 el.insert(0, e);
                 (seq(stms, stms_), el)
             } else {
-                let t = level::newtemp();
-                el.insert(0, TEMP(t.clone()));
-                (seq(seq(stms, MOVE(Box::new(TEMP(t)), Box::new(e))), stms_), el)
+                let t = level::newglobal();
+                el.insert(0, GLOBAL(t.clone()));
+                (seq(seq(stms, MOVE(Box::new(GLOBAL(t)), Box::new(e))), stms_), el)
             }
         }
     }
@@ -111,23 +106,23 @@ fn do_stm(stm: Tree::Stm) -> Tree::Stm {
             })
         ),
         MOVE(dest, src) => match (*dest, *src) {
-            (TEMP(t), CALL(function_name, function_label, args)) => {
+            (GLOBAL(t), CALL(function_name, function_label, args)) => {
                 let mut exps = args;
                 exps.push(*function_label);
                 reorder_stm(
                     exps,
                     Box::new(|mut l| {
-                        let dest = Box::new(TEMP(t));
+                        let dest = Box::new(GLOBAL(t));
                         let src = Box::new(CALL(function_name, Box::new(l.pop().expect("move canonization")), l));
                         MOVE(dest, src)
                     })
                 )
             },
-            (TEMP(t), b) =>
+            (GLOBAL(t), b) =>
                 reorder_stm(
                     vec![b],
                     Box::new(|mut l| {
-                        let dest = Box::new(TEMP(t));
+                        let dest = Box::new(GLOBAL(t));
                         let src = Box::new(l.pop().expect("move canonization"));
                         MOVE(dest, src)
                     })

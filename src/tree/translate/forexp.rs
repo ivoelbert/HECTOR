@@ -18,7 +18,7 @@ pub fn trans_stm(
         } => {
             let mut new_value_env = value_env.clone();
             let mut new_breaks_stack = breaks_stack.clone();
-            let access = level.alloc_local(*escape);
+            let access = level.alloc_local(*escape, Some(var.clone()));
             new_value_env.insert(
                 var.clone(),
                 EnvEntry::Var {
@@ -26,7 +26,7 @@ pub fn trans_stm(
                     depth: level.nesting_depth,
                 },
             );
-            let var_exp = super::varexp::simplevar(access, level.nesting_depth, &level);
+            let var_exp = super::varexp::simplevar(access, &level);
             let (lo_exp, lo_level, lo_frags) = super::trans_exp(
                 lo,
                 level,

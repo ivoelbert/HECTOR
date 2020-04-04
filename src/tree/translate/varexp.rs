@@ -1,40 +1,23 @@
-use super::super::frame::STATIC_LINK_OFFSET;
 use crate::ast::*;
 use crate::tree::*;
 use Tree::Exp::*;
 
-pub fn generate_static_link(remaining_depth: i64) -> Tree::Exp {
-    match remaining_depth {
-        0 => MEM(Box::new(plus!(
-            TEMP(Temp::FRAME_POINTER),
-            CONST(STATIC_LINK_OFFSET)
-        ))),
-        d => MEM(Box::new(plus!(
-            generate_static_link(d - 1),
-            CONST(STATIC_LINK_OFFSET)
-        ))),
-    }
-}
+// pub fn generate_static_link(remaining_depth: i64) -> Tree::Exp {
+//     match remaining_depth {
+//         0 => MEM(Box::new(plus!(
+//             TEMP(Temp::FRAME_POINTER),
+//             CONST(STATIC_LINK_OFFSET)
+//         ))),
+//         d => MEM(Box::new(plus!(
+//             generate_static_link(d - 1),
+//             CONST(STATIC_LINK_OFFSET)
+//         ))),
+//     }
+// }
 
 // Generates an expression that evaluates to the memory direction of the variable
-pub fn simplevar(access: Access, nesting_depth: i64, current_level: &Level) -> Tree::Exp {
-    let delta_depth = current_level.nesting_depth - nesting_depth;
-    match access {
-        Access::InReg(t) => {
-            if delta_depth == 0 {
-                TEMP(t)
-            } else {
-                panic!("escaped InReg! current: {:?}, var: {:?}", &current_level.nesting_depth, &nesting_depth)
-            }
-        }
-        Access::InFrame(offset) => {
-            // We assume all InFrame escape
-            MEM(Box::new(plus!(
-                generate_static_link(delta_depth),
-                CONST(offset)
-            )))
-        }
-    }
+pub fn simplevar(access: Access, current_level: &Level) -> Tree::Exp {
+    current_level.access_to_exp(access)
 }
 
 pub fn trans_var(
@@ -46,9 +29,9 @@ pub fn trans_var(
 ) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
     match kind {
         VarKind::Simple(name) => {
-            if let Some(EnvEntry::Var{access, depth}) = value_env.get(name) {
+            if let Some(EnvEntry::Var{access, ..}) = value_env.get(name) {
                 Ok((
-                    simplevar(access.clone(), *depth, &level),
+                    simplevar(access.clone(), &level),
                     level,
                     frags
                 ))

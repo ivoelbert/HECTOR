@@ -71,7 +71,6 @@ pub fn trace_schedule((basic_blocks, done_label): (Vec<Block>, Label)) -> Vec<Tr
                     vec![this_block, trace(table, false_block, rest)].concat()
                 }
                 (Some(true_block), _) if !true_block.is_empty() => {
-                    // TODO exp negada
                     let neg_jump = CJUMP(not_rel(o), a, b, t, f);
                     vec![most, vec![neg_jump], trace(table, true_block, rest)].concat()
                 },
@@ -80,7 +79,7 @@ pub fn trace_schedule((basic_blocks, done_label): (Vec<Block>, Label)) -> Vec<Tr
                     vec![
                         most,
                         vec![
-                            CJUMP(o, a, b, t, new_false),
+                            CJUMP(o, a, b, t, new_false.clone()),
                             LABEL(new_false),
                             JUMP(NAME(f.clone()), vec![f])],
                         get_next(table, rest)

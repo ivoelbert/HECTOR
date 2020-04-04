@@ -15,14 +15,13 @@ pub fn trans_exp(
                 .get(func)
                 .expect("typecheck should make sure this is found");
             match entry {
-                EnvEntry::Func {label, external: _} => {
-                    let (mut arg_exps, args_level, frags) = super::translate_many_exp(args, level, value_env, breaks_stack, frags)?;
-                    console_log!("static link, nesting_depth: {:?}", &args_level.nesting_depth);
-                    let sl = super::varexp::generate_static_link(args_level.nesting_depth);
-                    arg_exps.insert(0, sl);
-                    Ok((CALL(String::from(func), Box::new(NAME(label.clone())), arg_exps), args_level, frags))
-
-                    // TODO: external calls
+                EnvEntry::Func {label, external} => {
+                    let (arg_exps, args_level, frags) = super::translate_many_exp(args, level, value_env, breaks_stack, frags)?;
+                    if *external {
+                        Ok((level::external_call(label.clone(), label.clone(), arg_exps), args_level, frags))
+                    } else {
+                        Ok((CALL(String::from(func), Box::new(NAME(label.clone())), arg_exps), args_level, frags))
+                    }
                 }
                 EnvEntry::Var { .. } => {
                     panic!("typecheck should make sure this is a function")

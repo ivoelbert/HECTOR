@@ -11,13 +11,13 @@ pub fn vardec(
 ) -> Result<(Tree::Stm, Level, ValueEnviroment, Vec<Fragment>), TransError> {
     let (init_exp, mut init_level, init_frags) = super::trans_exp(init, level, &value_env, breaks_stack, frags)?;
     // We don't want the variable to be in the env when we translate the initialization
-    let access = init_level.alloc_local(*escape);
+    let access = init_level.alloc_local(*escape, Some(name.clone()));
     value_env.insert(name.clone(), EnvEntry::Var{
         access: access.clone(),
         depth: init_level.nesting_depth
     });
 
-    Ok((Move!(simplevar(access.clone(), init_level.nesting_depth, &init_level), init_exp), init_level, value_env, init_frags))
+    Ok((Move!(simplevar(access.clone(), &init_level), init_exp), init_level, value_env, init_frags))
 }
 
 pub fn fundecs(
@@ -52,25 +52,22 @@ pub fn fundecs(
             let label = if let EnvEntry::Func{label, ..} = new_value_env.get(name).unwrap() {
                 label
             } else {panic!()};
-            let formals : Vec<bool> = params.iter().map(|field| field.escape).collect();
-            let mut level = Level::new(depth + 1, name.clone(), label.clone(), formals);  // formals?
+            let mut level = Level::new(depth + 1, name.clone(), label.clone());
             let mut dec_value_env = new_value_env.clone();
-            level.alloc_arg(false); //Static Link
             params
                 .iter()
                 .for_each(|Field{name, escape, ..}| {
-                    let access = level.alloc_arg(*escape);
+                    let access = level.alloc_arg(name.clone(), *escape);
                     dec_value_env.insert(name.clone(), EnvEntry::Var{
                         access,
                         depth: depth + 1
                     });
                 });
             match result {
-                // TODO: label on function start
                 // If the function doesn't have a return value, then don't move a return value
                 Some(_) => {
                     let (body_exp, body_level, mut body_frags) = super::trans_exp(body, level, &dec_value_env, &new_breaks_stack, frags)?;
-                    let move_exp = Move!(TEMP(Temp::RV), body_exp);
+                    let move_exp = Move!(GLOBAL(named_global(RETURN_VALUE)), body_exp);
                     let fragment = Fragment::new(move_exp, body_level);
                     body_frags.push(fragment);
                     Ok(body_frags)
