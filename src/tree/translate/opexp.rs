@@ -1,6 +1,5 @@
 use crate::ast::*;
 use crate::tree::*;
-use crate::utils::log;
 
 fn trans_int_oper(ast_oper: &Oper) -> Tree::BinOp {
     use Oper::*;
@@ -85,7 +84,6 @@ pub fn trans_exp(
                     ))
                 },
                 _ => {
-                    console_log!("left.typ: {:?}, right.typ: {:?}, oper: {:?}", *left.typ, *right.typ, oper);
                     panic!("typechecking should not allow this")
                 }
             }

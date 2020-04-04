@@ -17,10 +17,7 @@ pub struct Frame {
     name: String,
     label: Label,
     formals: Vec<(String, bool)>,
-    locals: Vec<String>,
-    arg_index: i32,
-    local_index: i32,
-    mem_index: i32
+    locals: Vec<LocalTemp>,
 }
 
 pub type MemAddress = i32;
@@ -58,22 +55,20 @@ impl Frame {
             label,
             formals: vec![],
             locals: vec![],
-            arg_index: 0,
-            local_index: 0,
-            mem_index: 0,
         }
     }
 
     pub fn alloc_arg(self: &mut Self, name: String, escape: bool) -> Access {
-        self.formals.push((name.clone(), escape));
+        let label = named_local(&name);
+        self.formals.push((label.clone(), escape));
         match escape {
-            true => Access::InGlobal(name),
-            false => Access::InLocal(name)
+            true => Access::InGlobal(label),
+            false => Access::InLocal(label)
         }
     }
 
     pub fn alloc_local(self: &mut Self, escape: bool, name: Option<String>) -> Access {
-        let label = if let Some(name) = name {name} else {newlocal()};
+        let label = if let Some(name) = name {named_local(&name)} else {newlocal()};
         self.locals.push(label.clone());
         match escape {
             true => Access::InGlobal(label),
@@ -120,5 +115,5 @@ pub fn newlocal() -> GlobalTemp {
 }
 
 pub fn named_local(name: &str) -> GlobalTemp {
-    String::from(name)
+    vec![name.to_string(), "_".to_string(), Uuid::new_v4().to_string()].concat()
 }

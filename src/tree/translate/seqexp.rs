@@ -1,6 +1,5 @@
 use crate::ast::*;
 use crate::tree::*;
-use crate::utils::log;
 
 fn trans_seq(
     exps: &[AST],
@@ -59,7 +58,6 @@ pub fn trans_stm(
             None => panic!("empty seq"),
         },
         _ => {
-            console_log!("node: {:?}", node);
             panic!("delegation error")
         },
     }

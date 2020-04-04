@@ -1,6 +1,5 @@
 use crate::ast::*;
 use crate::tree::*;
-use crate::utils::log;
 
 pub fn trans_exp(
     AST { node, .. }: &AST,

@@ -67,7 +67,7 @@ pub fn fundecs(
                 // If the function doesn't have a return value, then don't move a return value
                 Some(_) => {
                     let (body_exp, body_level, mut body_frags) = super::trans_exp(body, level, &dec_value_env, &new_breaks_stack, frags)?;
-                    let move_exp = Move!(GLOBAL(named_global(RETURN_VALUE)), body_exp);
+                    let move_exp = Move!(LOCAL(RETURN_VALUE.to_string()), body_exp);
                     let fragment = Fragment::new(move_exp, body_level);
                     body_frags.push(fragment);
                     Ok(body_frags)
