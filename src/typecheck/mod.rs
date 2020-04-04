@@ -4,7 +4,6 @@ use serde::{Serialize, Serializer};
 extern crate snowflake;
 pub use std::sync::{Arc, Weak};
 use crate::ast::*;
-use crate::utils::log;
 
 mod intexp;
 mod opexp;

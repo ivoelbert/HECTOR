@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use crate::ast::*;
-use crate::utils::log;
 
 type EscapeTable = HashMap<Symbol, (u32, bool)>;
 
