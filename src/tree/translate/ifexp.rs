@@ -31,7 +31,7 @@ pub fn trans_exp(
             let (else_exp, else_level, else_frags) =
                 super::trans_exp(else_, then_level, value_env, breaks_stack, then_frags)?;
             let (then_label, join_label, else_label) = (newlabel(), newlabel(), newlabel());
-            let result = newtemp();
+            let result = newlocal();
             Ok((
                 ESEQ(
                     Box::new(Tree::seq(vec![
@@ -41,13 +41,13 @@ pub fn trans_exp(
                             else_label.clone(),
                         ),
                         LABEL(then_label.clone()),
-                        Move!(TEMP(result.clone()), then_exp),
+                        Move!(LOCAL(result.clone()), then_exp),
                         JUMP(NAME(join_label.clone()), vec![join_label.clone()]),
                         LABEL(else_label.clone()),
-                        Move!(TEMP(result.clone()), else_exp),
+                        Move!(LOCAL(result.clone()), else_exp),
                         LABEL(join_label.clone()),
                     ])),
-                    Box::new(TEMP(result.clone())),
+                    Box::new(LOCAL(result.clone())),
                 ),
                 else_level,
                 else_frags,

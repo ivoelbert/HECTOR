@@ -2,65 +2,72 @@
 // A frame is wrapped in a level as it's being built and when finished it's stored in a fragment
 // Registers are wrapped in temporaries.
 
-extern crate snowflake;
+extern crate uuid;
 
-pub use super::frame::{Frame};
+pub use super::frame::{Frame, LocalTemp, newlocal, named_local, FRAME_POINTER, STACK_POINTER, RETURN_VALUE, external_call};
 use super::Access;
-pub type Label = snowflake::ProcessUniqueId;
-type LocalTemp = snowflake::ProcessUniqueId;
+use super::Tree;
+
+pub type Label = String;
+pub type GlobalTemp = String;
+
 use serde::{Serialize};
-use crate::utils::log;
-
-
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-#[allow(non_camel_case_types)]
-pub enum Temp {
-    FRAME_POINTER,
-    RV, // Return Value
-    // Other special temps.
-    Local(LocalTemp),
-}
-
-pub fn newtemp() -> Temp {
-    Temp::Local(snowflake::ProcessUniqueId::new())
-}
+use uuid::Uuid;
 
 pub fn newlabel() -> Label {
-    snowflake::ProcessUniqueId::new()
+    Uuid::new_v4().to_string()
 }
 
+pub fn named_label(name: &str) -> Label {
+    String::from(name)
+}
+
+pub fn newglobal() -> GlobalTemp {
+    Uuid::new_v4().to_string()
+}
+
+pub fn named_global(name: &str) -> GlobalTemp {
+    String::from(name)
+}
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Level {
     pub frame: Frame,
-    pub nesting_depth: i64,
+    pub nesting_depth: i32,
 }
 
 impl Level {
     pub fn outermost() -> Level {
-        console_log!("Level::outermost");
         Level {
             frame: Frame::new(
                 String::from("outermost"),
                 newlabel(),
-                vec![],
             ),
             nesting_depth: -1,
         }
     }
 
-    pub fn new(depth: i64, name: String, label: Label, formals: Vec<bool>) -> Level {
+    pub fn new(depth: i32, name: String, label: Label) -> Level {
         Level {
-            frame: Frame::new(name, label, formals),
+            frame: Frame::new(name, label),
             nesting_depth: depth,
         }
     }
 
-    pub fn alloc_arg(self: &mut Self, escape: bool) -> Access {
-        self.frame.alloc_arg(escape)
+    pub fn alloc_arg(self: &mut Self, name: String, escape: bool) -> Access {
+        self.frame.alloc_arg(name, escape)
     }
 
-    pub fn alloc_local(self: &mut Self, escape: bool)  -> Access {
-        self.frame.alloc_local(escape)
+    pub fn alloc_local(self: &mut Self, escape: bool, name: Option<String>) -> Access {
+        self.frame.alloc_local(escape, name)
+    }
+
+    pub fn access_to_exp(self: &Self, access: Access) -> Tree::Exp {
+        use Tree::Exp::*;
+        match access {
+            Access::InMem(i) => MEM(Box::new(CONST(i))),
+            Access::InGlobal(l) => GLOBAL(l),
+            Access::InLocal(l) => LOCAL(l)
+        }
     }
 }

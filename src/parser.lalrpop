@@ -306,7 +306,7 @@ VarEx: Var = {
     },
 }
 
-Num: i64 = {
+Num: i32 = {
     <n:"Number"> => n
 };
 
@@ -439,7 +439,7 @@ extern {
         "nil" => lexer::Tok::Nil,
         "Symbol" => lexer::Tok::Symbol(<String>),
         "StringLiteral" => lexer::Tok::Str(<String>),
-        "Number" => lexer::Tok::Number(<i64>),
+        "Number" => lexer::Tok::Number(<i32>),
         "/*" => lexer::Tok::OpenComen, // Shouldn't appear
         "*/" => lexer::Tok::CloseComen, // Shouldn't appear
         "//" => lexer::Tok::LineComen, // Shouldn't appear

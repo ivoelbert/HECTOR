@@ -1,30 +1,36 @@
 // Arquitecture-specific details should be abstracted here.
 // To make it easier to target diffent arquitectures, we could make Frame into a trait.
 
-use super::{Label};
-use crate::tree::*;
+use super::{Label, GlobalTemp, level::*, Tree};
+use Tree::{Exp::*, Stm::*};
 use serde::{Serialize};
+use uuid::Uuid;
+
+pub static WORD_SIZE: i32 = 4;
+pub static FRAME_POINTER : &str = "fp";
+pub static STACK_POINTER : &str = "sp";
+pub static RETURN_VALUE : &str = "rv";
+
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Frame {
     name: String,
     label: Label,
-    formals: Vec<bool>,
-    locals: Vec<bool>,
-    actual_arg: i64,
-    actual_local: i64,
-    actual_reg: i64
+    formals: Vec<(String, bool)>,
+    locals: Vec<String>,
+    arg_index: i32,
+    local_index: i32,
+    mem_index: i32
 }
 
-// TODO: all of this constants
-pub static LOCAL_GAP: i64 = 4;
-pub static STATIC_LINK_OFFSET: i64 = 1337;
-pub static WORD_SIZE: i64 = 4;
+pub type MemAddress = i32;
+pub type LocalTemp = String;
 
 #[derive(Clone, Debug, Serialize)]
 pub enum Access {
-    InFrame(i64),
-    InReg(Temp)
+    InLocal(LocalTemp),
+    InGlobal(GlobalTemp),
+    InMem(MemAddress)
 }
 
 #[derive(Clone, Serialize)]
@@ -46,50 +52,73 @@ impl Frag {
 }
 
 impl Frame {
-    pub fn new(name: String, label: Label, formals: Vec<bool>) -> Self {
+    pub fn new(name: String, label: Label) -> Self {
         Frame {
             name,
             label,
-            formals,
+            formals: vec![],
             locals: vec![],
-            actual_arg: 0,
-            actual_local: 0,
-            actual_reg: 1,
+            arg_index: 0,
+            local_index: 0,
+            mem_index: 0,
         }
     }
 
-    pub fn alloc_local(self: &mut Self, escape: bool) -> Access {
+    pub fn alloc_arg(self: &mut Self, name: String, escape: bool) -> Access {
+        self.formals.push((name.clone(), escape));
         match escape {
-            true => {
-                let r = Access::InFrame(self.actual_local + LOCAL_GAP);
-                self.actual_local = self.actual_local -1;
-                r
-            }
-            false => Access::InReg(newtemp())
+            true => Access::InGlobal(name),
+            false => Access::InLocal(name)
         }
     }
 
-    pub fn alloc_arg(self: &mut Self, escape: bool) -> Access {
+    pub fn alloc_local(self: &mut Self, escape: bool, name: Option<String>) -> Access {
+        let label = if let Some(name) = name {name} else {newlocal()};
+        self.locals.push(label.clone());
         match escape {
-            true => {
-                let r = Access::InFrame(self.actual_arg + LOCAL_GAP);
-                self.actual_arg = self.actual_arg -1;
-                r
-            }
-            false => Access::InReg(newtemp())
+            true => Access::InGlobal(label),
+            false => Access::InLocal(label)
         }
     }
 
-    // abstrae la llamada al runtime
-    pub fn external_call(proc_name: String, proc_label: Label, args: Vec<Tree::Exp>) -> Tree::Exp {
-        CALL(proc_name, Box::new(NAME(proc_label)), args)
+    pub fn generate_move_escaped_arguments_statement(self: &Self) -> Vec<Tree::Stm>{
+        // a.k.a. procEntryExit1
+
+        self.formals.iter().map(|(name, escape)| -> Tree::Stm {
+            if *escape {
+                MOVE(Box::new(GLOBAL(name.clone())), Box::new(LOCAL(name.clone())))
+            } else {
+                EXP(Box::new(CONST(0)))
+            }
+        }).collect()
     }
 
-    // la funcion formals va en typescript
+    pub fn formals(self: &Self) -> Vec<Access> {
+        // Genera los access segun:
+        // - El diseño de frame que elegimos
+        // - La convencion de llamada (todo lo que se puede en locals)
+        // - El vector de escapes.
+        // Tiene que ser consistente con como incrementamos el contador de locals en el constructor.
+        use Access::*;
+        self.formals.iter().map(|(name, escape)| -> Access {
+            if *escape {
+                InGlobal(name.clone())
+            } else {
+                InLocal(name.clone())
+            }
+        }).collect()
+    }
+}
 
-    // TODO: prologo y epilogo de funcion
-    // label de funcion
-    // guardar registros callee-saved
-    // o no hace NADA?
-    // pub fn add_function_prologue_epilogue()
+pub fn external_call(proc_name: String, proc_label: Label, args: Vec<Tree::Exp>) -> Tree::Exp {
+    // TODO: ajustar segun convencion de llamada de lo que sea que usemos para el runtime
+    CALL(proc_name, Box::new(NAME(proc_label)), args)
+}
+
+pub fn newlocal() -> GlobalTemp {
+    Uuid::new_v4().to_string()
+}
+
+pub fn named_local(name: &str) -> GlobalTemp {
+    String::from(name)
 }

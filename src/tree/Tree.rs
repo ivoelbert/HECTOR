@@ -1,11 +1,12 @@
-use super::level::{Label, Temp};
+use super::level::{Label, LocalTemp, GlobalTemp};
 use serde::{Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub enum Exp {
-    CONST(i64),
+    CONST(i32),
     NAME(Label),
-    TEMP(Temp),
+    LOCAL(LocalTemp),
+    GLOBAL(GlobalTemp),
     BINOP(BinOp, Box<Exp>, Box<Exp>),
     MEM(Box<Exp>),
     CALL(String, Box<Exp>, Vec<Exp>),

@@ -18,7 +18,7 @@
 #![feature(start)]
 extern crate lalrpop_util;
 extern crate pathfinding;
-extern crate snowflake;
+extern crate uuid;
 
 
 #[macro_use]

@@ -23,7 +23,7 @@ pub enum TransError {
 pub enum EnvEntry {
     Var {
         access: Access,
-        depth: i64,
+        depth: i32,
     },
     Func {
         label: Label,

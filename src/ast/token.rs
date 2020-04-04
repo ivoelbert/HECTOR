@@ -25,7 +25,7 @@ pub enum Tok {
     Ident(String),
     If,
     In,
-    Int(i64),
+    Int(i32),
     Lesser,
     LesserOrEqual,
     Let,
