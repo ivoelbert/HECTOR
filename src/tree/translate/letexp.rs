@@ -22,7 +22,7 @@ pub fn vardec(
 
 pub fn fundecs(
     funcs: &[(_FunctionDec, Pos)],
-    depth: i64,
+    depth: i32,
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
     frags: Vec<Fragment>,

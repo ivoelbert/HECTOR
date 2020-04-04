@@ -3,7 +3,7 @@ use serde::{Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub enum Exp {
-    CONST(i64),
+    CONST(i32),
     NAME(Label),
     LOCAL(LocalTemp),
     GLOBAL(GlobalTemp),

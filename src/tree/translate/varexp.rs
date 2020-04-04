@@ -2,7 +2,7 @@ use crate::ast::*;
 use crate::tree::*;
 use Tree::Exp::*;
 
-// pub fn generate_static_link(remaining_depth: i64) -> Tree::Exp {
+// pub fn generate_static_link(remaining_depth: i32) -> Tree::Exp {
 //     match remaining_depth {
 //         0 => MEM(Box::new(plus!(
 //             TEMP(Temp::FRAME_POINTER),

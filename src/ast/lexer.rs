@@ -79,7 +79,7 @@ pub enum Tok {
     Nil,            // nil
     Symbol(String), // someVar
     Str(String),    // "something"
-    Number(i64),    // 1337
+    Number(i32),    // 1337
     OpenComen,      // /*
     CloseComen,     // */
     LineComen,      // //
@@ -178,7 +178,7 @@ fn get_token(string_token: String) -> Option<Tok> {
     {
         Some(Tok::Symbol(string_token))
     } else if Regex::new(r"^[0-9]+$").unwrap().is_match(&string_token) {
-        Some(Tok::Number(string_token.parse::<i64>().unwrap()))
+        Some(Tok::Number(string_token.parse::<i32>().unwrap()))
     } else if Regex::new(r"^/\*$").unwrap().is_match(&string_token) {
         Some(Tok::OpenComen)
     } else if Regex::new(r"^\*/$").unwrap().is_match(&string_token) {
@@ -196,7 +196,7 @@ fn get_token(string_token: String) -> Option<Tok> {
 pub enum LexerState {
     LexingTokens,
     LexingLineComment,
-    LexingBlockComment(i64),
+    LexingBlockComment(i32),
     LexingString(String),
 }
 

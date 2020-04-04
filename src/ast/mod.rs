@@ -36,7 +36,7 @@ pub enum Exp {
     Var(Var),
     Unit,
     Nil,
-    Int(i64),
+    Int(i32),
     String(String),
     Call {
         func: Symbol,

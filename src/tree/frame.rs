@@ -6,7 +6,7 @@ use Tree::{Exp::*, Stm::*};
 use serde::{Serialize};
 use uuid::Uuid;
 
-pub static WORD_SIZE: i64 = 8;
+pub static WORD_SIZE: i32 = 4;
 pub static FRAME_POINTER : &str = "fp";
 pub static STACK_POINTER : &str = "sp";
 pub static RETURN_VALUE : &str = "rv";
@@ -18,12 +18,12 @@ pub struct Frame {
     label: Label,
     formals: Vec<(String, bool)>,
     locals: Vec<String>,
-    arg_index: i64,
-    local_index: i64,
-    mem_index: i64
+    arg_index: i32,
+    local_index: i32,
+    mem_index: i32
 }
 
-pub type MemAddress = i64;
+pub type MemAddress = i32;
 pub type LocalTemp = String;
 
 #[derive(Clone, Debug, Serialize)]

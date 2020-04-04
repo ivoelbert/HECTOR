@@ -33,7 +33,7 @@ pub fn named_global(name: &str) -> GlobalTemp {
 #[derive(Clone, Debug, Serialize)]
 pub struct Level {
     pub frame: Frame,
-    pub nesting_depth: i64,
+    pub nesting_depth: i32,
 }
 
 impl Level {
@@ -47,7 +47,7 @@ impl Level {
         }
     }
 
-    pub fn new(depth: i64, name: String, label: Label) -> Level {
+    pub fn new(depth: i32, name: String, label: Label) -> Level {
         Level {
             frame: Frame::new(name, label),
             nesting_depth: depth,
