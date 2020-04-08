@@ -3,6 +3,8 @@ use crate::typecheck::*;
 use pathfinding::directed::topological_sort;
 use std::convert::TryInto;
 
+use crate::utils::log;
+
 fn typecheck_vardec(
     _VarDec {
         name, typ, init, escape

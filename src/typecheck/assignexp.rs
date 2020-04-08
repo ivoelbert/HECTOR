@@ -1,4 +1,5 @@
 use super::*;
+use crate::utils::log;
 
 pub fn typecheck(
     ast: AST,
