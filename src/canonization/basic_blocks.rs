@@ -1,7 +1,6 @@
 use super::*;
 use level::{Label, unique_named_label};
 
-
 pub fn basic_blocks(stms: Vec<Tree::Stm>) -> (Vec<Vec<Tree::Stm>>, Label) {
     use Tree::Stm::*;
     use Tree::Exp::*;
@@ -48,5 +47,6 @@ pub fn basic_blocks(stms: Vec<Tree::Stm>) -> (Vec<Vec<Tree::Stm>>, Label) {
         });
     last_block.push(JUMP(NAME(done_label.clone()), vec![done_label.clone()]));
     blocks.push(last_block);
+    console_log!("blocks: {:?}", &blocks);
     (blocks, done_label)
 }

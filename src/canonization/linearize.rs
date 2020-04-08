@@ -3,6 +3,7 @@ use super::*;
 use Tree::Stm::*;
 use Tree::Exp::*;
 
+
 macro_rules! nop {
     () => {
         EXP(Box::new(CONST(0)))
@@ -217,5 +218,7 @@ pub fn linearize(tree: Tree::Stm) -> Vec<Tree::Stm> {
             list
         }
     }
-    linear(do_stm(tree), vec![])
+    let linear = linear(do_stm(tree), vec![]);
+    console_log!("linear: {:?}", &linear);
+    linear
 }
