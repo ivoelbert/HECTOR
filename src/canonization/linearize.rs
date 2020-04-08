@@ -35,13 +35,13 @@ fn commute(stm: &Tree::Stm, exp: &Tree::Exp) -> bool {
 
     match (stm, exp) {
         (_, CONST(..)) | (_, NAME(..)) => true,
-        (EXP(x), y) => match *x.clone() {
-            CONST(..) | NAME(..) => true,
-            CALL(label, _) => match *label {
+        (EXP(x), y) => match &**x {
+            CONST(..) => true,
+            CALL(label, _) => match &**label {
                 NAME(name) if name == "+check_index_array" || name == "+check_nil" => true,
                 _ => false,
             },
-            x => inmut(&x) || inmut(y)
+            x => inmut(x) || inmut(y)
         }
         _ => false,
 
@@ -72,17 +72,12 @@ fn reorder(mut exps: Vec<Tree::Exp>) -> (Tree::Stm, Vec<Tree::Exp>) {
                 el.insert(0, e);
                 (seq(stms, stms_), el)
             } else {
-                let t = level::newglobal();
+                let t = level::unique_named_global("-reorder");
                 el.insert(0, GLOBAL(t.clone()));
-                (seq(seq(stms, MOVE(Box::new(GLOBAL(t)), Box::new(e))), stms_), el)
+                (seq(stms, seq(MOVE(Box::new(GLOBAL(t)), Box::new(e)), stms_)), el)
             }
         }
     }
-}
-
-fn reorder_stm(exps: Vec<Tree::Exp>, build: Box<dyn FnOnce(Vec<Tree::Exp>) -> Tree::Stm>) -> Tree::Stm {
-    let (stms, exps_) = reorder(exps);
-    seq(stms, build(exps_))
 }
 
 fn reorder_exp(exps: Vec<Tree::Exp>, build: Box<dyn FnOnce(Vec<Tree::Exp>) -> Tree::Exp>) -> (Tree::Stm, Tree::Exp) {
@@ -90,9 +85,14 @@ fn reorder_exp(exps: Vec<Tree::Exp>, build: Box<dyn FnOnce(Vec<Tree::Exp>) -> Tr
     (stms, build(exps_))
 }
 
+fn reorder_stm(exps: Vec<Tree::Exp>, build: Box<dyn FnOnce(Vec<Tree::Exp>) -> Tree::Stm>) -> Tree::Stm {
+    let (stms, exps_) = reorder(exps);
+    seq(stms, build(exps_))
+}
+
 fn do_stm(stm: Tree::Stm) -> Tree::Stm {
     match stm {
-        SEQ(a, b) => SEQ(Box::new(do_stm(*a)), Box::new(do_stm(*b))),
+        SEQ(a, b) => seq(do_stm(*a), do_stm(*b)),
         JUMP(exp, labels) => reorder_stm(
             vec![exp],
             Box::new(|mut l| {
@@ -126,6 +126,27 @@ fn do_stm(stm: Tree::Stm) -> Tree::Stm {
                     vec![b],
                     Box::new(|mut l| {
                         let dest = Box::new(GLOBAL(t));
+                        let src = Box::new(l.pop().expect("move canonization"));
+                        MOVE(dest, src)
+                    })
+                ),
+            (LOCAL(t), CALL(function_label, args)) => {
+                let mut exps = args;
+                exps.push(*function_label);
+                reorder_stm(
+                    exps,
+                    Box::new(|mut l| {
+                        let dest = Box::new(LOCAL(t));
+                        let src = Box::new(CALL(Box::new(l.pop().expect("move canonization")), l));
+                        MOVE(dest, src)
+                    })
+                )
+            },
+            (LOCAL(t), b) =>
+                reorder_stm(
+                    vec![b],
+                    Box::new(|mut l| {
+                        let dest = Box::new(LOCAL(t));
                         let src = Box::new(l.pop().expect("move canonization"));
                         MOVE(dest, src)
                     })
@@ -189,7 +210,7 @@ fn do_exp(exp: Tree::Exp) -> (Tree::Stm, Tree::Exp) {
 
 pub fn linearize(tree: Tree::Stm) -> Vec<Tree::Stm> {
     fn linear(tree: Tree::Stm, mut list: Vec<Tree::Stm>) -> Vec<Tree::Stm> {
-        if let SEQ(a, b)= tree {
+        if let SEQ(a, b) = tree {
             linear(*a, linear(*b, list))
         } else {
             list.insert(0, tree);
