@@ -14,7 +14,6 @@ pub static RETURN_VALUE : &str = "rv";
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Frame {
-    name: String,
     label: Label,
     formals: Vec<(String, bool)>,
     locals: Vec<LocalTemp>,
@@ -49,9 +48,8 @@ impl Frag {
 }
 
 impl Frame {
-    pub fn new(name: String, label: Label) -> Self {
+    pub fn new(label: Label) -> Self {
         Frame {
-            name,
             label,
             formals: vec![],
             locals: vec![],
@@ -59,7 +57,7 @@ impl Frame {
     }
 
     pub fn alloc_arg(self: &mut Self, name: String, escape: bool) -> Access {
-        let label = named_local(&name);
+        let label = unique_named_local(&name);
         self.formals.push((label.clone(), escape));
         match escape {
             true => Access::InGlobal(label),
@@ -68,7 +66,7 @@ impl Frame {
     }
 
     pub fn alloc_local(self: &mut Self, escape: bool, name: Option<String>) -> Access {
-        let label = if let Some(name) = name {named_local(&name)} else {newlocal()};
+        let label = if let Some(name) = name {unique_named_local(&name)} else {unique_named_local("-alloc-local")};
         self.locals.push(label.clone());
         match escape {
             true => Access::InGlobal(label),
@@ -105,9 +103,9 @@ impl Frame {
     }
 }
 
-pub fn external_call(proc_name: String, proc_label: Label, args: Vec<Tree::Exp>) -> Tree::Exp {
+pub fn external_call(proc_label: Label, args: Vec<Tree::Exp>) -> Tree::Exp {
     // TODO: ajustar segun convencion de llamada de lo que sea que usemos para el runtime
-    CALL(proc_name, Box::new(NAME(proc_label)), args)
+    CALL(Box::new(NAME(proc_label)), args)
 }
 
 pub fn newlocal() -> GlobalTemp {
@@ -115,5 +113,9 @@ pub fn newlocal() -> GlobalTemp {
 }
 
 pub fn named_local(name: &str) -> GlobalTemp {
+    name.to_string()
+}
+
+pub fn unique_named_local(name: &str) -> GlobalTemp {
     vec![name.to_string(), "_".to_string(), Uuid::new_v4().to_string()].concat()
 }

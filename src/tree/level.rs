@@ -4,7 +4,7 @@
 
 extern crate uuid;
 
-pub use super::frame::{Frame, LocalTemp, newlocal, named_local, FRAME_POINTER, STACK_POINTER, RETURN_VALUE, external_call};
+pub use super::frame::{Frame, LocalTemp, newlocal, unique_named_local, FRAME_POINTER, STACK_POINTER, RETURN_VALUE, external_call};
 use super::Access;
 use super::Tree;
 
@@ -19,11 +19,19 @@ pub fn newlabel() -> Label {
 }
 
 pub fn named_label(name: &str) -> Label {
-    String::from(name)
+    name.to_string()
+}
+
+pub fn unique_named_label(name: &str) -> Label {
+    vec![name.to_string(), "_".to_string(), Uuid::new_v4().to_string()].concat()
 }
 
 pub fn newglobal() -> GlobalTemp {
     Uuid::new_v4().to_string()
+}
+
+pub fn unique_named_global(name: &str) -> Label {
+    vec![name.to_string(), "_".to_string(), Uuid::new_v4().to_string()].concat()
 }
 
 pub fn named_global(name: &str) -> GlobalTemp {
@@ -40,8 +48,7 @@ impl Level {
     pub fn outermost() -> Level {
         Level {
             frame: Frame::new(
-                String::from("outermost"),
-                newlabel(),
+                named_label("outermost"),
             ),
             nesting_depth: -1,
         }
@@ -49,7 +56,7 @@ impl Level {
 
     pub fn new(depth: i32, name: String, label: Label) -> Level {
         Level {
-            frame: Frame::new(name, label),
+            frame: Frame::new(label),
             nesting_depth: depth,
         }
     }

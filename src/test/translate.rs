@@ -78,7 +78,7 @@ fn break_ok() {
         typ: Arc::new(TigerType::TUnit)
     };
     let level = Level::outermost();
-    let res = translate::breakexp::trans_stm(&exp, level, &initial_value_env(), &vec![Some(newlabel())], vec![]);
+    let res = translate::breakexp::trans_stm(&exp, level, &initial_value_env(), &vec![Some(unique_named_label("-break"))], vec![]);
     match res {
         Ok((JUMP(NAME(_), _), _, fragments)) => {
             assert!(fragments.is_empty());

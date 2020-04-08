@@ -10,7 +10,7 @@ pub fn trans_stm(
 ) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
     match node {
         Exp::While{test, body} => {
-            let (test_label, body_label, done_label) = (newlabel(), newlabel(), newlabel());
+            let (test_label, body_label, done_label) = (unique_named_label("-test"), unique_named_label("-body"), unique_named_label("-while-done"));
             let (test_exp, test_level, test_frags) = super::trans_exp(test, level, value_env, breaks_stack, frags)?;
             let mut new_breaks_stack = breaks_stack.clone();
             new_breaks_stack.push(Some(done_label.clone()));

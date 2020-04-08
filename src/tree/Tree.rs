@@ -9,7 +9,7 @@ pub enum Exp {
     GLOBAL(GlobalTemp),
     BINOP(BinOp, Box<Exp>, Box<Exp>),
     MEM(Box<Exp>),
-    CALL(String, Box<Exp>, Vec<Exp>),
+    CALL(Box<Exp>, Vec<Exp>),
     ESEQ(Box<Stm>, Box<Exp>)
 }
 
@@ -65,10 +65,11 @@ pub fn not_rel(ro : BinOp) -> BinOp {
 }
 
 pub fn seq(mut stms: Vec<Stm>) -> Stm {
-    let maybe_stm = stms.pop();
-    match maybe_stm {
-        Some(s) => Stm::SEQ(Box::new(s), Box::new(seq(stms))),
-        None => Stm::EXP(Box::new(Exp::CONST(0))),
+    let stm =  if stms.is_empty() {Stm::EXP(Box::new(Exp::CONST(0)))} else {stms.remove(0)};
+    if stms.is_empty() {
+        stm
+    } else {
+        Stm::SEQ(Box::new(stm), Box::new(seq(stms)))
     }
 }
 

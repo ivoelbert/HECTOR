@@ -49,7 +49,7 @@ pub fn trans_exp(
                         Box::new(Move!(
                             memaddr_exp.clone(),
                             // This returns the memory address of the malloc result
-                            external_call(String::from("+alloc_record"), label.clone(), vec![CONST(fields_exps.len().try_into().unwrap())])
+                            external_call(label.clone(), vec![CONST(fields_exps.len().try_into().unwrap())])
                         )),
                         Box::new(gen_init_stm(memaddr_exp.clone(), typ.clone(), fields_exps))
                         )),

@@ -37,7 +37,10 @@ fn commute(stm: &Tree::Stm, exp: &Tree::Exp) -> bool {
         (_, CONST(..)) | (_, NAME(..)) => true,
         (EXP(x), y) => match *x.clone() {
             CONST(..) | NAME(..) => true,
-            CALL(name, _, _) if name == "_checkIndexArray" || name == "_checkNil" => true,
+            CALL(label, _) => match *label {
+                NAME(name) if name == "+check_index_array" || name == "+check_nil" => true,
+                _ => false,
+            },
             x => inmut(&x) || inmut(y)
         }
         _ => false,
@@ -52,7 +55,7 @@ fn reorder(mut exps: Vec<Tree::Exp>) -> (Tree::Stm, Vec<Tree::Exp>) {
     let first = exps.remove(0);
     match first {
         CALL(..) => {
-            let t = level::newglobal();
+            let t = level::unique_named_global("-reorder_call");
             exps.insert(0, ESEQ(
                 Box::new(MOVE(
                     Box::new(GLOBAL(t.clone())),
@@ -106,14 +109,14 @@ fn do_stm(stm: Tree::Stm) -> Tree::Stm {
             })
         ),
         MOVE(dest, src) => match (*dest, *src) {
-            (GLOBAL(t), CALL(function_name, function_label, args)) => {
+            (GLOBAL(t), CALL(function_label, args)) => {
                 let mut exps = args;
                 exps.push(*function_label);
                 reorder_stm(
                     exps,
                     Box::new(|mut l| {
                         let dest = Box::new(GLOBAL(t));
-                        let src = Box::new(CALL(function_name, Box::new(l.pop().expect("move canonization")), l));
+                        let src = Box::new(CALL(Box::new(l.pop().expect("move canonization")), l));
                         MOVE(dest, src)
                     })
                 )
@@ -140,12 +143,12 @@ fn do_stm(stm: Tree::Stm) -> Tree::Stm {
             (a, b) => reorder_stm(vec![], Box::new(|_| MOVE(Box::new(a), Box::new(b))))
         },
         EXP(boxed_exp) => match *boxed_exp {
-            CALL(function_name, function_label, args) => {
+            CALL(function_label, args) => {
                 let mut exps = args;
                 exps.push(*function_label);
                 reorder_stm(
                     exps,
-                    Box::new(|mut l| EXP(Box::new(CALL(function_name, Box::new(l.pop().expect("exp call canonization")), l))))
+                    Box::new(|mut l| EXP(Box::new(CALL(Box::new(l.pop().expect("exp call canonization")), l))))
                 )
             },
             e => reorder_stm(vec![e], Box::new(|mut l| EXP(Box::new(l.pop().expect("exp canonization")))))
@@ -175,10 +178,10 @@ fn do_exp(exp: Tree::Exp) -> (Tree::Stm, Tree::Exp) {
             let (stms_, exps) = do_exp(*e);
             (seq(stms, stms_), exps)
         },
-        CALL(function_name, function_label, args) =>{
+        CALL(function_label, args) =>{
             let mut exps = args;
             exps.push(*function_label);
-            reorder_exp(exps, Box::new(|mut l| CALL(function_name, Box::new(l.pop().expect("call canonization")), l)))
+            reorder_exp(exps, Box::new(|mut l| CALL(Box::new(l.pop().expect("call canonization")), l)))
         }
         e => reorder_exp(vec![], Box::new(|_| e))
     }

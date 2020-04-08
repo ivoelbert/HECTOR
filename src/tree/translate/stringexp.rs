@@ -10,7 +10,7 @@ pub fn trans_exp(
 ) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
     match node {
         Exp::String(s) => {
-            let l = newlabel();
+            let l = unique_named_label(s);
             // Not sure if this is OK or I need one more fragment for the length
             frags.push(Fragment::ConstString(l.clone(), s.clone()));
             Ok((NAME(l), level, frags))

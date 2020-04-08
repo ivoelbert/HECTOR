@@ -7,3 +7,5 @@
 ## CAMBIOS NUESTROS:
 
 test51 bad_type -> bad_translate
+
+Hicimos el canonizado pero poinamos que no sirve para un carajo.

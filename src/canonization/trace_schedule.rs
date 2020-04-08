@@ -75,7 +75,7 @@ pub fn trace_schedule((basic_blocks, done_label): (Vec<Block>, Label)) -> Vec<Tr
                     vec![most, vec![neg_jump], trace(table, true_block, rest)].concat()
                 },
                 _ => {
-                    let new_false = level::newlabel();
+                    let new_false = level::unique_named_label("-false");
                     vec![
                         most,
                         vec![

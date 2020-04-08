@@ -36,7 +36,7 @@ pub fn fundecs(
     let mut new_value_env = value_env.clone();
     funcs.iter().for_each(|(_FunctionDec {name, ..}, _)| {
         new_value_env.insert(name.clone(), EnvEntry::Func{
-            label: newlabel(),
+            label: unique_named_label(name),
             external: false,
         });
     });

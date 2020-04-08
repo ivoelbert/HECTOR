@@ -17,9 +17,9 @@ pub fn trans_exp(
                 EnvEntry::Func {label, external} => {
                     let (arg_exps, args_level, frags) = super::translate_many_exp(args, level, value_env, breaks_stack, frags)?;
                     if *external {
-                        Ok((level::external_call(label.clone(), label.clone(), arg_exps), args_level, frags))
+                        Ok((level::external_call(label.clone(), arg_exps), args_level, frags))
                     } else {
-                        Ok((CALL(String::from(func), Box::new(NAME(label.clone())), arg_exps), args_level, frags))
+                        Ok((CALL(Box::new(NAME(label.clone())), arg_exps), args_level, frags))
                     }
                 }
                 EnvEntry::Var { .. } => {

@@ -30,8 +30,8 @@ pub fn trans_exp(
             )?;
             let (else_exp, else_level, else_frags) =
                 super::trans_exp(else_, then_level, value_env, breaks_stack, then_frags)?;
-            let (then_label, join_label, else_label) = (newlabel(), newlabel(), newlabel());
-            let result = newlocal();
+            let (then_label, join_label, else_label) = (unique_named_label("-then"), unique_named_label("-join"), unique_named_label("-else"));
+            let result = unique_named_local("-ifresult");
             Ok((
                 ESEQ(
                     Box::new(Tree::seq(vec![
@@ -79,7 +79,7 @@ pub fn trans_stm(
             )?;
             let (then_stm, then_level, then_frags) =
                 super::trans_stm(then_, test_level, value_env, breaks_stack, test_frags)?;
-            let (then_label, join_label) = (newlabel(), newlabel());
+            let (then_label, join_label) = (unique_named_label("-then"), unique_named_label("-else"));
             Ok((
                 Tree::seq(vec![
                     CJUMP(
@@ -116,7 +116,7 @@ pub fn trans_stm(
             )?;
             let (else_stm, else_level, else_frags) =
                 super::trans_stm(else_, then_level, value_env, breaks_stack, then_frags)?;
-            let (then_label, join_label, else_label) = (newlabel(), newlabel(), newlabel());
+            let (then_label, join_label, else_label) = (unique_named_label("-then"), unique_named_label("-join"), unique_named_label("-else"));
             Ok((
                 Tree::seq(vec![
                     CJUMP(
