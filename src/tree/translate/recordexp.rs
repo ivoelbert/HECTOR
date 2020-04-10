@@ -22,7 +22,7 @@ use crate::tree::*;
 // }
 
 pub fn trans_exp(
-    AST {node, typ, ..}: &AST,
+    AST {node, ..}: &AST,
     level: Level,
     value_env: &ValueEnviroment,
     breaks_stack: &Vec<Option<Label>>,
@@ -34,9 +34,9 @@ pub fn trans_exp(
         Exp::Record { fields, .. } => {
             use std::convert::TryInto;
             // Translate field initializations
-            let (fields_exps, mut fields_level, fields_frags): (Vec<Tree::Exp>, Level, Vec<Fragment>) = fields
+            let (fields_exps, fields_level, fields_frags): (Vec<Tree::Exp>, Level, Vec<Fragment>) = fields
                 .iter()
-                .try_fold((vec![], level, frags), |(mut exps, level, frags), (name, ast)| {
+                .try_fold((vec![], level, frags), |(mut exps, level, frags), (_name, ast)| {
                     let (exp, level, frags) = super::trans_exp(ast, level, value_env, breaks_stack, frags)?;
                     exps.push(exp);
                     Ok((exps, level, frags))

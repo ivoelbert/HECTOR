@@ -17,7 +17,7 @@ pub fn vardec(
         depth: init_level.nesting_depth
     });
 
-    Ok((Move!(simplevar(access.clone(), &init_level), init_exp), init_level, value_env, init_frags))
+    Ok((Move!(simplevar(access.clone(), &init_level, init_level.nesting_depth), init_exp), init_level, value_env, init_frags))
 }
 
 pub fn fundecs(
@@ -52,7 +52,7 @@ pub fn fundecs(
             let label = if let EnvEntry::Func{label, ..} = new_value_env.get(name).unwrap() {
                 label
             } else {panic!()};
-            let mut level = Level::new(depth + 1, name.clone(), label.clone());
+            let mut level = Level::new(depth + 1, label.clone());
             let mut dec_value_env = new_value_env.clone();
             params
                 .iter()
@@ -67,15 +67,13 @@ pub fn fundecs(
                 // If the function doesn't have a return value, then don't move a return value
                 Some(_) => {
                     let (body_exp, body_level, mut body_frags) = super::trans_exp(body, level, &dec_value_env, &new_breaks_stack, frags)?;
-                    let move_exp = Move!(GLOBAL(RETURN_VALUE.to_string()), body_exp);
-                    let fragment = Fragment::new(move_exp, body_level);
-                    body_frags.push(fragment);
+                    let move_stm = Move!(GLOBAL(RETURN_VALUE.to_string()), body_exp);
+                    body_frags.push(body_level.finish(move_stm));
                     Ok(body_frags)
                 }
                 None => {
                     let (body_stm, body_level, mut body_frags) = super::trans_stm(body, level, &dec_value_env, &new_breaks_stack, frags)?;
-                    let fragment = Fragment::new(body_stm, body_level);
-                    body_frags.push(fragment);
+                    body_frags.push(body_level.finish(body_stm));
                     Ok(body_frags)
                 }
             }

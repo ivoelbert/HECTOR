@@ -59,10 +59,10 @@ fn reorder(mut exps: Vec<Tree::Exp>) -> (Tree::Stm, Vec<Tree::Exp>) {
             let t = level::unique_named_global("-reorder_call");
             exps.insert(0, ESEQ(
                 Box::new(MOVE(
-                    Box::new(GLOBAL(t.clone())),
+                    Box::new(LOCAL(t.clone())),
                     Box::new(first)
                 )),
-                Box::new(GLOBAL(t))
+                Box::new(LOCAL(t))
             ));
             reorder(exps)
         }
@@ -74,8 +74,8 @@ fn reorder(mut exps: Vec<Tree::Exp>) -> (Tree::Stm, Vec<Tree::Exp>) {
                 (seq(stms, stms_), el)
             } else {
                 let t = level::unique_named_global("-reorder");
-                el.insert(0, GLOBAL(t.clone()));
-                (seq(stms, seq(MOVE(Box::new(GLOBAL(t)), Box::new(e)), stms_)), el)
+                el.insert(0, LOCAL(t.clone()));
+                (seq(stms, seq(MOVE(Box::new(LOCAL(t)), Box::new(e)), stms_)), el)
             }
         }
     }

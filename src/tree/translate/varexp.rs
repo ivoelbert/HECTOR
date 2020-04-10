@@ -2,22 +2,9 @@ use crate::ast::*;
 use crate::tree::*;
 use Tree::Exp::*;
 
-// pub fn generate_static_link(remaining_depth: i32) -> Tree::Exp {
-//     match remaining_depth {
-//         0 => MEM(Box::new(plus!(
-//             TEMP(Temp::FRAME_POINTER),
-//             CONST(STATIC_LINK_OFFSET)
-//         ))),
-//         d => MEM(Box::new(plus!(
-//             generate_static_link(d - 1),
-//             CONST(STATIC_LINK_OFFSET)
-//         ))),
-//     }
-// }
-
 // Generates an expression that evaluates to the memory direction of the variable
-pub fn simplevar(access: Access, current_level: &Level) -> Tree::Exp {
-    current_level.access_to_exp(access)
+pub fn simplevar(access: Access, current_level: &Level, depth: i32) -> Tree::Exp {
+    current_level.access_to_exp(access, depth)
 }
 
 pub fn trans_var(
@@ -29,9 +16,9 @@ pub fn trans_var(
 ) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
     match kind {
         VarKind::Simple(name) => {
-            if let Some(EnvEntry::Var{access, ..}) = value_env.get(name) {
+            if let Some(EnvEntry::Var{access, depth}) = value_env.get(name) {
                 Ok((
-                    simplevar(access.clone(), &level),
+                    simplevar(access.clone(), &level, *depth),
                     level,
                     frags
                 ))
@@ -48,7 +35,7 @@ pub fn trans_var(
             let (index_exp, index_level, index_frags) = super::trans_exp(index, array_level, value_env, breaks_stack, array_frags)?;
             Ok((MEM(Box::new(plus!(
                 array_exp,
-                BINOP(MUL, Box::new(index_exp), Box::new(CONST(frame::WORD_SIZE)))
+                index_exp
             ))), index_level, index_frags))
         },
         VarKind::Field(record, field) => {
@@ -68,7 +55,7 @@ pub fn trans_var(
             Ok((MEM(Box::new(plus!(
                 record_exp,
                 // optimization candidate
-                CONST(*order * frame::WORD_SIZE)
+                CONST(*order)
             ))), record_level, record_frags))
         },
     }

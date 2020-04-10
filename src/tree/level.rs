@@ -4,7 +4,8 @@
 
 extern crate uuid;
 
-pub use super::frame::{Frame, LocalTemp, newlocal, unique_named_local, FRAME_POINTER, STACK_POINTER, RETURN_VALUE, external_call};
+pub use super::frame::{Frame, LocalTemp, Frag, newlocal, unique_named_local,
+    FRAME_POINTER, STACK_POINTER, RETURN_VALUE, STATIC_LINK_OFFSET, external_call};
 use super::Access;
 use super::Tree;
 
@@ -54,7 +55,7 @@ impl Level {
         }
     }
 
-    pub fn new(depth: i32, name: String, label: Label) -> Level {
+    pub fn new(depth: i32, label: Label) -> Level {
         Level {
             frame: Frame::new(label),
             nesting_depth: depth,
@@ -69,12 +70,54 @@ impl Level {
         self.frame.alloc_local(escape, name)
     }
 
-    pub fn access_to_exp(self: &Self, access: Access) -> Tree::Exp {
-        use Tree::Exp::*;
+    pub fn access_to_exp(self: &Self, access: Access, depth: i32) -> Tree::Exp {
+        use Tree::{Exp::*, BinOp::*};
+        fn generate_static_link(remaining_depth: i32) -> Tree::Exp {
+            if remaining_depth < 1 {panic!("depth: {:?}", remaining_depth)};
+            match remaining_depth {
+                1 => MEM(Box::new(plus!(
+                    GLOBAL(named_global(FRAME_POINTER)),
+                    CONST(STATIC_LINK_OFFSET)
+                ))),
+                d => MEM(Box::new(plus!(
+                    generate_static_link(d - 1),
+                    CONST(STATIC_LINK_OFFSET)
+                ))),
+            }
+        }
+        let delta_depth = self.nesting_depth - depth;
         match access {
-            Access::InMem(i) => MEM(Box::new(CONST(i))),
+            Access::InMem(i) => {
+                if delta_depth == 0 {
+                    MEM(Box::new(BINOP(PLUS,
+                        Box::new(GLOBAL(named_global(FRAME_POINTER))),
+                        Box::new(CONST(i))
+                    )))
+                } else {
+                    let sl = generate_static_link(delta_depth);
+                    MEM(Box::new(BINOP(PLUS,
+                        Box::new(sl),
+                        Box::new(CONST(i))
+                    )))
+                }
+            },
             Access::InGlobal(l) => GLOBAL(l),
-            Access::InLocal(l) => LOCAL(l)
+            Access::InLocal(l) => {
+                if delta_depth != 0 {
+                    panic!("escaped local!")
+                }
+                LOCAL(l)
+            }
+        }
+    }
+
+    pub fn finish(self: Self, body: Tree::Stm) -> Frag {
+        Frag::Proc{
+            body: Tree::Stm::SEQ(
+                Box::new(self.frame.generate_move_escaped_arguments_statement()),
+                Box::new(body)
+            ),
+            frame: self.frame
         }
     }
 }

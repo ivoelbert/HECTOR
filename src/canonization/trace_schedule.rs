@@ -92,6 +92,7 @@ pub fn trace_schedule((basic_blocks, done_label): (Vec<Block>, Label)) -> Vec<Tr
                     vec![most, vec![neg_jump], true_block_trace].concat()
                 },
                 _ => {
+                    // TODO: esto capaz se rompe y no aparece ninguno de los dos
                     let new_false = level::unique_named_label("-false");
                     vec![
                         most,

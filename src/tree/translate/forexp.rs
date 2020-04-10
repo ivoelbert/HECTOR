@@ -26,7 +26,7 @@ pub fn trans_stm(
                     depth: level.nesting_depth,
                 },
             );
-            let var_exp = super::varexp::simplevar(access, &level);
+            let var_exp = super::varexp::simplevar(access, &level, level.nesting_depth);
             let (lo_exp, lo_level, lo_frags) = super::trans_exp(
                 lo,
                 level,
