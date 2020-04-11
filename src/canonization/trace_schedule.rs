@@ -81,7 +81,7 @@ pub fn trace_schedule((basic_blocks, done_label): (Vec<Block>, Label)) -> Vec<Tr
                     vec![this_block, false_block_trace].concat()
                 }
                 (Some(true_block), maybe_false_block) if !true_block.is_empty() => {
-                    let neg_jump = CJUMP(not_rel(o), a, b, t, f.clone());
+                    let neg_jump = CJUMP(not_rel(o), a, b, f.clone(), t);
                     // console_log!("caso true block: {:?}", &true_block);
                     // console_log!("most: {:?}", most);
                     if let Some(false_block) = maybe_false_block {
