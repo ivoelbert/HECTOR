@@ -69,26 +69,26 @@ pub fn trace_schedule((basic_blocks, done_label): (Vec<Block>, Label)) -> Vec<Tr
             }
             CJUMP(o, a, b, t, f) => match (table.remove(&t), table.remove(&f)) {
                 (maybe_true_block, Some(false_block)) if !false_block.is_empty() => {
-                    console_log!("caso false block: {:?}", &false_block);
-                    console_log!("table: {:?}", &table);
-                    console_log!("this_block: {:?}", &most);
-                    console_log!("rest: {:?}", &rest);
+                    // console_log!("caso false block: {:?}", &false_block);
+                    // console_log!("table: {:?}", &table);
+                    // console_log!("this_block: {:?}", &most);
+                    // console_log!("rest: {:?}", &rest);
                     if let Some(true_block) = maybe_true_block {
                         table.insert(t, true_block);
                     }
                     let false_block_trace = trace(table, false_block, rest);
-                    console_log!("false_block_trace {:?}", &false_block_trace);
+                    // console_log!("false_block_trace {:?}", &false_block_trace);
                     vec![this_block, false_block_trace].concat()
                 }
                 (Some(true_block), maybe_false_block) if !true_block.is_empty() => {
                     let neg_jump = CJUMP(not_rel(o), a, b, t, f.clone());
-                    console_log!("caso true block: {:?}", &true_block);
-                    console_log!("most: {:?}", most);
+                    // console_log!("caso true block: {:?}", &true_block);
+                    // console_log!("most: {:?}", most);
                     if let Some(false_block) = maybe_false_block {
                         table.insert(f, false_block);
                     }
                     let true_block_trace = trace(table, true_block, rest);
-                    console_log!("true_block trace {:?}", &true_block_trace);
+                    // console_log!("true_block trace {:?}", &true_block_trace);
                     vec![most, vec![neg_jump], true_block_trace].concat()
                 },
                 _ => {
@@ -114,9 +114,9 @@ pub fn trace_schedule((basic_blocks, done_label): (Vec<Block>, Label)) -> Vec<Tr
         } else {
             return vec![]
         };
-        console_log!("get_next {:?}", &first_block);
+        // console_log!("get_next {:?}", &first_block);
         let first_block_label = get_block_label(&first_block);
-        console_log!("get_next table res {:?}", &table.get(&first_block_label));
+        // console_log!("get_next table res {:?}", &table.get(&first_block_label));
         match table.get(&first_block_label) {
             Some(block) => {
                 if block.is_empty() {
@@ -130,6 +130,6 @@ pub fn trace_schedule((basic_blocks, done_label): (Vec<Block>, Label)) -> Vec<Tr
     }
 
     let res = vec![get_next(table, basic_blocks), vec![LABEL(done_label)]].concat();
-    console_log!("trace_schedule: {:?}", &res);
+    // console_log!("trace_schedule: {:?}", &res);
     res
 }

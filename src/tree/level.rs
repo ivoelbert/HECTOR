@@ -72,7 +72,7 @@ impl Level {
 
     pub fn access_to_exp(self: &Self, access: Access, depth: i32) -> Tree::Exp {
         use Tree::{Exp::*, BinOp::*};
-        fn generate_static_link(remaining_depth: i32) -> Tree::Exp {
+        fn search_correct_frame_pointer(remaining_depth: i32) -> Tree::Exp {
             if remaining_depth < 1 {panic!("depth: {:?}", remaining_depth)};
             match remaining_depth {
                 1 => MEM(Box::new(plus!(
@@ -80,7 +80,7 @@ impl Level {
                     CONST(STATIC_LINK_OFFSET)
                 ))),
                 d => MEM(Box::new(plus!(
-                    generate_static_link(d - 1),
+                    search_correct_frame_pointer(d - 1),
                     CONST(STATIC_LINK_OFFSET)
                 ))),
             }
@@ -94,7 +94,7 @@ impl Level {
                         Box::new(CONST(i))
                     )))
                 } else {
-                    let sl = generate_static_link(delta_depth);
+                    let sl = search_correct_frame_pointer(delta_depth);
                     MEM(Box::new(BINOP(PLUS,
                         Box::new(sl),
                         Box::new(CONST(i))

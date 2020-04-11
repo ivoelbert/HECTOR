@@ -52,7 +52,7 @@ pub fn fundecs(
             let label = if let EnvEntry::Func{label, ..} = new_value_env.get(name).unwrap() {
                 label
             } else {panic!()};
-            let mut level = Level::new(depth + 1, label.clone());
+            let mut level = Level::new(depth, label.clone());
             let mut dec_value_env = new_value_env.clone();
             level.alloc_arg("sl".to_string(), true); //TODO: uuid
             params
@@ -61,7 +61,7 @@ pub fn fundecs(
                     let access = level.alloc_arg(name.clone(), *escape);
                     dec_value_env.insert(name.clone(), EnvEntry::Var{
                         access,
-                        depth: depth + 1
+                        depth: depth
                     });
                 });
             match result {
