@@ -15,10 +15,11 @@ pub fn trans_exp(
                 .expect("typecheck should make sure this is found");
             match entry {
                 EnvEntry::Func {label, external} => {
-                    let (arg_exps, args_level, frags) = super::translate_many_exp(args, level, value_env, breaks_stack, frags)?;
+                    let (mut arg_exps, args_level, frags) = super::translate_many_exp(args, level, value_env, breaks_stack, frags)?;
                     if *external {
                         Ok((level::external_call(label.clone(), arg_exps), args_level, frags))
                     } else {
+                        arg_exps.insert(0, GLOBAL(named_global(FRAME_POINTER)));
                         Ok((CALL(Box::new(NAME(label.clone())), arg_exps), args_level, frags))
                     }
                 }

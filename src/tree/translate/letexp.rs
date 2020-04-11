@@ -54,6 +54,7 @@ pub fn fundecs(
             } else {panic!()};
             let mut level = Level::new(depth + 1, label.clone());
             let mut dec_value_env = new_value_env.clone();
+            level.alloc_arg("sl".to_string(), true); //TODO: uuid
             params
                 .iter()
                 .for_each(|Field{name, escape, ..}| {

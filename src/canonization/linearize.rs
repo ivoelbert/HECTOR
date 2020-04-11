@@ -219,6 +219,5 @@ pub fn linearize(tree: Tree::Stm) -> Vec<Tree::Stm> {
         }
     }
     let linear = linear(do_stm(tree), vec![]);
-    console_log!("linear: {:?}", &linear);
     linear
 }
