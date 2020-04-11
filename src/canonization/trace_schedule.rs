@@ -32,7 +32,7 @@ pub fn trace_schedule((basic_blocks, done_label): (Vec<Block>, Label)) -> Vec<Tr
         let last = block.pop().expect("No empty blocks");
         (block, last)
     }
-    console_log!("table: {:?}", &table);
+    // console_log!("table: {:?}", &table);
     // Si no hay mas bloques, paramos
     // Si hay un bloque que no empieza con Label, panico.
     // Para cada bloque

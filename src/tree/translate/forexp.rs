@@ -50,15 +50,16 @@ pub fn trans_stm(
             // We should move them to temps
             Ok((
                 Tree::seq(vec![
+                    Move!(var_exp.clone(), lo_exp.clone()),
                     CJUMP(LE,
-                        Box::new(lo_exp.clone()),
+                        Box::new(var_exp.clone()),
                         Box::new(hi_exp.clone()),
                         start_label.clone(),
                         done_label.clone(),
                     ),
                     LABEL(start_label.clone()),
                     body_stm,
-                    CJUMP(LT, Box::new(lo_exp), Box::new(hi_exp), start_label.clone(), done_label.clone()),
+                    CJUMP(LT, Box::new(var_exp.clone()), Box::new(hi_exp), continue_label.clone(), done_label.clone()),
                     LABEL(continue_label),
                     Move!(var_exp.clone(), plus!(var_exp, CONST(1))),
                     JUMP(NAME(start_label.clone()), vec![start_label.clone()]),

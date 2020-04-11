@@ -7,8 +7,8 @@ let
        function isdigit (s : string) : int =
          ord ("0") <= ord (s) & ord (s) <= ord ("9")
        function skipto () =
-   	 while buffer = " " | buffer = "\n"
-   	   do buffer := getchar ()
+   	      while buffer = " " | buffer = "\n"
+   	      do buffer := getchar ()
    in skipto ();
       any.any := isdigit (buffer);
       while isdigit (buffer)
@@ -37,7 +37,7 @@ let
  function printint (i : int) =
    let function f (i : int) =
         if i > 0
-	then (f (i/10); print (chr (i-i/10*10+ord ("0"))))
+	      then (f (i/10); print (chr (i-i/10*10+ord ("0"))))
    in if i < 0 then (print ("-"); f (-i))
       else if i>0 then f (i)
       else print ("0")
@@ -47,8 +47,8 @@ let
    if l = nil then print ("\n")
    else (printint (l.first); print (" "); printlist (l.rest))
 
-   var list1 := readlist ()
-   var list2 := (buffer := getchar (); readlist ())
+ var list1 := readlist ()
+ var list2 := (buffer := getchar (); readlist ())
 
 in printlist (merge (list1,list2)); 0
 end
