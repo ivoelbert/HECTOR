@@ -1,17 +1,13 @@
-import React, { useState, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import { CodeEditor } from '../CodeEditor/CodeEditor';
 import { ASTViewer } from '../ASTViewer/ASTViewer';
-import { useLocalStorageState } from '../../hooks/useLocalStorageState';
 import { Tabs } from '../Tabs/Tabs';
 import { TREEViewer } from '../TREEViewer/TREEViewer';
-import { useCtrlKeys } from '../../hooks/useCtrlKeys';
 import { CanonViewer } from '../CanonViewer/CanonViewer';
 import { Interpreter } from '../Interpreter/Interpreter';
-
-const baseCode = `
-/* Enter your tiger code */
-0
-`;
+import { Frag } from '../../interpreter/treeTypes';
+import { useLocalStorageState } from '../../hooks/useLocalStorageState';
+import { baseCode } from '../../utils/baseCode';
 
 // Bad type. You can get either Ok or Err. Improve this.
 export type RustOption<T> = {
@@ -21,58 +17,44 @@ export type RustOption<T> = {
 
 export type ParseResult = RustOption<any> | null;
 export type TypecheckResult = RustOption<any> | null;
-export type EscapeResult = any; // Why is this not an option?
+export type EscapeResult = any;
 export type TranslateResult = RustOption<any> | null;
-export type CanonResult = any; // Not implemented
+export type CanonResult = Frag[];
 export type WasmResult = any; // Not implemented
 
+interface CompileResult {
+    parse: ParseResult;
+    typecheck: ParseResult;
+    escape: any;
+    translate: ParseResult;
+    canon: CanonResult;
+    wasm: any;
+}
+
 interface CompilerProps {
-    compile(
-        source: string
-    ): {
-        parse: ParseResult;
-        typecheck: TypecheckResult;
-        escape: EscapeResult;
-        translate: TranslateResult;
-        canon: CanonResult;
-        wasm: WasmResult;
-    };
+    compile(source: string): CompileResult;
 }
 
 export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
-    const [code, setCode] = useLocalStorageState<string>(
+    const [compiledCode, setCompiledCode] = useLocalStorageState<string>(
         'hector-code',
         baseCode
     );
-    const [ast, setAst] = useState<EscapeResult>(null);
-    const [fragments, setFragments] = useState<TranslateResult>(null);
-    const [canon, setCanon] = useState<CanonResult>(null);
 
-    const compileCode = useCallback(() => {
-        const result = compile(code);
-        setAst(result.escape);
-        setFragments(result.translate);
-        setCanon(result.canon)
-
-        // Log the results, errors are not displayed yet.
+    const compileResult: CompileResult = useMemo(() => {
+        const result = compile(compiledCode);
         console.log(result);
-    }, [compile, code]);
 
-    useCtrlKeys([13, 83], compileCode);
+        return result;
+    }, [compile, compiledCode]);
 
-    // THIS IS SHIT. MAKE IT RIGHT. COMPOSE COMPONENTS LIKE YOU'RE SUPPOSED TO.
+    // I should make this into a nicer component
     const tabs = {
-        Editor: (
-            <CodeEditor
-                code={code}
-                setCode={setCode}
-                compileCode={compileCode}
-            />
-        ),
-        AST: <ASTViewer ast={ast} />,
-        TREE: <TREEViewer fragments={fragments} />,
-        Canon: <CanonViewer canon={canon} />,
-        Interp: <Interpreter canon={canon} />,
+        Editor: <CodeEditor compileCode={setCompiledCode} />,
+        AST: <ASTViewer ast={compileResult.escape} />,
+        TREE: <TREEViewer fragments={compileResult.translate} />,
+        Canon: <CanonViewer canon={compileResult.canon} />,
+        Interp: <Interpreter canon={compileResult.canon} />,
         Result: <p>not implemented</p>,
     };
 

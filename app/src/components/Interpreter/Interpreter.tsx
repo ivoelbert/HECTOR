@@ -1,30 +1,26 @@
 import React from 'react';
 import { CanonResult } from '../Compiler/CompilerInterface';
+import { InterpreterOk } from './InterpreterOk';
+
 import './Interpreter.scss';
 
-const noop = () => {};
-
 interface InterpreterProps {
-    canon: CanonResult;
+    canon: CanonResult | null;
 }
-export const Interpreter: React.FC<InterpreterProps> = props => {
-    const fragmentsAvailable = props.canon !== null;
-
-    return (
-        <div className="interpreter-container">
-            {fragmentsAvailable && <RunButton onClick={noop} />}
-        </div>
-    );
+export const Interpreter: React.FC<InterpreterProps> = (props) => {
+    if (props.canon === null) {
+        return <InterpreterErr />;
+    } else {
+        return <InterpreterOk frags={props.canon} />;
+    }
 };
 
-interface RunButtonProps {
-    onClick: () => void;
-}
-
-const RunButton: React.FC<RunButtonProps> = props => {
+const InterpreterErr: React.FC = () => {
     return (
-        <button className="run-button" onClick={props.onClick}>
-            Run interpreter
-        </button>
+        <div className="interpreter-container">
+            <h3>No fragments to show!</h3>
+            <p>Did you compile the code?</p>
+            <p>If so, check the WASM results to see if there were any errors</p>
+        </div>
     );
 };

@@ -1,0 +1,32 @@
+.custom-console {
+    width: 100%;
+    height: 400px;
+    background-color: #1b1b1b;
+    border: solid 2px #4f4f4f;
+}
+
+.message-with-prompt {
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+        monospace;
+
+    display: flex;
+    margin: 4px;
+
+    .prompt {
+        width: fit-content;
+        margin-right: 1em;
+    }
+
+    .message {
+        margin: 0;
+        flex: 1;
+    }
+
+    .input {
+        background: transparent;
+        border: none;
+        color: white;
+        font-family: inherit;
+        flex: 1;
+    }
+}

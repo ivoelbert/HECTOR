@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 export const useLocalStorageState = <T>(
     key: string,
@@ -18,20 +18,23 @@ export const useLocalStorageState = <T>(
     });
 
     // Return a wrapped version of useState's setter function that persists the new value to localStorage.
-    const setValue: React.Dispatch<React.SetStateAction<T>> = (value): void => {
-        try {
-            // Allow value to be a function so we have same API as useState
-            const valueToStore: T =
-                value instanceof Function ? value(storedValue) : value;
+    const setValue: React.Dispatch<React.SetStateAction<T>> = useCallback(
+        (value): void => {
+            try {
+                // Allow value to be a function so we have same API as useState
+                const valueToStore: T =
+                    value instanceof Function ? value(storedValue) : value;
 
-            setStoredValue(valueToStore);
+                setStoredValue(valueToStore);
 
-            window.localStorage.setItem(key, JSON.stringify(valueToStore));
-        } catch (error) {
-            // We'll suppose you have localstorage, if not well... Just log for now.
-            console.warn(error);
-        }
-    };
+                window.localStorage.setItem(key, JSON.stringify(valueToStore));
+            } catch (error) {
+                // We'll suppose you have localstorage, if not well... Just log for now.
+                console.warn(error);
+            }
+        },
+        [key, storedValue]
+    );
 
     return [storedValue, setValue];
 };

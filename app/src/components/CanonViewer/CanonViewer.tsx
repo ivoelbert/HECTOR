@@ -3,7 +3,7 @@ import ReactJson from 'react-json-view';
 import { CanonResult } from '../Compiler/CompilerInterface';
 
 interface CanonViewerProps {
-    canon: CanonResult;
+    canon: CanonResult | null;
 }
 
 export const CanonViewer: React.FC<CanonViewerProps> = props => {
