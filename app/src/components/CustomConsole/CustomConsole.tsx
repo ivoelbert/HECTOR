@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { InterpConsole } from '../../hooks/useConsole';
 
 import './CustomConsole.scss';
@@ -14,8 +14,16 @@ interface CustomConsoleProps {
 export const CustomConsole: React.FC<CustomConsoleProps> = (props) => {
     const { messages, isReading, customConsole } = props;
 
+    const consoleRef = useRef<HTMLDivElement | null>(null);
+    useEffect(() => {
+        const element = consoleRef.current
+        if (element !== null) {
+            element.scrollTop = element.scrollHeight;
+        }
+    });
+
     return (
-        <div className="custom-console">
+        <div className="custom-console" ref={consoleRef}>
             {messages.map((msg: string, index: number) => {
                 return <MessageWithPrompt key={index}>{msg}</MessageWithPrompt>;
             })}
