@@ -27,7 +27,7 @@ interface CompileResult {
     typecheck: ParseResult;
     escape: any;
     translate: ParseResult;
-    canon: CanonResult;
+    canon: CanonResult | null;
     wasm: any;
 }
 
@@ -42,10 +42,23 @@ export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
     );
 
     const compileResult: CompileResult = useMemo(() => {
-        const result = compile(compiledCode);
-        console.log(result);
+        try {
+            const result = compile(compiledCode);
+            console.log(result);
 
-        return result;
+            return result;
+        } catch (err) {
+            console.log('Something went wrong compiling your code!');
+            console.error(err);
+            return {
+                parse: null,
+                typecheck: null,
+                escape: null,
+                translate: null,
+                canon: null,
+                wasm: null,
+            };
+        }
     }, [compile, compiledCode]);
 
     // I should make this into a nicer component
