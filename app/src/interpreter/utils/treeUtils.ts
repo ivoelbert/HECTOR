@@ -26,7 +26,7 @@ export const evalBinop = (op: BinOp, leftVal: number, rightVal: number): number 
             return leftVal * rightVal;
 
         case 'DIV':
-            return leftVal / rightVal;
+            return Math.floor(leftVal / rightVal);
 
         case 'AND':
             return leftVal && rightVal;
