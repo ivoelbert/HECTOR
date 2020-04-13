@@ -19,8 +19,15 @@ export const useInterpreter = (
     const run = useCallback(async () => {
         customConsole.clear();
         setIsRunning(true);
-        const result = await interpreter.run();
-        customConsole.printLine(`Program ended returning ${result}`);
+        try {
+            const result = await interpreter.run();
+            customConsole.printLine(`Program ended returning ${result}`);
+        } catch (err) {
+            console.error(err);
+            customConsole.printLine(
+                'Program failed! Check the console for further details'
+            );
+        }
         setIsRunning(false);
     }, [interpreter, customConsole]);
 

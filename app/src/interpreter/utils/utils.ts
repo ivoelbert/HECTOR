@@ -5,8 +5,8 @@ export class NotImplementedError extends Error {
 }
 
 export class UnexpectedUndefinedError extends Error {
-    constructor() {
-        super('Unexpected undefined value!');
+    constructor(msg?: string) {
+        super(msg ?? 'Unexpected undefined value!');
     }
 }
 
@@ -16,9 +16,9 @@ export class UnreachableError extends Error {
     }
 }
 
-export const assertExists = <T>(value: T | undefined): T => {
+export const assertExists = <T>(value: T | undefined, msg?: string): T => {
     if (value === undefined) {
-        throw new UnexpectedUndefinedError();
+        throw new UnexpectedUndefinedError(msg);
     } else {
         return value;
     }
