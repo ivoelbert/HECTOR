@@ -38,6 +38,7 @@ pub fn fundecs(
         new_value_env.insert(name.clone(), EnvEntry::Func{
             label: unique_named_label(name),
             external: false,
+            depth
         });
     });
     let new_frags = funcs

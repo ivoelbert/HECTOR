@@ -28,6 +28,7 @@ pub enum EnvEntry {
     Func {
         label: Label,
         external: bool,
+        depth: i32
     }
 }
 
@@ -64,6 +65,7 @@ pub fn initial_value_env() -> ValueEnviroment {
         (name.to_string(), EnvEntry::Func {
             label: named_label(name),
             external: true,
+            depth: 0
         })
     }).collect()
 }

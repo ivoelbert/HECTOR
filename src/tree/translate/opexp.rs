@@ -33,7 +33,7 @@ fn trans_str_oper(ast_oper: &Oper, value_env: &ValueEnviroment) -> Box<Tree::Exp
         GeOp => "+str_greater_or_equals",
     };
     let entry = value_env.get(external_name);
-    if let Some(EnvEntry::Func {label, external: true}) = entry {
+    if let Some(EnvEntry::Func {label, external: true, ..}) = entry {
         Box::new(NAME(label.clone()))
     } else {
         panic!("should be in initial value env")
