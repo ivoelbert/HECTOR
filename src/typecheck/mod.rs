@@ -108,10 +108,10 @@ pub enum EnvEntry {
     }
 }
 
-pub type TypeEnviroment = HashMap<Symbol, Arc<TigerType>>;
-pub type ValueEnviroment = HashMap<Symbol, EnvEntry>;
+type TypeEnviroment = HashMap<Symbol, Arc<TigerType>>;
+type ValueEnviroment = HashMap<Symbol, EnvEntry>;
 
-pub fn initial_type_env() -> TypeEnviroment {
+fn initial_type_env() -> TypeEnviroment {
     vec![
         (Symbol::from("int"), Arc::new(TigerType::TInt(R::RW))),
         (Symbol::from("string"), Arc::new(TigerType::TString))
@@ -120,7 +120,7 @@ pub fn initial_type_env() -> TypeEnviroment {
     .collect()
 }
 
-pub fn initial_value_env() -> ValueEnviroment {
+fn initial_value_env() -> ValueEnviroment {
     use TigerType::*;
     use EnvEntry::*;
     let mut value_env = ValueEnviroment::new();
@@ -193,7 +193,8 @@ pub enum TypeError {
     TypeCycle(Pos),
     DuplicatedDefinitions(Pos),
     InvalidNilAssignment(Pos),
-    UnconstrainedNilInitialization(Pos)
+    UnconstrainedNilInitialization(Pos),
+    NonIntegerProgram(Pos)
 }
 
 impl PartialEq for TigerType {
@@ -215,7 +216,7 @@ impl PartialEq for TigerType {
     }
 }
 
-pub fn type_exp(ast : AST, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<AST, TypeError> {
+fn type_exp(ast : AST, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<AST, TypeError> {
     match &ast {
         AST {node, ..} => match node {
             Exp::Var(..) => varexp::typecheck(ast, type_env, value_env),
@@ -235,5 +236,14 @@ pub fn type_exp(ast : AST, type_env : &TypeEnviroment, value_env: &ValueEnvirome
             Exp::Break => breakexp::typecheck(ast, type_env, value_env),
             Exp::Array{..} => arrayexp::typecheck(ast, type_env, value_env),
         }
+    }
+}
+
+pub fn typecheck(ast : AST) -> Result<AST, TypeError> {
+    let typed_ast = type_exp(ast, &initial_type_env(), &initial_value_env())?;
+    if *typed_ast.typ == TigerType::TInt(R::RW) {
+        Ok(typed_ast)
+    } else {
+        Err(TypeError::NonIntegerProgram(typed_ast.pos))
     }
 }

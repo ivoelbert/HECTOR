@@ -1,9 +1,9 @@
 use crate::ast::*;
-use crate::tree::*;
+use super::*;
 
 mod arrayexp;
 mod assignexp;
-pub mod breakexp;
+mod breakexp;
 mod callexp;
 mod forexp;
 mod ifexp;
@@ -13,10 +13,12 @@ mod nilexp;
 mod opexp;
 mod recordexp;
 mod seqexp;
-pub mod stringexp;
+mod stringexp;
 mod unitexp;
 mod varexp;
 mod whileexp;
+
+use crate::typecheck::{TigerType};
 
 // Translation functions.
 // We replaced all side-effects in Appel's book for move semantics because it's our compiler.

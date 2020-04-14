@@ -31,7 +31,7 @@ mod canonization;
 #[cfg(test)]
 mod test;
 
-use typecheck::{initial_type_env, initial_value_env, type_exp};
+use typecheck::typecheck;
 pub use utils::{log, set_panic_hook};
 
 use wasm_bindgen::prelude::*;
@@ -48,7 +48,7 @@ pub struct CompilerResult {
     escape: Option<ast::AST>,
     translate: Option<Result<Vec<tree::Fragment>, tree::TransError>>,
     canon: Option<Vec<canonization::CanonFrag>>,
-    wasm: Option<Vec<tree::frame::Frag>>
+    wasm: Option<Vec<tree::Fragment>>
 }
 
 #[wasm_bindgen]
@@ -63,7 +63,7 @@ pub fn compile(source_code: &str) -> JsValue {
 
     let parse_result = ast::parser::parse(source_code);
     let typecheck_result = if let Ok(ast) = &parse_result {
-        Some(type_exp(ast.clone(), &initial_type_env(), &initial_value_env()))
+        Some(typecheck(ast.clone()))
     } else {None};
     let escape_result = if let Some(Ok(ast)) = &typecheck_result {
         Some(tree::escape::find_escapes(ast.clone()))

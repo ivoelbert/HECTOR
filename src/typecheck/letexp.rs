@@ -3,8 +3,6 @@ use crate::typecheck::*;
 use pathfinding::directed::topological_sort;
 use std::convert::TryInto;
 
-use crate::utils::log;
-
 fn typecheck_vardec(
     _VarDec {
         name, typ, init, escape
@@ -404,5 +402,638 @@ pub fn typecheck(
             })
         }
         _ => panic!("error de delegacion en letexp::tipar"),
+    }
+}
+
+#[cfg(test)]
+mod test {
+    extern crate wasm_bindgen_test;
+    use wasm_bindgen_test::*;
+    use super::*;
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_vardec_no_type_ok() {
+        let ast =  make_ast(Exp::Let {
+            decs: vec![Dec::VarDec(
+                _VarDec::new(
+                    Symbol::from("foo"),
+                    None,
+                    boxed_ast(Exp::Int(4))
+                ),
+                Pos{line: 0, column: 0}
+            )],
+            body: boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("foo")))))
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_vardec_type_ok() {
+        let ast =  make_ast(Exp::Let {
+            decs: vec![Dec::VarDec(
+                _VarDec::new(
+                    Symbol::from("foo"),
+                    Some(Symbol::from("int")),
+                    boxed_ast(Exp::Int(4)),
+                ),
+                Pos{line: 0, column: 0}
+            )],
+            body: boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("foo")))))
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_vardec_undeclared_type() {
+        let ast =  make_ast(Exp::Let {
+            decs: vec![Dec::VarDec(
+                _VarDec::new(
+                    Symbol::from("foo"),
+                    Some(Symbol::from("un_tipo_no_declarado")),
+                    boxed_ast(Exp::Int(4)),
+                ),
+                Pos{line: 0, column: 0}
+            )],
+            body: boxed_ast(Exp::Unit)
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::UndeclaredType(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_vardec_type_mismatch() {
+        let ast =  make_ast(Exp::Let {
+            decs: vec![Dec::VarDec(
+                _VarDec::new(
+                    Symbol::from("foo"),
+                    Some(Symbol::from("string")),
+                    boxed_ast(Exp::Int(4))
+                ),
+                Pos{line: 0, column: 0}
+            )],
+            body: boxed_ast(Exp::Unit)
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::TypeMismatch(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_typedec_name_ok() {
+        let ast =  make_ast(Exp::Let {
+            decs: vec![
+                Dec::TypeDec(vec![(
+                    _TypeDec::new(
+                        Symbol::from("FooType"),
+                        Ty::Name(Symbol::from("int"))
+                    ),
+                    Pos{line: 0, column: 0}
+                )]),
+                Dec::VarDec(
+                    _VarDec::new(
+                        Symbol::from("foo"),
+                        Some(Symbol::from("FooType")),
+                        boxed_ast(Exp::Int(4))
+                    ),
+                    Pos{line: 0, column: 0}
+                ),
+            ],
+            body: boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("foo")))))
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_typedec_array_ok() {
+        let ast =  make_ast(Exp::Let {
+            decs: vec![
+                Dec::TypeDec(vec![(
+                    _TypeDec::new(
+                        Symbol::from("FooType"),
+                        Ty::Array(Symbol::from("int"))
+                    ),
+                    Pos{line: 0, column: 0}
+                )]),
+                Dec::VarDec(
+                    _VarDec::new(
+                        Symbol::from("foo"),
+                        Some(Symbol::from("FooType")),
+                        boxed_ast(Exp::Array {
+                            typ: Symbol::from("FooType"),
+                            size:boxed_ast(Exp::Int(1)),
+                            init: boxed_ast(Exp::Int(2)),
+                        })
+                    ),
+                    Pos{line: 0, column: 0}
+                ),
+            ],
+            body: boxed_ast(Exp::Var(
+                make_var(VarKind::Subscript(
+                    boxed_var(VarKind::Simple(Symbol::from("foo"))),
+                    boxed_ast(Exp::Int(0))
+                ))
+            ))
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_typedec_record_ok() {
+        let ast =  make_ast(Exp::Let {
+            decs: vec![
+                Dec::TypeDec(vec![(
+                    _TypeDec::new(
+                        Symbol::from("FooType"),
+                        Ty::Record(vec![
+                            Field {
+                                name: Symbol::from("bar"),
+                                typ: Ty::Name(Symbol::from("int")),
+                                escape: false,
+                            }
+                        ])
+                    ),
+                    Pos{line: 0, column: 1}
+                )]),
+                Dec::VarDec(
+                    _VarDec::new(
+                        Symbol::from("foo"),
+                        Some(Symbol::from("FooType")),
+                        boxed_ast(Exp::Record {
+                            fields: vec![(Symbol::from("bar"), boxed_ast(Exp::Int(1)))],
+                            typ: Symbol::from("FooType"),
+                        })
+                    ),
+                    Pos{line: 0, column: 2}
+                )],
+            body: boxed_ast(Exp::Var(
+                make_var(VarKind::Field(
+                    boxed_var(VarKind::Simple(Symbol::from("foo"))),
+                    Symbol::from("bar")
+                ))
+            ))
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_typedec_infinite_recursion() {
+       let ast =  make_ast(Exp::Let {
+            decs: vec![Dec::TypeDec(vec![
+                (_TypeDec::new(Symbol::from("FooType"), Ty::Name(Symbol::from("BaazType"))), Pos{line: 0, column: 0}),
+                (_TypeDec::new(Symbol::from("BaazType"), Ty::Name(Symbol::from("FooType"))), Pos{line: 0, column: 0}),
+            ])],
+            body: boxed_ast(Exp::Unit)
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::TypeCycle(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+    #[test]
+    #[wasm_bindgen_test]
+    fn test_typedec_recursive_ok() {
+       let ast =  make_ast(Exp::Let {
+            decs: vec![Dec::TypeDec(vec![
+                (_TypeDec::new(Symbol::from("C"), Ty::Name(Symbol::from("B"))), Pos{line: 0, column: 0}),
+                (_TypeDec::new(Symbol::from("B"), Ty::Name(Symbol::from("A"))), Pos{line: 0, column: 0}),
+                (_TypeDec::new(Symbol::from("A"), Ty::Name(Symbol::from("int"))), Pos{line: 0, column: 0}),
+            ])],
+            body: boxed_ast(Exp::Unit)
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(..) => panic!("type error"),
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_typedec_undeclared_type() {
+        let ast =  make_ast(Exp::Let {
+            decs: vec![Dec::TypeDec(vec![(
+                _TypeDec::new(
+                    Symbol::from("FooType"),
+                    Ty::Name(Symbol::from("BaazType"))
+                ),
+                Pos{line: 0, column: 0}
+            )])],
+            body: boxed_ast(Exp::Unit)
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::UndeclaredType(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn record_type_cycle_ok() {
+        let ast =  make_ast(Exp::Let {
+            decs: vec![
+                Dec::TypeDec(vec![(
+                    _TypeDec::new(
+                        Symbol::from("List"),
+                        Ty::Record(vec![
+                            Field {
+                                name: Symbol::from("head"),
+                                typ: Ty::Name(Symbol::from("int")),
+                                escape: false,
+                            },
+                            Field {
+                                name: Symbol::from("tail"),
+                                typ: Ty::Name(Symbol::from("List")),
+                                escape: false,
+                            }
+                        ])
+                    ),
+                    Pos{line: 0, column: 1}
+                )]),
+                Dec::VarDec(
+                    _VarDec::new(
+                        Symbol::from("foo"),
+                        Some(Symbol::from("List")),
+                        boxed_ast(Exp::Record {
+                            fields: vec![
+                                (Symbol::from("head"), boxed_ast(Exp::Int(1))),
+                                (Symbol::from("tail"), boxed_ast(Exp::Record {
+                                    fields: vec![
+                                        (Symbol::from("head"), boxed_ast(Exp::Int(2))),
+                                        (Symbol::from("tail"), boxed_ast(Exp::Record {
+                                            fields: vec![
+                                                (Symbol::from("head"), boxed_ast(Exp::Int(3))),
+                                                (Symbol::from("tail"), boxed_ast(Exp::Record {
+                                                    fields: vec![
+                                                        (Symbol::from("head"), boxed_ast(Exp::Int(4))),
+                                                        (Symbol::from("tail"), boxed_ast(Exp::Nil))
+                                                    ],
+                                                    typ: Symbol::from("List"),
+                                                }))
+                                            ],
+                                            typ: Symbol::from("List"),
+                                        }))
+                                    ],
+                                    typ: Symbol::from("List"),
+                                }))
+                            ],
+                            typ: Symbol::from("List"),
+                        })
+                    ),
+                    Pos{line: 0, column: 2}
+                )],
+            body: boxed_ast(Exp::Var(
+                make_var(VarKind::Field(
+                    boxed_var(VarKind::Simple(Symbol::from("foo"))),
+                    Symbol::from("head")
+                ))
+            ))
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_functiondec_ok() {
+        let ast =  make_ast(Exp::Let {
+            decs: vec![Dec::FunctionDec(vec![(
+                _FunctionDec::new(
+                    Symbol::from("foo"),
+                    vec![Field {
+                        name: Symbol::from("arg"),
+                        typ: Ty::Name(Symbol::from("int")),
+                        escape: false,
+                    }],
+                    None,
+                    boxed_ast(Exp::Unit)
+                ),
+                Pos{line: 0, column: 0}
+            )])],
+            body: boxed_ast(Exp::Unit)
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_functiondec_called_ok() {
+        let ast =  make_ast(Exp::Let {
+            decs: vec![
+                Dec::FunctionDec(vec![(
+                    _FunctionDec::new(
+                        Symbol::from("foo"),
+                        vec![Field {
+                            name: Symbol::from("arg1"),
+                            typ: Ty::Name(Symbol::from("int")),
+                            escape: false,
+                        }],
+                        Some(Symbol::from("int")),
+                        boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("arg1"))))),
+                    ),
+                    Pos{line: 0, column: 0}
+                )]),
+                Dec::FunctionDec(vec![(
+                    _FunctionDec::new(
+                        Symbol::from("baaz"),
+                        vec![Field {
+                            name: Symbol::from("arg2"),
+                            typ: Ty::Name(Symbol::from("int")),
+                            escape: false,
+                        }],
+                        Some(Symbol::from("int")),
+                        boxed_ast(Exp::Call {
+                            func: Symbol::from("foo"),
+                            args: vec![make_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("arg2")))))],
+                        })
+                    ),
+                    Pos{line: 0, column: 0}
+                )]),
+            ],
+            body: boxed_ast(Exp::Call {
+                func: Symbol::from("baaz"),
+                args: vec![make_ast(Exp::Int(2))]
+            })
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_functiondec_body_type_error() {
+        let ast =  make_ast(Exp::Let {
+            decs: vec![Dec::FunctionDec(vec![(
+                _FunctionDec::new(
+                    Symbol::from("foo"),
+                    vec![Field {
+                        name: Symbol::from("arg"),
+                        typ: Ty::Name(Symbol::from("int")),
+                        escape: false,
+                    }],
+                    None,
+                    boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("baaz"))))), // undeclared
+                ),
+                Pos{line: 0, column: 0}
+            )])],
+            body: boxed_ast(Exp::Unit)
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::UndeclaredSimpleVar(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_functiondec_body_result_type_mismatch() {
+        let ast =  make_ast(Exp::Let {
+            decs: vec![Dec::FunctionDec(vec![(
+                _FunctionDec::new(
+                    Symbol::from("foo"),
+                    vec![Field {
+                        name: Symbol::from("arg"),
+                        typ: Ty::Name(Symbol::from("int")),
+                        escape: false,
+                    }],
+                    None,
+                    boxed_ast(Exp::Int(2)),
+                ),
+                Pos{line: 0, column: 0}
+            )])],
+            body: boxed_ast(Exp::Unit)
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::TypeMismatch(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_functiondec_repeated_param_names() {
+        // TODO
+        let ast =  make_ast(Exp::Let {
+            decs: vec![Dec::FunctionDec(vec![(
+                _FunctionDec::new(
+                    Symbol::from("foo"),
+                    vec![Field {
+                        name: Symbol::from("arg"),
+                        typ: Ty::Name(Symbol::from("int")),
+                        escape: false,
+                    }],
+                    None,
+                    boxed_ast(Exp::Unit)
+                ),
+                Pos{line: 0, column: 0}
+            )])],
+            body: boxed_ast(Exp::Unit)
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_functiondec_repeated_function_names() {
+        // TODO
+        let ast =  make_ast(Exp::Let {
+            decs: vec![Dec::FunctionDec(vec![(
+                _FunctionDec::new(
+                    Symbol::from("foo"),
+                    vec![Field {
+                        name: Symbol::from("arg"),
+                        typ: Ty::Name(Symbol::from("int")),
+                        escape: false,
+                    }],
+                    None,
+                    boxed_ast(Exp::Unit)
+                ),
+                Pos{line: 0, column: 0}
+            )])],
+            body: boxed_ast(Exp::Unit)
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_functiondec_recursion() {
+        let ast =  make_ast(Exp::Let {
+            decs: vec![Dec::FunctionDec(vec![(
+                _FunctionDec::new(
+                    Symbol::from("foo"),
+                    vec![Field {
+                        name: Symbol::from("arg"),
+                        typ: Ty::Name(Symbol::from("int")),
+                        escape: false,
+                    }],
+                    None,
+                    boxed_ast(Exp::Unit)
+                ),
+                Pos{line: 0, column: 0})])],
+            body: boxed_ast(Exp::Unit)
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn letexp_todas_all_decs_ok() {
+        let ast =  make_ast(Exp::Let {
+            decs: vec![
+                Dec::TypeDec(vec![(
+                    _TypeDec::new(
+                        Symbol::from("FooType"),
+                        Ty::Name(Symbol::from("int")),
+                    ),
+                    Pos{line: 0, column: 0}
+                )]),
+                Dec::VarDec(
+                    _VarDec::new(
+                        Symbol::from("foo"),
+                        Some(Symbol::from("FooType")),
+                        boxed_ast(Exp::Int(4))
+                    ),
+                    Pos{line: 0, column: 0}
+                ),
+                Dec::FunctionDec(vec![(
+                    _FunctionDec::new(
+                        Symbol::from("baaz"),
+                        vec![Field {
+                            name: Symbol::from("bar"),
+                            typ: Ty::Name(Symbol::from("FooType")),
+                            escape: false,
+                        }],
+                        Some(Symbol::from("FooType")),
+                        boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("bar")))))
+                    ),
+                    Pos{line: 0, column: 0}
+                )]),
+            ],
+            body: boxed_ast(Exp::Call {
+                func: Symbol::from("baaz"),
+                args: vec![make_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("foo")))))]
+            })
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
     }
 }

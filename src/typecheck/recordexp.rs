@@ -1,8 +1,6 @@
 use crate::ast::*;
 use crate::typecheck::*;
 
-use crate::utils::log;
-
 pub fn typecheck(
     AST{node, pos, ..}: AST,
     type_env: &TypeEnviroment,
@@ -67,5 +65,69 @@ pub fn typecheck(
             }
         }
         _ => panic!("delegation panic on recordexp::tipar")
+    }
+}
+#[cfg(test)]
+mod test {
+    extern crate wasm_bindgen_test;
+    use wasm_bindgen_test::*;
+    use super::*;
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn recordexp_ok() {
+        let ast = make_ast(Exp::Record {
+            fields: vec![(Symbol::from("baz"), boxed_ast(Exp::Int(1)))],
+            typ: Symbol::from("FooType"),
+        });
+        let mut type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let field_type = Arc::new(TigerType::TInt(R::RW));
+        let foo_type = Arc::new(TigerType::TRecord(
+                vec![(String::from("baz"),
+                    field_type,
+                    0)], TypeId::new()));
+        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == *foo_type => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn recordexp_undeclard_type() {
+        let ast = make_ast(Exp::Record {
+            fields: vec![(Symbol::from("baz"), boxed_ast(Exp::Int(1)))],
+            typ: Symbol::from("FooType"),
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::UndeclaredType(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn recordexp_non_record_type() {
+        let ast = make_ast(Exp::Record {
+            fields: vec![(Symbol::from("baz"), boxed_ast(Exp::Int(1)))],
+            typ: Symbol::from("FooType"),
+        });
+        let mut type_env = initial_type_env();
+        let value_env = initial_value_env();
+        type_env.insert(Symbol::from("FooType"), Arc::new(TigerType::TInt(R::RW)));
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::NotRecordType(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
     }
 }
