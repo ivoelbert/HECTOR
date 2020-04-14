@@ -12,8 +12,6 @@ use crate::tree::{Fragment, Tree};
 use crate::tree::frame::Frame;
 use crate::tree::level;
 
-use crate::utils::log;
-
 #[derive(Clone, Serialize)]
 pub enum CanonFrag {
     Proc {
@@ -38,3 +36,4 @@ pub fn canonize(frags: Vec<Fragment>) -> Vec<CanonFrag> {
         })
         .collect()
 }
+

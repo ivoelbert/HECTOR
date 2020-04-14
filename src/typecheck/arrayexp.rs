@@ -1,5 +1,4 @@
 use crate::typecheck::*;
-use crate::utils::log;
 
 pub fn typecheck(
     AST {node, pos, ..}: AST,
@@ -47,5 +46,118 @@ pub fn typecheck(
             }
         }
         _ => panic!("le llego algo nada que ver a arrayexp::tipar"),
+    }
+}
+
+#[cfg(test)]
+mod test {
+    extern crate wasm_bindgen_test;
+    use wasm_bindgen_test::*;
+    use super::*;
+    #[test]
+    #[wasm_bindgen_test]
+    fn arrayexp_ok() {
+        let ast = make_ast(Exp::Array {
+            typ: Symbol::from("FooType"),
+            size: boxed_ast(Exp::Int(1)),
+            init: boxed_ast(Exp::Int(2))
+        });
+        let mut type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let foo_type = Arc::new(TigerType::TArray(
+            Arc::new(TigerType::TInt(R::RW)),
+            TypeId::new(),
+        ));
+        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == *foo_type => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(..) => panic!("array")
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn arrayexp_size_not_int() {
+        let ast = make_ast(Exp::Array {
+            typ: Symbol::from("FooType"),
+            size: boxed_ast(Exp::String(String::from("perro"))),
+            init: boxed_ast(Exp::Int(2))
+        });
+        let mut type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let foo_type = Arc::new(TigerType::TArray(
+            Arc::new(TigerType::TInt(R::RW)),
+            TypeId::new(),
+        ));
+        type_env.insert(Symbol::from("FooType"), foo_type);
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::NonIntegerSize(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn arrayexp_type_mismatch() {
+        let ast = make_ast(Exp::Array {
+            typ: Symbol::from("FooType"),
+            size: boxed_ast(Exp::Int(1)),
+            init: boxed_ast(Exp::String(String::from("perro")))
+        });
+        let mut type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let foo_type = Arc::new(TigerType::TArray(
+            Arc::new(TigerType::TInt(R::RW)),
+            TypeId::new(),
+        ));
+        type_env.insert(Symbol::from("FooType"), foo_type);
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::TypeMismatch(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn arrayexp_not_array_type() {
+        let ast = make_ast(Exp::Array {
+            typ: Symbol::from("FooType"),
+            size: boxed_ast(Exp::Int(1)),
+            init: boxed_ast(Exp::String(String::from("perro")))
+        });
+        let mut type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let foo_type = Arc::new(TigerType::TInt(R::RW));
+        type_env.insert(Symbol::from("FooType"), foo_type);
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::NotArrayType(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn arrayexp_undeclared_type() {
+        let ast = make_ast(Exp::Array {
+            typ: Symbol::from("FooType"),
+            size: boxed_ast(Exp::Int(1)),
+            init: boxed_ast(Exp::String(String::from("perro")))
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::UndeclaredType(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
     }
 }

@@ -33,15 +33,6 @@ pub enum Access {
     InMem(MemAddress)
 }
 
-#[derive(Clone, Serialize)]
-pub enum Frag {
-    Proc {
-        body: Tree::Stm,
-        frame: Frame
-    },
-    ConstString(Label, String)
-}
-
 impl Frame {
     pub fn new(label: Label) -> Self {
         Frame {

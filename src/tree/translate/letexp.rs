@@ -119,3 +119,14 @@ pub fn trans_exp(
         _ => panic!("delegation error"),
     }
 }
+
+
+
+// TODO: test let
+//      declaring variable modifies the level
+//      declaring a function inside a variable adds a fragment
+//      declaring a type doesn't modify anything
+//      declaring a variable inside a function doesn't modify the current level
+//      can declare arrays
+//      can declare records
+//      a function body with a break inside a while fails

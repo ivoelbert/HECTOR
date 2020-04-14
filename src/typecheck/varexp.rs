@@ -87,3 +87,207 @@ pub fn typecheck(
         _ => panic!("Delegation error varexp::typecheck"),
     }
 }
+
+#[cfg(test)]
+mod test {
+    extern crate wasm_bindgen_test;
+    use wasm_bindgen_test::*;
+    use super::*;
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn varexp_simplevar_ok() {
+        let ast =  make_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("foo")))));
+        let type_env = initial_type_env();
+        let mut value_env = initial_value_env();
+        value_env.insert(Symbol::from("foo"), EnvEntry::Var{ty: Arc::new(TigerType::TInt(R::RW)),});
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn varexp_simplevar_not_declared() {
+        let ast =  make_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("foo")))));
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::UndeclaredSimpleVar(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(ast) => panic!("Should error, returns: {:?}", ast)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn varexp_simplevar_not_simple() {
+        let ast =  make_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("f")))));
+        let type_env = initial_type_env();
+        let mut value_env = initial_value_env();
+        value_env.insert(Symbol::from("f"), EnvEntry::Func {
+            formals: vec![],
+            result: Arc::new(TigerType::TUnit),
+        });
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::NotSimpleVar(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn varexp_fieldvar_ok() {
+        let ast = make_ast(Exp::Var(
+            make_var(VarKind::Field(
+                boxed_var(VarKind::Simple(Symbol::from("foo"))),
+                Symbol::from("bar")))
+        ));
+        let mut type_env = initial_type_env();
+        let mut value_env = initial_value_env();
+        let field_type = Arc::new(TigerType::TInt(R::RW));
+        let foo_type = Arc::new(TigerType::TRecord(
+                vec![(String::from("bar"),
+                    field_type,
+                    0)], TypeId::new()));
+        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        value_env.insert(Symbol::from("foo"), EnvEntry::Var{
+            ty: foo_type,
+        });
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn varexp_fieldvar_field_does_not_exist() {
+        let ast = make_ast(Exp::Var(
+            make_var(VarKind::Field(
+                boxed_var(VarKind::Simple(Symbol::from("foo"))),
+                Symbol::from("perro")))
+        ));
+        let mut type_env = initial_type_env();
+        let mut value_env = initial_value_env();
+        let foo_type = Arc::new(TigerType::TRecord(
+                vec![(String::from("bar"),
+                    Arc::new(TigerType::TInt(R::RW)),
+                    0)], TypeId::new()));
+        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        value_env.insert(Symbol::from("foo"), EnvEntry::Var{
+            ty: foo_type,
+        });
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::FieldDoesNotExist(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn varexp_fieldvar_not_record() {
+        let ast = make_ast(Exp::Var(
+            make_var(VarKind::Field(
+                boxed_var(VarKind::Simple(Symbol::from("foo"))),
+                Symbol::from("bar")))
+        ));
+        let mut type_env = initial_type_env();
+        let mut value_env = initial_value_env();
+        let foo_type = Arc::new(TigerType::TInt(R::RW));
+        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        value_env.insert(Symbol::from("foo"), EnvEntry::Var{
+            ty: foo_type,
+        });
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::NotRecordType(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn varexp_subscriptvar_ok() {
+        let ast = make_ast(Exp::Var(
+            make_var(VarKind::Subscript(boxed_var(VarKind::Simple(Symbol::from("foo"))),
+            boxed_ast(Exp::Int(0))),
+        )));
+        let mut type_env = initial_type_env();
+        let mut value_env = initial_value_env();
+        let foo_type = Arc::new(TigerType::TArray(
+            Arc::new(TigerType::TInt(R::RW)),
+            TypeId::new(),
+        ));
+        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        value_env.insert(Symbol::from("foo"), EnvEntry::Var{
+            ty: foo_type,
+        });
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TInt(R::RW) => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn varexp_subscriptvar_non_integer_index() {
+        let ast = make_ast(Exp::Var(
+            make_var(VarKind::Subscript(
+                boxed_var(VarKind::Simple(Symbol::from("foo"))),
+                boxed_ast(Exp::String(String::from("una string de indice :o"))),
+            ))
+        ));
+        let mut type_env = initial_type_env();
+        let mut value_env = initial_value_env();
+        let foo_type = Arc::new(TigerType::TArray(
+            Arc::new(TigerType::TInt(R::RW)),
+            TypeId::new(),
+        ));
+        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        value_env.insert(Symbol::from("foo"), EnvEntry::Var{
+            ty: foo_type,
+        });
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::SubscriptNotInteger(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn varexp_subscriptvar_not_array() {
+        let ast = make_ast(Exp::Var(
+            make_var(VarKind::Subscript(boxed_var(VarKind::Simple(Symbol::from("foo"))),
+            boxed_ast(Exp::Int(0))),
+        )));
+        let mut type_env = initial_type_env();
+        let mut value_env = initial_value_env();
+        let foo_type = Arc::new(TigerType::TInt(R::RW));
+        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        value_env.insert(Symbol::from("foo"), EnvEntry::Var{
+            ty: foo_type,
+        });
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::NotArrayType(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+}
