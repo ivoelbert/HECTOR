@@ -27,9 +27,6 @@ mod ast;
 mod typecheck;
 mod tree;
 mod canonization;
-#[allow(unused_imports)]
-#[cfg(test)]
-mod test;
 
 use typecheck::typecheck;
 pub use utils::{log, set_panic_hook};
@@ -43,24 +40,15 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[derive(Serialize)]
 pub struct CompilerResult {
-    parse: Result<ast::AST, ast::parser::ParseError>,
-    typecheck: Option<Result<ast::AST, typecheck::TypeError>>,
-    escape: Option<ast::AST>,
-    translate: Option<Result<Vec<tree::Fragment>, tree::TransError>>,
-    canon: Option<Vec<canonization::CanonFrag>>,
-    wasm: Option<Vec<tree::Fragment>>
+    pub parse: Result<ast::AST, ast::parser::ParseError>,
+    pub typecheck: Option<Result<ast::AST, typecheck::TypeError>>,
+    pub escape: Option<ast::AST>,
+    pub translate: Option<Result<Vec<tree::Fragment>, tree::TransError>>,
+    pub canon: Option<Vec<canonization::CanonFrag>>,
+    pub wasm: Option<Vec<tree::Fragment>>
 }
 
-#[wasm_bindgen]
-pub fn compile(source_code: &str) -> JsValue {
-    set_panic_hook();
-    console_log!("Running WASM!");
-
-    if source_code == "" {
-        console_log!("No code to compile, bye bye!");
-        return JsValue::from(-1)
-    }
-
+pub fn run_compile(source_code: &str) -> CompilerResult {
     let parse_result = ast::parser::parse(source_code);
     let typecheck_result = if let Ok(ast) = &parse_result {
         Some(typecheck(ast.clone()))
@@ -74,12 +62,25 @@ pub fn compile(source_code: &str) -> JsValue {
     let canon_result = if let Some(Ok(frags)) = &translate_result {
         Some(canonization::canonize(frags.clone()))
     } else {None};
-    JsValue::from_serde(&CompilerResult{
+    CompilerResult{
         parse: parse_result,
         typecheck: typecheck_result,
         escape: escape_result,
         translate: translate_result,
         canon: canon_result,
         wasm: None
-    }).unwrap()
+    }
+}
+
+#[wasm_bindgen]
+pub fn compile(source_code: &str) -> JsValue {
+    set_panic_hook();
+    console_log!("Running WASM!");
+
+    if source_code == "" {
+        console_log!("No code to compile, bye bye!");
+        return JsValue::from(-1)
+    }
+
+    JsValue::from_serde(&run_compile(source_code)).unwrap()
 }
