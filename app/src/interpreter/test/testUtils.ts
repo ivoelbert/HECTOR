@@ -1,9 +1,10 @@
 import { MockConsole } from './mockConsole';
 import { Runtime } from '../runtime';
 import { MemMap } from '../utils/memMap';
-import { Label, Frag } from '../treeTypes';
+import { Label } from '../treeTypes';
 import { StringStorage } from '../utils/stringStorage';
 import { TreeInterpreter } from '../interpreter';
+import { promises as fs } from 'fs';
 
 interface RuntimeTestDependencies {
     memMap: MemMap;
@@ -34,9 +35,17 @@ interface InterpreterTestDependencies {
     customConsole: MockConsole;
 }
 
-export const interpreterDependenciesFactory = (input: Frag[]): InterpreterTestDependencies => {
+export const interpreterDependenciesFactory = async (
+    file: string
+): Promise<InterpreterTestDependencies> => {
+    const baseName = file.split('.tig')[0]
+
+    const inputPath = `src/interpreter/test/inputs/generated/${baseName}.json`
+    const rawJson = await fs.readFile(inputPath, 'utf8');
+    const canon = JSON.parse(rawJson);
+
     const customConsole = new MockConsole();
-    const interpreter = new TreeInterpreter(input, customConsole);
+    const interpreter = new TreeInterpreter(canon, customConsole);
 
     return {
         interpreter,

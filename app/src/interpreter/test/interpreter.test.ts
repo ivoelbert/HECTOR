@@ -1,137 +1,144 @@
 import { interpreterDependenciesFactory } from './testUtils';
-import { returnNumberTestInput } from './inputs/returnNumber';
-import { returnVariableTestInput } from './inputs/returnVariable';
-import { callIdentityInput } from './inputs/callIdentity';
-import { callFactorialInput } from './inputs/callFactorial';
-import { addoneTestInput } from './inputs/callAddone';
-import { returnArrayElementInput } from './inputs/returnArrayElement';
-import { returnRecordElementTestInput } from './inputs/returnRecordElement';
-import { escapeInput } from './inputs/escape';
-import { mergeInput } from './inputs/merge';
-import { queensInput } from './inputs/queens';
-import { basicForInput } from './inputs/basicFor';
-import { localHideGlobalInput } from './inputs/localHideGlobal';
-import { complexStructInput } from './inputs/complexStruct';
-import { nilRecordInput } from './inputs/nilRecord';
-import { whileWithBreakInput } from './inputs/whileWithBreak';
-import { basicWhileInput } from './inputs/basicWhile';
-import { printGetcharInput } from './inputs/printGetchar';
-import { printPerroInput } from './inputs/printPerro';
 
 test('Basic program that returns 42 works', async () => {
-    const { interpreter } = interpreterDependenciesFactory(returnNumberTestInput);
+    const { interpreter } = await interpreterDependenciesFactory(
+        'returnNumber.tig'
+    );
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(42);
 });
 
 test('Define and return variable works', async () => {
-    const { interpreter } = interpreterDependenciesFactory(returnVariableTestInput);
+    const { interpreter } = await interpreterDependenciesFactory(
+        'returnVariable.tig'
+    );
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(42);
 });
 
 test('Calling the identity function works', async () => {
-    const { interpreter } = interpreterDependenciesFactory(callIdentityInput);
+    const { interpreter } = await interpreterDependenciesFactory(
+        'callIdentity.tig'
+    );
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(42);
 });
 
 test('Calling the factorial function works', async () => {
-    const { interpreter } = interpreterDependenciesFactory(callFactorialInput);
+    const { interpreter } = await interpreterDependenciesFactory(
+        'callFactorial.tig'
+    );
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(120);
 });
 
 test('Calling the addone function works', async () => {
-    const { interpreter } = interpreterDependenciesFactory(addoneTestInput);
+    const { interpreter } = await interpreterDependenciesFactory(
+        'callAddone.tig'
+    );
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(42);
 });
 
 test('Return the Nth element of an array', async () => {
-    const { interpreter } = interpreterDependenciesFactory(returnArrayElementInput);
+    const { interpreter } = await interpreterDependenciesFactory(
+        'returnArrayElement.tig'
+    );
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(42);
 });
 
 test('Return a field of a record', async () => {
-    const { interpreter } = interpreterDependenciesFactory(returnRecordElementTestInput);
+    const { interpreter } = await interpreterDependenciesFactory(
+        'returnRecordElement.tig'
+    );
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(42);
 });
 
 test('Escaped variables work', async () => {
-    const { interpreter } = interpreterDependenciesFactory(escapeInput);
+    const { interpreter } = await interpreterDependenciesFactory(
+        'escape.tig'
+    );
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(4);
 });
 
-// test('Mergesort works', async () => {
-//     const { interpreter } = interpreterDependenciesFactory(mergeInput);
-//     const returnValue = await interpreter.run();
+test('Queens works', async () => {
+    const { interpreter } = await interpreterDependenciesFactory(
+        'queens.tig'
+    );
+    const returnValue = await interpreter.run();
 
-//     expect(returnValue).toBe(0);
-// });
-
-// test('Queens works', async () => {
-//     const { interpreter } = interpreterDependenciesFactory(queensInput);
-//     const returnValue = await interpreter.run();
-
-//     expect(returnValue).toBe(0);
-// });
+    expect(returnValue).toBe(0);
+});
 
 test('Basic for loop works', async () => {
-    const { interpreter } = interpreterDependenciesFactory(basicForInput);
+    const { interpreter } = await interpreterDependenciesFactory(
+        'basicFor.tig'
+    );
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(55);
 });
 
 test('Local variable hides a global', async () => {
-    const { interpreter } = interpreterDependenciesFactory(localHideGlobalInput);
+    const { interpreter } = await interpreterDependenciesFactory(
+        'localHideGlobal.tig'
+    );
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(2);
 });
 
 test('Complex structures work', async () => {
-    const { interpreter } = interpreterDependenciesFactory(complexStructInput);
+    const { interpreter } = await interpreterDependenciesFactory(
+        'complexStruct.tig'
+    );
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(0);
 });
 
 test('Assign nil to a record', async () => {
-    const { interpreter } = interpreterDependenciesFactory(nilRecordInput);
+    const { interpreter } = await interpreterDependenciesFactory(
+        'nilRecord.tig'
+    );
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(0);
 });
 
 test('While with break works', async () => {
-    const { interpreter } = interpreterDependenciesFactory(whileWithBreakInput);
+    const { interpreter } = await interpreterDependenciesFactory(
+        'whileWithBreak.tig'
+    );
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(10);
 });
 
 test('Basic while works', async () => {
-    const { interpreter } = interpreterDependenciesFactory(basicWhileInput);
+    const { interpreter } = await interpreterDependenciesFactory(
+        'basicWhile.tig'
+    );
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(10);
 });
 
 test('Print getchar input', async () => {
-    const { interpreter, customConsole } = interpreterDependenciesFactory(printGetcharInput);
+    const { interpreter, customConsole } = await interpreterDependenciesFactory(
+        'printGetchar.tig'
+    );
 
     const stringToRead = 'perro';
     customConsole.setReadResult('perro');
@@ -143,7 +150,9 @@ test('Print getchar input', async () => {
 });
 
 test('Print perro works', async () => {
-    const { interpreter, customConsole } = interpreterDependenciesFactory(printPerroInput);
+    const { interpreter, customConsole } = await interpreterDependenciesFactory(
+        'printPerro.tig'
+    );
 
     const returnValue = await interpreter.run();
     const printedMessage = customConsole.getLastMessage();
