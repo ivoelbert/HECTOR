@@ -1,6 +1,4 @@
-use crate::ast::*;
-use crate::tree::*;
-use Tree::Exp::*;
+use super::*;
 
 // Generates an expression that evaluates to the memory direction of the variable
 pub fn simplevar(access: Access, current_level: &Level, depth: i32) -> Tree::Exp {

@@ -11,7 +11,7 @@ use serde::{Serialize};
 #[allow(non_snake_case)]
 use level::*;
 type Access = frame::Access;
-pub type Fragment = frame::Frag;
+pub use level::Fragment;
 
 #[derive(Debug, Serialize)]
 pub enum TransError {

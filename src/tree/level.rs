@@ -1,10 +1,10 @@
 // This modules abtract arquitecture specific concepts during translation phase.
 // A frame is wrapped in a level as it's being built and when finished it's stored in a fragment
-// Registers are wrapped in temporaries.
 
 extern crate uuid;
 
-pub use super::frame::{Frame, LocalTemp, Frag, newlocal, unique_named_local,
+use super::frame::Frame;
+pub use super::frame::{LocalTemp, newlocal, unique_named_local,
     FRAME_POINTER, STACK_POINTER, RETURN_VALUE, STATIC_LINK_OFFSET, external_call};
 use super::Access;
 use super::Tree;
@@ -37,6 +37,15 @@ pub fn unique_named_global(name: &str) -> Label {
 
 pub fn named_global(name: &str) -> GlobalTemp {
     String::from(name)
+}
+
+#[derive(Clone, Serialize)]
+pub enum Fragment {
+    Proc {
+        body: Tree::Stm,
+        frame: Frame
+    },
+    ConstString(Label, String)
 }
 
 #[derive(Clone, Debug, Serialize)]
@@ -111,8 +120,8 @@ impl Level {
         }
     }
 
-    pub fn finish(self: Self, body: Tree::Stm) -> Frag {
-        Frag::Proc{
+    pub fn finish(self: Self, body: Tree::Stm) -> Fragment {
+        Fragment::Proc{
             body: Tree::Stm::SEQ(
                 Box::new(self.frame.generate_move_escaped_arguments_statement()),
                 Box::new(body)

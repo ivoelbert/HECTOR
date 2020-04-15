@@ -28,3 +28,43 @@ pub fn typecheck(
     }
 }
 
+
+#[cfg(test)]
+mod test {
+    extern crate wasm_bindgen_test;
+    use wasm_bindgen_test::*;
+    use super::*;
+    #[test]
+    #[wasm_bindgen_test]
+    fn whileexp_ok() {
+        let ast = make_ast(Exp::While {
+            test: boxed_ast(Exp::Int(0)),
+            body: boxed_ast(Exp::Unit),
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Ok(AST{typ, ..}) if *typ == TigerType::TUnit => (),
+            Ok(AST{typ, ..}) => panic!("wrong type: {:?}", typ),
+            Err(type_error) => panic!("type error: {:?}", type_error)
+        }
+    }
+
+    #[test]
+    #[wasm_bindgen_test]
+    fn whileexp_non_integer_condition() {
+        let ast = make_ast(Exp::While {
+            test: boxed_ast(Exp::Unit),
+            body: boxed_ast(Exp::Unit),
+        });
+        let type_env = initial_type_env();
+        let value_env = initial_value_env();
+        let res = type_exp(ast, &type_env, &value_env);
+        match res {
+            Err(TypeError::NonIntegerCondition(_)) => (),
+            Err(type_error) => panic!("Wrong type error: {:?}", type_error),
+            Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
+        }
+    }
+}

@@ -3,10 +3,11 @@ pub mod parser;
 pub mod lexer;
 mod token;
 
+pub use position::{Pos};
+
 use std::fmt::{self, Debug, Formatter};
 use serde::Serialize;
-pub use crate::typecheck::{TigerType, Arc};
-pub use position::{Pos, WithPos};
+use crate::typecheck::{TigerType, Arc};
 
 pub type Symbol = String;
 
