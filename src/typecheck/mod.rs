@@ -153,7 +153,7 @@ fn initial_value_env() -> ValueEnviroment {
         result: Arc::new(TString),
     });
     value_env.insert(Symbol::from("concat"), Func {
-        formals: vec![Arc::new(TString), Arc::new(TInt(R::RW)), Arc::new(TInt(R::RW))],
+        formals: vec![Arc::new(TString), Arc::new(TString)],
         result: Arc::new(TString),
     });
     value_env.insert(Symbol::from("not"), Func {

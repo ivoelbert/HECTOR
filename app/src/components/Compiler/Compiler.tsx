@@ -5,7 +5,7 @@ import './Compiler.scss';
 
 const AsyncCompiler = React.lazy(
     async (): Promise<any> => {
-        const wasm = await import('../../tigerust');
+        const wasm = await import('tigerust');
         const Component: React.FC = () => <CompilerInterface compile={wasm.compile} />;
 
         return { default: Component };
