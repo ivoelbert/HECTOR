@@ -12,7 +12,7 @@ use crate::tree::{Fragment, Tree};
 use crate::tree::frame::Frame;
 use crate::tree::level;
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, Debug)]
 pub enum CanonFrag {
     Proc {
         body: Vec<Tree::Stm>,

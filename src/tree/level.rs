@@ -39,7 +39,7 @@ pub fn named_global(name: &str) -> GlobalTemp {
     String::from(name)
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Serialize, Debug)]
 pub enum Fragment {
     Proc {
         body: Tree::Stm,

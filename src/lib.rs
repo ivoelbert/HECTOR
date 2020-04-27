@@ -27,6 +27,7 @@ mod ast;
 mod typecheck;
 mod tree;
 mod canonization;
+mod emitter;
 
 use typecheck::typecheck;
 pub use utils::{log, set_panic_hook};
@@ -38,14 +39,15 @@ use serde::{Serialize};
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct CompilerResult {
     pub parse: Result<ast::AST, ast::parser::ParseError>,
     pub typecheck: Option<Result<ast::AST, typecheck::TypeError>>,
     pub escape: Option<ast::AST>,
     pub translate: Option<Result<Vec<tree::Fragment>, tree::TransError>>,
     pub canon: Option<Vec<canonization::CanonFrag>>,
-    pub wasm: Option<Vec<tree::Fragment>>
+    pub wasm: Option<String>,
+    pub bin: Option<Vec<u8>>
 }
 
 pub fn run_compile(source_code: &str) -> CompilerResult {
@@ -62,13 +64,18 @@ pub fn run_compile(source_code: &str) -> CompilerResult {
     let canon_result = if let Some(Ok(frags)) = &translate_result {
         Some(canonization::canonize(frags.clone()))
     } else {None};
+    let (wasm_result, bin_result) = if let Some(canon) = canon_result.clone() {
+        let (wasm, bin) = emitter::emit(canon);
+        (Some(wasm), Some(bin))
+    } else {(None, None)};
     CompilerResult{
         parse: parse_result,
         typecheck: typecheck_result,
         escape: escape_result,
         translate: translate_result,
         canon: canon_result,
-        wasm: None
+        wasm: wasm_result,
+        bin: bin_result
     }
 }
 
