@@ -3,6 +3,7 @@ mod enviroment;
 use munch::munch_stm;
 use enviroment::{LocalEnv, FunctionEnv};
 extern crate parity_wasm;
+extern crate wasmprinter;
 
 use parity_wasm::builder::ModuleBuilder;
 use parity_wasm::{builder, elements::*, elements::Instruction::*};
@@ -16,7 +17,8 @@ use crate::tree::level::Label;
 pub type Wasm = Module;
 
 pub fn emit(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
-    let (module_builder, functions) = frags.into_iter().fold(
+	// let module = builder::module().build();
+	let (module_builder, functions) = frags.into_iter().fold(
         (builder::module(), FunctionEnv::new()),
         |(module, fenv): (ModuleBuilder, FunctionEnv), frag: CanonFrag| -> (ModuleBuilder, FunctionEnv) {
             match frag {
@@ -64,9 +66,13 @@ pub fn emit(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 			.build()
 		)
 		.build();
-	println!("{:#?}", &module);
-	parity_wasm::serialize_to_file("asd.wasm", module.clone()).unwrap();
-	(format!("{:?}", &module), parity_wasm::serialize(module).unwrap())
+	// println!("{:#?}", &module);
+	// (format!("{:?}", &module), parity_wasm::serialize(module).unwrap())
+	// parity_wasm::serialize_to_file("asd.wasm", module.clone()).unwrap();
+	let bytes = parity_wasm::serialize(module).unwrap();
+	let text = wasmprinter::print_bytes(&bytes).unwrap();
+	console_log!("{:?}", &text);
+	(text, bytes)
 }
 
 fn emit_string_global(label: Label, string: String, module: ModuleBuilder) -> ModuleBuilder {

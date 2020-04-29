@@ -28,7 +28,8 @@ interface CompileResult {
     escape: any;
     translate: ParseResult;
     canon: CanonResult | null;
-    wasm: any;
+    wasm: string | null;
+    bin: any;
 }
 
 interface CompilerProps {
@@ -57,6 +58,7 @@ export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
                 translate: null,
                 canon: null,
                 wasm: null,
+                bin: null,
             };
         }
     }, [compile, compiledCode]);
@@ -68,7 +70,7 @@ export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
         TREE: <TREEViewer fragments={compileResult.translate} />,
         Canon: <CanonViewer canon={compileResult.canon} />,
         Interp: <Interpreter canon={compileResult.canon} />,
-        Result: <p>not implemented</p>,
+        Result: <p>{compileResult.wasm}</p>,
     };
 
     return (

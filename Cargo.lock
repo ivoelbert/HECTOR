@@ -9,6 +9,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.28"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "argon2rs"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -828,6 +833,7 @@ dependencies = [
  "uuid 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "wasm-bindgen 0.2.34 (registry+https://github.com/rust-lang/crates.io-index)",
  "wasm-bindgen-test 0.2.34 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wasmprinter 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "wee_alloc 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -948,6 +954,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "wasmparser"
+version = "0.51.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "wasmprinter"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "anyhow 1.0.28 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wasmparser 0.51.4 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "wee_alloc"
 version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -979,6 +999,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [metadata]
 "checksum aho-corasick 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)" = "36b7aa1ccb7d7ea3f437cf025a2ab1c47cc6c1bc9fc84918ff449def12f5e282"
+"checksum anyhow 1.0.28 (registry+https://github.com/rust-lang/crates.io-index)" = "d9a60d744a80c30fcb657dfe2c1b22bcb3e814c1a1e3674f32bf5820b570fbff"
 "checksum argon2rs 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)" = "3f67b0b6a86dae6e67ff4ca2b6201396074996379fba2b92ff649126f37cb392"
 "checksum arrayvec 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)" = "92c7fb76bc8826a8b33b4ee5bb07a247a81e76764ab4d55e8f73e3a4d8808c71"
 "checksum ascii-canvas 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ff8eb72df928aafb99fe5d37b383f2fe25bd2a765e3e5f7c365916b6f2463a29"
@@ -1094,6 +1115,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum wasm-bindgen-shared 0.2.34 (registry+https://github.com/rust-lang/crates.io-index)" = "77b13edbe385eb9b3f7f17960f6dbf0adcdb8dac422c7f14a6279426c052336f"
 "checksum wasm-bindgen-test 0.2.34 (registry+https://github.com/rust-lang/crates.io-index)" = "5d2220139a62fccd897d00f2a3ef953a9fcd2082461bfa50d8a9f9c0c85a6c94"
 "checksum wasm-bindgen-test-macro 0.2.34 (registry+https://github.com/rust-lang/crates.io-index)" = "12201f5a4fe123303e93efbb1f799e9577312c6e53cb00f6539ace9355b70ad5"
+"checksum wasmparser 0.51.4 (registry+https://github.com/rust-lang/crates.io-index)" = "aeb1956b19469d1c5e63e459d29e7b5aa0f558d9f16fcef09736f8a265e6c10a"
+"checksum wasmprinter 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)" = "8bd423d45b95fcee11775472bfdce66c63c45ada23c1b338e0a63d623a6c475b"
 "checksum wee_alloc 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)" = "dbb3b5a6b2bb17cb6ad44a2e68a43e8d2722c997da10e928665c72ec6c0a0b8e"
 "checksum winapi 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)" = "f10e386af2b13e47c89e7236a7a14a086791a2b88ebad6df9bf42040195cf770"
 "checksum winapi-i686-pc-windows-gnu 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ac3b87c63620426dd9b991e5ce0329eff545bccbbb34f3be09ff6fb6ab51b7b6"

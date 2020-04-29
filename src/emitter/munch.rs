@@ -51,7 +51,7 @@ pub fn munch_stm(stm: Tree::Stm, locals : LocalEnv, functions: &FunctionEnv) -> 
                         addr_code,
                         vec![I32Const(WORD_SIZE), I32Mul],
                         value_code,
-                        vec![I32Store(2, 0)], // CHEQUEAR: no se que son estos parametros
+                        vec![I32Store(0, 0)], // CHEQUEAR: no se que son estos parametros
                     ].concat(), locals)
 
                 },
