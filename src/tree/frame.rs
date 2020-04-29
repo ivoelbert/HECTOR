@@ -16,7 +16,7 @@ pub static STATIC_LINK_OFFSET : i32 = 0;
 
 #[derive(Clone, Debug, Serialize)]
 pub struct Frame {
-    label: Label,
+    pub label: Label,
     formals: Vec<(String, bool)>,
     // locals: Vec<LocalTemp>,
     memindex: i32,
@@ -84,7 +84,7 @@ impl Frame {
         Tree::seq(moves)
     }
 
-    pub fn formals(self: &Self) -> Vec<Access> {
+    pub fn formals(self: &Self) -> Vec<(String, Access)> {
         // Genera los access segun:
         // - El diseño de frame que elegimos
         // - La convencion de llamada (todo lo que se puede en locals)
@@ -93,12 +93,12 @@ impl Frame {
         use Access::*;
         self.formals.iter().fold(
             (vec![], -1),
-            |(mut formals, mut current_index): (Vec<Access>, i32), (name, escape): &(String, bool)| -> (Vec<Access>, i32) {
+            |(mut formals, mut current_index): (Vec<(String, Access)>, i32), (name, escape): &(String, bool)| -> (Vec<(String, Access)>, i32) {
                 formals.push(if *escape {
                     current_index += 1;
-                    InMem(current_index)
+                    (name.to_string(), InMem(current_index))
                 } else {
-                    InLocal(name.clone())
+                    (name.to_string(), InLocal(name.clone()))
                 });
                 (formals, current_index)
         }).0

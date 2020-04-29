@@ -33,7 +33,7 @@ pub enum BinOp {
     OR,
     LSHIFT,
     RSHIFT,
-    ARSHIFT,
+    // ARSHIFT,
     XOR,
     EQ,
     NE,
