@@ -53,7 +53,7 @@ fn munch_stm(stm: Tree::Stm, locals : LocalEnv, labels: &LabelEnv, functions: &F
                         addr_code,
                         vec![I32Const(WORD_SIZE), I32Mul],
                         value_code,
-                        vec![I32Store(0, 0)], // CHEQUEAR: no se que son estos parametros
+                        vec![I32Store(0, strings.offset)], // CHEQUEAR: no se que son estos parametros
                     ].concat(), locals)
 
                 },
@@ -174,7 +174,7 @@ pub fn munch_exp(exp: Tree::Exp, locals : LocalEnv, functions: &FunctionEnv, str
             vec![
                 I32Const(WORD_SIZE),
                 I32Mul,
-                I32Load(0, 0)]
+                I32Load(0, strings.offset)]
             ].concat(),
             locals)
         },

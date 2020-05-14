@@ -114,6 +114,7 @@ pub fn emit_module(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 fn emit_string(string: String, module: builder::ModuleBuilder) -> builder::ModuleBuilder {
 	module
 		.data()
+			// Aca hay que ponerle el offset que vamos sumando
 			.offset(I32Const(string.len().try_into().unwrap()))
 			.value(string.into_bytes())
 		.build()
