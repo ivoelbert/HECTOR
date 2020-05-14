@@ -65,7 +65,7 @@ pub fn run_compile(source_code: &str) -> CompilerResult {
         Some(canonization::canonize(frags.clone()))
     } else {None};
     let (wasm_result, bin_result) = if let Some(canon) = canon_result.clone() {
-        let (wasm, bin) = emitter::emit(canon);
+        let (wasm, bin) = emitter::emit_module(canon);
         (Some(wasm), Some(bin))
     } else {(None, None)};
     CompilerResult{

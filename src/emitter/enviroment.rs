@@ -39,30 +39,60 @@ impl LocalEnv {
     }
 }
 
-pub struct FunctionEnv {
-    table: HashMap<String, u32>,
-    index: u32,
+// pub struct FunctionEnv {
+//     table: HashMap<Label, u32>,
+//     index: u32,
+// }
+
+// impl FunctionEnv {
+//     pub fn new() -> Self {
+//         FunctionEnv {
+//             table: HashMap::new(),
+//             index: 0,
+//         }
+//     }
+
+//     pub fn insert(self: &mut Self, label: Label) -> u32 {
+//         self.table.insert(label, self.index);
+//         self.index += 1;
+//         self.index - 1
+//     }
+
+//     pub fn get(self: &Self, name: &str) -> Option<u32> {
+//         self.table.get(name).copied()
+//     }
+
+//     pub fn get_last_index(self: &Self) -> u32 {
+//         self.index - 1
+//     }
+// }
+
+pub struct StringEnv {
+    table: HashMap<Label, u32>,
+    offset: u32,
 }
 
-impl FunctionEnv {
+impl StringEnv {
     pub fn new() -> Self {
-        FunctionEnv {
+        StringEnv {
             table: HashMap::new(),
-            index: 0,
+            offset: 0,
         }
     }
 
-    pub fn insert(self: &mut Self, label: Label) -> u32 {
-        self.table.insert(label, self.index);
-        self.index += 1;
-        self.index - 1
+    pub fn insert(mut self: Self, label: Label, string: &str) -> Self{
+        let len : u32 = string.len().try_into().unwrap();
+        self.offset = self.offset + len;
+        self.table.insert(label, self.offset);
+        self
     }
 
     pub fn get(self: &Self, name: &str) -> Option<u32> {
         self.table.get(name).copied()
     }
-
-    pub fn get_last_index(self: &Self) -> u32 {
-        self.index - 1
-    }
 }
+
+// TODO: strings should keep record of the memory offsets
+pub type LabelEnv = HashMap<Label, u32>;
+
+pub type FunctionEnv = HashMap<Label, u32>;

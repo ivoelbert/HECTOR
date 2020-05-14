@@ -1,14 +1,22 @@
 use super::*;
-use level::{Label, unique_named_label};
+use level::{Label, unique_named_label, named_label};
+// pub type Block = Vec<Tree::Stm>;
 
-pub fn basic_blocks(stms: Vec<Tree::Stm>) -> (Vec<Vec<Tree::Stm>>, Label) {
+#[derive(Clone, Debug, Serialize)]
+pub struct Block {
+    pub stms: Vec<Tree::Stm>,
+    pub label: Label,
+    pub target: Vec<Label>
+}
+
+pub fn basic_blocks(stms: Vec<Tree::Stm>) -> Vec<Block> {
     use Tree::Stm::*;
     use Tree::Exp::*;
-    let done_label = unique_named_label("-done");
+    let done_label = named_label("done");
     // El fold nos da el ultimo bloque porque cuando se quedo sin instrucciones
     // Hay que meterle un jump a done
-    let (mut blocks, mut last_block) : (Vec<Vec<Tree::Stm>>, Vec<Tree::Stm>) = stms.into_iter()
-        .fold((vec![], vec![LABEL(unique_named_label("-blockfirst"))]), |(mut blocks, mut this_block), stm| -> (Vec<Vec<Tree::Stm>>, Vec<Tree::Stm>) {
+    let (mut blocks, mut last_block) : (Vec<Block>, Vec<Tree::Stm>) = stms.into_iter()
+        .fold((vec![], vec![LABEL(unique_named_label("blockfirst"))]), |(mut blocks, mut this_block), stm| -> (Vec<Block>, Vec<Tree::Stm>) {
             // Dados:
             //    los bloques previos en blocks
             //    el progreso de este bloque en this_block
@@ -19,22 +27,46 @@ pub fn basic_blocks(stms: Vec<Tree::Stm>) -> (Vec<Vec<Tree::Stm>>, Label) {
                 // que empieza uno nuevo.
                 LABEL(l) => {
                     this_block.push(JUMP(NAME(l.clone()), vec![l.clone()]));
-                    blocks.push(this_block);
+                    blocks.push(Block {
+                        label: if let LABEL(l) = this_block.first().unwrap() {
+                            l.clone()
+                        } else {
+                            panic!("all blocks should start with a label")
+                        },
+                        target: vec![l.clone()],
+                        stms: this_block,
+                    });
                     let new_block = vec![LABEL(l)];
                     (blocks, new_block)
 
                 },
                 // Si hay un JUMP, terminamos este bloque y empezamos el nuevo con un label.
                 JUMP(l, ls) => {
-                    this_block.push(JUMP(l, ls));
-                    blocks.push(this_block);
-                    let new_block = vec![LABEL(unique_named_label("-newblock-jump"))];
+                    this_block.push(JUMP(l, ls.clone()));
+                    blocks.push(Block {
+                        label: if let LABEL(l) = this_block.first().unwrap() {
+                            l.clone()
+                        } else {
+                            panic!("all blocks should start with a label")
+                        },
+                        target: ls,
+                        stms: this_block,
+                    });
+                    let new_block = vec![LABEL(unique_named_label("newblock-jump"))];
                     (blocks, new_block)
                 },
                 CJUMP(o, a, b, t, f) => {
-                    this_block.push(CJUMP(o, a, b, t, f));
-                    blocks.push(this_block);
-                    let new_block = vec![LABEL(unique_named_label("-newblock-cjump"))];
+                    this_block.push(CJUMP(o, a, b, t.clone(), f.clone()));
+                    blocks.push(Block {
+                        label: if let LABEL(l) = this_block.first().unwrap() {
+                            l.clone()
+                        } else {
+                            panic!("all blocks should start with a label")
+                        },
+                        target: vec![t, f],
+                        stms: this_block,
+                    });
+                    let new_block = vec![LABEL(unique_named_label("newblock-cjump"))];
                     (blocks, new_block)
                 },
                 // Cualquier otra instruccion simplemente se agrega al bloque.
@@ -46,6 +78,14 @@ pub fn basic_blocks(stms: Vec<Tree::Stm>) -> (Vec<Vec<Tree::Stm>>, Label) {
             }
         });
     last_block.push(JUMP(NAME(done_label.clone()), vec![done_label.clone()]));
-    blocks.push(last_block);
-    (blocks, done_label)
+    blocks.push(Block {
+        label: if let LABEL(l) = last_block.first().unwrap() {
+            l.clone()
+        } else {
+            panic!("all blocks should start with a label")
+        },
+        target: vec![done_label],
+        stms: last_block,
+    });
+    blocks
 }

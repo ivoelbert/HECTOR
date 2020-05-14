@@ -1,0 +1,8 @@
+
+let
+    var N := 0
+in
+    (for r := 53 to 62 do
+        N := N + 1234
+    ); N
+end
