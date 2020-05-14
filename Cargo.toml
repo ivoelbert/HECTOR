@@ -31,7 +31,7 @@ features = ["serde-serialize"]
 
 [dev-dependencies]
 wasm-bindgen-test = "0.2"
-
+wasmi = "0.6.2"
 
 [build-dependencies]
 lalrpop = "0.17.1"

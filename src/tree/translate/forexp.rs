@@ -41,7 +41,7 @@ pub fn trans_stm(
                 breaks_stack,
                 lo_frags,
             )?;
-            let (start_label, continue_label, done_label) = (unique_named_label("-start"), unique_named_label("-continue"), unique_named_label("-for-done"));
+            let (start_label, continue_label, done_label) = (unique_named_label("-for-start"), unique_named_label("-for-continue"), unique_named_label("-for-done"));
             new_breaks_stack.push(Some(done_label.clone()));
             let (body_stm, body_level, body_frags) =
                 super::trans_stm(body, hi_level, &new_value_env, &new_breaks_stack, hi_frags)?;
