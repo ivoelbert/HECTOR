@@ -110,13 +110,13 @@ pub fn external_call(proc_label: Label, args: Vec<Tree::Exp>) -> Tree::Exp {
     CALL(Box::new(NAME(proc_label)), args)
 }
 
-pub fn newlocal() -> GlobalTemp {
-    Uuid::new_v4().to_string()
-}
+// pub fn newlocal() -> GlobalTemp {
+//     Uuid::new_v4().to_string()
+// }
 
-pub fn named_local(name: &str) -> GlobalTemp {
-    name.to_string()
-}
+// pub fn named_local(name: &str) -> GlobalTemp {
+//     name.to_string()
+// }
 
 pub fn unique_named_local(name: &str) -> GlobalTemp {
     vec![name.to_string(), "_".to_string(), Uuid::new_v4().to_string()].concat()

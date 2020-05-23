@@ -4,7 +4,7 @@
 extern crate uuid;
 
 use super::frame::Frame;
-pub use super::frame::{LocalTemp, newlocal, unique_named_local,
+pub use super::frame::{LocalTemp, unique_named_local,
     FRAME_POINTER, STACK_POINTER, RETURN_VALUE, STATIC_LINK_OFFSET, external_call};
 use super::Access;
 use super::Tree;
@@ -15,9 +15,9 @@ pub type GlobalTemp = String;
 use serde::{Serialize};
 use uuid::Uuid;
 
-pub fn newlabel() -> Label {
-    Uuid::new_v4().to_string()
-}
+// pub fn newlabel() -> Label {
+//     Uuid::new_v4().to_string()
+// }
 
 pub fn named_label(name: &str) -> Label {
     name.to_string()
@@ -27,9 +27,9 @@ pub fn unique_named_label(name: &str) -> Label {
     vec![name.to_string(), "_".to_string(), Uuid::new_v4().to_string()].concat()
 }
 
-pub fn newglobal() -> GlobalTemp {
-    Uuid::new_v4().to_string()
-}
+// pub fn newglobal() -> GlobalTemp {
+//     Uuid::new_v4().to_string()
+// }
 
 pub fn unique_named_global(name: &str) -> Label {
     vec![name.to_string(), "_".to_string(), Uuid::new_v4().to_string()].concat()

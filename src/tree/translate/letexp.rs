@@ -6,7 +6,7 @@ pub fn vardec(
     (_VarDec {name, escape, init, ..}, _,): (&_VarDec, &Pos),
     level: Level,
     mut value_env: ValueEnviroment,
-    breaks_stack: &Vec<Option<Label>>,
+    breaks_stack: &[Option<Label>],
     frags: Vec<Fragment>,
 ) -> Result<(Tree::Stm, Level, ValueEnviroment, Vec<Fragment>), TransError> {
     let (init_exp, mut init_level, init_frags) = super::trans_exp(init, level, &value_env, breaks_stack, frags)?;
@@ -17,21 +17,21 @@ pub fn vardec(
         depth: init_level.nesting_depth
     });
 
-    Ok((Move!(simplevar(access.clone(), &init_level, init_level.nesting_depth), init_exp), init_level, value_env, init_frags))
+    Ok((Move!(simplevar(access, &init_level, init_level.nesting_depth), init_exp), init_level, value_env, init_frags))
 }
 
 pub fn fundecs(
     funcs: &[(_FunctionDec, Pos)],
     depth: i32,
     value_env: &ValueEnviroment,
-    breaks_stack: &Vec<Option<Label>>,
+    breaks_stack: &[Option<Label>],
     frags: Vec<Fragment>,
 ) -> Result<(ValueEnviroment, Vec<Fragment>), TransError> {
     // Add a new entry to the breaks stack (so that a break fails)
     // Add all functions to a new env, declaring labels for each one.
     // Translate each funtion
     // Return all the new fragments
-    let mut new_breaks_stack = breaks_stack.clone();
+    let mut new_breaks_stack = breaks_stack.to_vec();
     new_breaks_stack.push(None);
     let mut new_value_env = value_env.clone();
     funcs.iter().for_each(|(_FunctionDec {name, ..}, _)| {
@@ -62,7 +62,7 @@ pub fn fundecs(
                     let access = level.alloc_arg(name.clone(), *escape);
                     dec_value_env.insert(name.clone(), EnvEntry::Var{
                         access,
-                        depth: depth
+                        depth
                     });
                 });
             match result {
@@ -87,7 +87,7 @@ pub fn trans_exp(
     AST { node, .. }: &AST,
     mut level: Level,
     value_env: &ValueEnviroment,
-    breaks_stack: &Vec<Option<Label>>,
+    breaks_stack: &[Option<Label>],
     mut frags: Vec<Fragment>,
 ) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
     match node {

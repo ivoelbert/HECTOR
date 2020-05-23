@@ -54,7 +54,7 @@ impl StringEnv {
 
     pub fn insert(mut self, label: Label, string: &str) -> Self{
         let len : u32 = string.len().try_into().unwrap();
-        self.offset = self.offset + len;
+        self.offset += len;
         self.table.insert(label, self.offset);
         self
     }

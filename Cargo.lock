@@ -273,6 +273,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "hector"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lalrpop 0.17.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lalrpop-util 0.17.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "nanoid 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "parity-wasm 0.41.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pathfinding 1.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde 1.0.94 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_derive 1.0.94 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde_json 1.0.42 (registry+https://github.com/rust-lang/crates.io-index)",
+ "snowflake 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "uuid 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wasm-bindgen 0.2.34 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wasm-bindgen-test 0.2.34 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wasmi 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wasmprinter 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "wee_alloc 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "indexmap"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -853,29 +876,6 @@ version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "lazy_static 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "tigerust"
-version = "0.1.0"
-dependencies = [
- "console_error_panic_hook 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "lalrpop 0.17.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "lalrpop-util 0.17.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "nanoid 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "parity-wasm 0.41.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "pathfinding 1.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
- "regex 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde 1.0.94 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_derive 1.0.94 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json 1.0.42 (registry+https://github.com/rust-lang/crates.io-index)",
- "snowflake 1.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "uuid 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "wasm-bindgen 0.2.34 (registry+https://github.com/rust-lang/crates.io-index)",
- "wasm-bindgen-test 0.2.34 (registry+https://github.com/rust-lang/crates.io-index)",
- "wasmi 0.6.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "wasmprinter 0.2.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "wee_alloc 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

@@ -1,8 +1,11 @@
+//! From an arbitrary Tree statement, produce a list of cleaned trees
+//!   satisfying the following properties:
+//!   1.  No SEQ's or ESEQ's
+//!   2.  The parent of every CALL is an EXP(..) or a MOVE(TEMP t,..)
 use super::*;
 
 use Tree::Stm::*;
 use Tree::Exp::*;
-
 
 macro_rules! nop {
     () => {
@@ -101,12 +104,12 @@ fn do_stm(stm: Tree::Stm) -> Tree::Stm {
                 JUMP(exp, labels)
             })
         ),
-        CJUMP(o, a, b, t, f) => reorder_stm(
-            vec![*a, *b],
+        CJUMP(oper, left, right, t, f) => reorder_stm(
+            vec![*left, *right],
             Box::new(move |mut l| {
                 let b = l.pop().expect("cjump canonization");
-                let a = l.pop().expect("cjump canonization");
-                CJUMP(o, Box::new(a), Box::new(b), t, f)
+                let left = l.pop().expect("cjump canonization");
+                CJUMP(oper, Box::new(left), Box::new(b), t, f)
             })
         ),
         MOVE(dest, src) => match (*dest, *src) {
@@ -218,6 +221,5 @@ pub fn linearize(tree: Tree::Stm) -> Vec<Tree::Stm> {
             list
         }
     }
-    let linear = linear(do_stm(tree), vec![]);
-    linear
+    linear(do_stm(tree), vec![])
 }

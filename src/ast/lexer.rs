@@ -33,8 +33,6 @@ use std::str::{Chars, Lines, SplitWhitespace};
 
 pub type Spanned<Tok, Loc, Error> = Result<(Loc, Tok, Loc), Error>;
 
-const DEBUG: bool = false;
-
 #[derive(Debug, PartialEq, Clone)]
 pub enum Tok {
     Point,          // .
@@ -236,7 +234,7 @@ impl<'input> Lexer<'input> {
 
     pub fn transition(&mut self, new_state: LexerState) {
         self.state = new_state.clone();
-        self.line_lexer.transition(new_state.clone());
+        self.line_lexer.transition(new_state);
     }
 }
 
@@ -421,7 +419,7 @@ impl<'input> Iterator for LineLexer<'input> {
                     self.current_word = &self.current_word[position..];
                     let rest = &self.current_word;
 
-                    let mut full_string = s.clone();
+                    let mut full_string = s;
                     full_string.push_str(string_part);
 
                     self.char_lexer = CharLexer::new(rest.chars(), self.state.clone());

@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/target/debug/tigerust",
+            "program": "${workspaceFolder}/target/debug/hector",
             "args": [],
             "preLaunchTask": "build",
             "stopAtEntry": false,

@@ -37,7 +37,7 @@ pub fn typecheck(
 mod test {
     extern crate wasm_bindgen_test;
     use wasm_bindgen_test::*;
-    use super::*;
+    use super::{AST, Arc, EnvEntry, Exp, R, Symbol, TigerType, TypeError, VarKind, boxed_ast, initial_type_env, initial_value_env, make_ast, make_var, type_exp};
     #[test]
     #[wasm_bindgen_test]
     fn assignexp_ok() {

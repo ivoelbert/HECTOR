@@ -1,5 +1,5 @@
 [package]
-name = "tigerust"
+name = "hector"
 version = "0.1.0"
 authors = ["ielvert-menlo <ielvert@menlo-technologies.com>", "QPotato <federicobadaloni@hotmail.com>"]
 edition = "2018"

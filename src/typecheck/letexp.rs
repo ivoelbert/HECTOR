@@ -28,12 +28,8 @@ fn typecheck_vardec(
             }
         }
     } else {
-        match *init_ast.typ {
-            // We can't find NILs with ==
-            TigerType::TNil => {
-                return Err(TypeError::UnconstrainedNilInitialization(pos))
-            }
-            _ => ()
+        if let TigerType::TNil = *init_ast.typ {
+            return Err(TypeError::UnconstrainedNilInitialization(pos))
         };
         init_ast.typ.clone()
     };
@@ -218,14 +214,16 @@ fn typecheck_functiondec_batch(
         .collect::<Result<Vec<(_FunctionDec, Pos)>, TypeError>>()?, value_env))
 }
 
-fn sort_type_decs(decs: &[(_TypeDec, Pos)]) -> Result<(Vec<&(_TypeDec, Pos)>, Vec<&(_TypeDec, Pos)>), Symbol> {
-    // This function takes a batch of type declarations and returns (if posible):
-    // - A vector of the type declarations that are not records, topologically sorted.
-    // - A vector of record type declarations.
-    // If it fails, it return the symbol of the not record type with cyclic declaration.
+type DecList<'a> = Vec<&'a (_TypeDec, Pos)>;
+
+fn sort_type_decs(decs: &[(_TypeDec, Pos)]) -> Result<(DecList, DecList), Symbol> {
+    /// This function takes a batch of type declarations and returns (if posible):
+    /// - A vector of the type declarations that are not records, topologically sorted.
+    /// - A vector of record type declarations.
+    /// If it fails, it return the symbol of the not record type with cyclic declaration.
     fn gen_pairs(decs: &[(_TypeDec, Pos)]) -> (Vec<(Symbol, Symbol)>, Vec<Symbol>) {
-        // gen_pairs is a wrapper for genp.
-        // gen_pairs only calls genp with an initial state.
+        /// gen_pairs is a wrapper for genp.
+        /// gen_pairs only calls genp with an initial state.
         fn genp(decs: &[(_TypeDec, Pos)], mut res: Vec<(Symbol, Symbol)>, mut records: Vec<Symbol>, ) -> (Vec<(Symbol, Symbol)>, Vec<Symbol>) {
             // This recursive function takes a batch of function declarations and returns
             // - A vector of pairs of symbols where left declaration depends on right declaration (or oposite?)
@@ -280,7 +278,7 @@ fn sort_type_decs(decs: &[(_TypeDec, Pos)]) -> Result<(Vec<&(_TypeDec, Pos)>, Ve
                 .collect::<Vec<Symbol>>()
         })
     }
-    fn sort_decs(decs: &[(_TypeDec, Pos)], order: Vec<(Symbol)>, record_names: Vec<(Symbol)>) -> (Vec<&(_TypeDec, Pos)>, Vec<&(_TypeDec, Pos)>) {
+    fn sort_decs(decs: &[(_TypeDec, Pos)], order: Vec<Symbol>, record_names: Vec<Symbol>) -> (DecList, DecList) {
         let mut sorted_decs = order
             .iter()
             .filter_map(|order_symbol| {
@@ -345,7 +343,7 @@ fn typecheck_typedec_batch(
                         ));
                     }
                     let type_id = match type_env.remove(name).as_deref() {
-                        Some(TigerType::TRecord(_, id)) => id.clone(),
+                        Some(TigerType::TRecord(_, id)) => *id,
                         _ => panic!("There should be a record header in the env")
                     };
                     type_env.insert(name.clone(), Arc::new(TigerType::TRecord(record, type_id)));
@@ -410,6 +408,9 @@ mod test {
     extern crate wasm_bindgen_test;
     use wasm_bindgen_test::*;
     use super::*;
+    fn boxed_var(kind: VarKind) -> Box<Var> {
+        Box::new(Var {kind, pos: Pos {line: 0, column: 0}, typ: Arc::new(TigerType::Untyped)})
+    }
     #[test]
     #[wasm_bindgen_test]
     fn letexp_vardec_no_type_ok() {

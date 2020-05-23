@@ -1,3 +1,16 @@
+#![allow(
+    clippy::clone_on_copy,
+    clippy::double_parens,
+    clippy::needless_return,
+    clippy::redundant_static_lifetimes,
+    clippy::redundant_closure,
+    unused_parens,
+    clippy::let_and_return,
+    clippy::too_many_arguments,
+    // clippy::missing_docs_in_private_items,
+)]
+//! Tiger parser
+//! This module is later extended with lalrpop
 use super::{AST};
 use super::position::{Pos};
 use super::lexer::Lexer;
@@ -8,10 +21,14 @@ use serde::{Serialize};
 lalrpop_mod!(pub parser);
 
 #[derive(Debug, Serialize)]
+/// An error ocurred while parsing
 pub enum ParseError {
+    /// Unexpected token
     UnexpectedToken(Pos),
 }
 
+/// Transform Tiger source code into an AST
+/// All nodes have type = untyped
 pub fn parse(str_src : &str) -> Result<AST, ParseError> {
     let lexed = Lexer::new(str_src.lines());
 
@@ -159,7 +176,7 @@ mod test {
                         ..
                     },
                 pos: Pos { line: 0, column: 0 },
-                typ: _,
+                ..
             }) => (),
             Ok(..) => panic!("wrong parsing"),
             Err(..) => panic!("parser fails in a well-formed expression"),
@@ -179,7 +196,7 @@ mod test {
                         ..
                     },
                 pos: Pos { line: 0, column: 0 },
-                typ: _,
+                ..
             }) => (),
             Ok(..) => panic!("wrong parsing"),
             Err(..) => panic!("parser fails in a well-formed expression"),
@@ -199,7 +216,7 @@ mod test {
                         ..
                     },
                 pos: Pos { line: 0, column: 0 },
-                typ: _,
+                ..
             }) => (),
             Ok(..) => panic!("wrong parsing"),
             Err(..) => panic!("parser fails in a well-formed expression"),

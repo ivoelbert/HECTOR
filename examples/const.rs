@@ -1,5 +1,5 @@
-extern crate tigerust;
+extern crate hector;
 
 fn main() {
-    println!("{:#?}", tigerust::run_compile("42").wasm)
+    println!("{:#?}", hector::run_compile("42").wasm)
 }

@@ -1,3 +1,5 @@
+//! Tiger AST and parser
+
 pub mod position;
 pub mod parser;
 pub mod lexer;
@@ -9,26 +11,39 @@ use std::fmt::{self, Debug, Formatter};
 use serde::Serialize;
 use crate::typecheck::{TigerType, Arc};
 
+/// A symbol that appears at least once in the source code
 pub type Symbol = String;
 
 #[derive(Clone, Serialize)]
+/// The Tiger Abstract Syntax Tree representing the source code
 pub struct AST {
+    /// The Tiger expression
     pub node: Exp,
+    /// The position in the source code where this node starts
     pub pos: Pos,
+    /// The type for this node, if allready typechecked, or untyped
     pub typ: Arc<TigerType>,
 }
 
 #[derive(Clone, Debug, Serialize)]
+/// A Variable in the AST
 pub struct Var {
+    /// Kind of variable
     pub kind: VarKind,
+    /// Position in source code
     pub pos: Pos,
+    /// Type of the variable
     pub typ: Arc<TigerType>,
 }
 
 #[derive(Clone, Debug, Serialize)]
+/// Posibles kind of variables in an AST
 pub enum VarKind {
+    /// As in `x`
     Simple(Symbol),
+    /// As in `x.a`
     Field(Box<Var>, Symbol),
+    /// As in `x[2]`
     Subscript(Box<Var>, Box<AST>),
 }
 
@@ -273,20 +288,15 @@ pub fn make_var(kind: VarKind) -> Var {
     Var {kind, pos: Pos {line: 0, column: 0}, typ: Arc::new(TigerType::Untyped)}
 }
 
-pub fn boxed_var(kind: VarKind) -> Box<Var> {
-    Box::new(Var {kind, pos: Pos {line: 0, column: 0}, typ: Arc::new(TigerType::Untyped)})
-}
-
 pub fn append_dec(new_dec: Dec, decs: Vec<Dec>) -> Vec<Dec> {
-    let cloned_decs = decs.clone();
-    let first_dec = cloned_decs[0].clone();
+    let first_dec = decs[0].clone();
     let cloned_new_dec = new_dec.clone();
 
     match (new_dec, first_dec) {
         (Dec::FunctionDec(new_fd), Dec::FunctionDec(fds)) => {
             // return the same decs, with the new_fd pushed into fds
             let mut new_decs: Vec<Dec> = vec![];
-            for dec in cloned_decs {
+            for dec in decs {
                 new_decs.push(dec);
             }
 
@@ -302,7 +312,7 @@ pub fn append_dec(new_dec: Dec, decs: Vec<Dec>) -> Vec<Dec> {
         (Dec::TypeDec(new_td), Dec::TypeDec(tds)) => {
             // return the same decs, with the new_td pushed into tds
             let mut new_decs: Vec<Dec> = vec![];
-            for dec in cloned_decs {
+            for dec in decs {
                 new_decs.push(dec);
             }
 
@@ -319,7 +329,7 @@ pub fn append_dec(new_dec: Dec, decs: Vec<Dec>) -> Vec<Dec> {
             // return [new_dec, ...decs]
             let mut new_decs: Vec<Dec> = vec![cloned_new_dec];
 
-            for dec in cloned_decs {
+            for dec in decs {
                 new_decs.push(dec);
             }
 

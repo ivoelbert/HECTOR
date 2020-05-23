@@ -4,7 +4,7 @@ pub fn trans_stm(
     AST { node, pos, .. }: &AST,
     level: Level,
     _value_env: &ValueEnviroment,
-    breaks_stack: &Vec<Option<Label>>,
+    breaks_stack: &[Option<Label>],
     frags: Vec<Fragment>,
 ) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
     match node {
@@ -39,7 +39,7 @@ mod test {
             typ: Arc::new(TigerType::TUnit)
         };
         let level = Level::outermost();
-        let res = translate::breakexp::trans_stm(&exp, level, &initial_value_env(), &vec![], vec![]);
+        let res = translate::breakexp::trans_stm(&exp, level, &initial_value_env(), &[], vec![]);
         match res {
             Err(TransError::BreakError(_)) => (),
             Err(..) => panic!("wrong error"),
@@ -55,7 +55,7 @@ mod test {
             typ: Arc::new(TigerType::TUnit)
         };
         let level = Level::outermost();
-        let res = translate::breakexp::trans_stm(&exp, level, &initial_value_env(), &vec![], vec![]);
+        let res = translate::breakexp::trans_stm(&exp, level, &initial_value_env(), &[], vec![]);
         match res {
             Err(TransError::BreakError(_)) => (),
             Err(..) => panic!("wrong error"),
@@ -71,7 +71,7 @@ mod test {
             typ: Arc::new(TigerType::TUnit)
         };
         let level = Level::outermost();
-        let res = translate::breakexp::trans_stm(&exp, level, &initial_value_env(), &vec![Some(unique_named_label("-break"))], vec![]);
+        let res = translate::breakexp::trans_stm(&exp, level, &initial_value_env(), &[Some(unique_named_label("-break"))], vec![]);
         match res {
             Ok((JUMP(NAME(_), _), _, fragments)) => {
                 assert!(fragments.is_empty());

@@ -93,6 +93,9 @@ mod test {
     extern crate wasm_bindgen_test;
     use wasm_bindgen_test::*;
     use super::*;
+    pub fn boxed_var(kind: VarKind) -> Box<Var> {
+        Box::new(Var {kind, pos: Pos {line: 0, column: 0}, typ: Arc::new(TigerType::Untyped)})
+    }
 
     #[test]
     #[wasm_bindgen_test]

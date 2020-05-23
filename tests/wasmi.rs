@@ -1,4 +1,4 @@
-extern crate tigerust;
+extern crate hector;
 extern crate wasmi;
 
 use std::fs::{read_to_string};
@@ -6,7 +6,7 @@ use wasmi::{ModuleInstance, ImportsBuilder, NopExternals, RuntimeValue};
 
 #[test]
 fn wasmi_const() {
-    let wasm_binary: Vec<u8> = tigerust::run_compile("42").bin.unwrap();
+    let wasm_binary: Vec<u8> = hector::run_compile("42").bin.unwrap();
     // Load wasm binary and prepare it for instantiation.
     let module = wasmi::Module::from_buffer(&wasm_binary)
         .expect("failed to load wasm");
@@ -36,7 +36,7 @@ fn wasmi_const() {
 #[test]
 fn wasmi_addone() {
     let contents = read_to_string("./tiger_sources/good/callAddone.tig").expect("read_to_string");
-    let wasm_binary: Vec<u8> = tigerust::run_compile(&contents).bin.unwrap();
+    let wasm_binary: Vec<u8> = hector::run_compile(&contents).bin.unwrap();
     // Load wasm binary and prepare it for instantiation.
     let module = wasmi::Module::from_buffer(&wasm_binary)
         .expect("failed to load wasm");
@@ -66,7 +66,7 @@ fn wasmi_addone() {
 #[test]
 fn wasmi_basic_for() {
     let contents = read_to_string("./tiger_sources/good/basicFor.tig").expect("read_to_string");
-    let wasm_binary: Vec<u8> = tigerust::run_compile(&contents).bin.unwrap();
+    let wasm_binary: Vec<u8> = hector::run_compile(&contents).bin.unwrap();
     // Load wasm binary and prepare it for instantiation.
     let module = wasmi::Module::from_buffer(&wasm_binary)
         .expect("failed to load wasm");
@@ -96,7 +96,7 @@ fn wasmi_basic_for() {
 #[test]
 fn wasmi_basic_while() {
     let contents = read_to_string("./tiger_sources/good/basicWhile.tig").expect("read_to_string");
-    let wasm_binary: Vec<u8> = tigerust::run_compile(&contents).bin.unwrap();
+    let wasm_binary: Vec<u8> = hector::run_compile(&contents).bin.unwrap();
     // Load wasm binary and prepare it for instantiation.
     let module = wasmi::Module::from_buffer(&wasm_binary)
         .expect("failed to load wasm");
@@ -126,7 +126,7 @@ fn wasmi_basic_while() {
 #[test]
 fn wasmi_identity() {
     let contents = read_to_string("./tiger_sources/good/callIdentity.tig").expect("read_to_string");
-    let wasm_binary: Vec<u8> = tigerust::run_compile(&contents).bin.unwrap();
+    let wasm_binary: Vec<u8> = hector::run_compile(&contents).bin.unwrap();
     // Load wasm binary and prepare it for instantiation.
     let module = wasmi::Module::from_buffer(&wasm_binary)
         .expect("failed to load wasm");
@@ -156,7 +156,7 @@ fn wasmi_identity() {
 #[test]
 fn wasmi_fact() {
     let contents = read_to_string("./tiger_sources/good/fact.tig").expect("read_to_string");
-    let wasm_binary: Vec<u8> = tigerust::run_compile(&contents).bin.unwrap();
+    let wasm_binary: Vec<u8> = hector::run_compile(&contents).bin.unwrap();
     // Load wasm binary and prepare it for instantiation.
     let module = wasmi::Module::from_buffer(&wasm_binary)
         .expect("failed to load wasm");
@@ -186,7 +186,7 @@ fn wasmi_fact() {
 #[test]
 fn wasmi_local_hide_global() {
     let contents = read_to_string("./tiger_sources/good/localHideGlobal.tig").expect("read_to_string");
-    let wasm_binary: Vec<u8> = tigerust::run_compile(&contents).bin.unwrap();
+    let wasm_binary: Vec<u8> = hector::run_compile(&contents).bin.unwrap();
     // Load wasm binary and prepare it for instantiation.
     let module = wasmi::Module::from_buffer(&wasm_binary)
         .expect("failed to load wasm");
@@ -216,7 +216,7 @@ fn wasmi_local_hide_global() {
 #[test]
 fn wasmi_return_variable() {
     let contents = read_to_string("./tiger_sources/good/returnVariable.tig").expect("read_to_string");
-    let wasm_binary: Vec<u8> = tigerust::run_compile(&contents).bin.unwrap();
+    let wasm_binary: Vec<u8> = hector::run_compile(&contents).bin.unwrap();
     // Load wasm binary and prepare it for instantiation.
     let module = wasmi::Module::from_buffer(&wasm_binary)
         .expect("failed to load wasm");
@@ -246,7 +246,7 @@ fn wasmi_return_variable() {
 #[test]
 fn wasmi_if() {
     let contents = read_to_string("./tiger_sources/good/test08.tig").expect("read_to_string");
-    let wasm_binary: Vec<u8> = tigerust::run_compile(&contents).bin.unwrap();
+    let wasm_binary: Vec<u8> = hector::run_compile(&contents).bin.unwrap();
     // Load wasm binary and prepare it for instantiation.
     let module = wasmi::Module::from_buffer(&wasm_binary)
         .expect("failed to load wasm");

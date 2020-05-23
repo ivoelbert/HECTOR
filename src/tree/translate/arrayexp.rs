@@ -4,7 +4,7 @@ pub fn trans_exp(
     AST {node, ..}: &AST,
     level: Level,
     value_env: &ValueEnviroment,
-    breaks_stack: &Vec<Option<Label>>,
+    breaks_stack: &[Option<Label>],
     frags: Vec<Fragment>,
 ) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
     match node {

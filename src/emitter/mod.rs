@@ -15,6 +15,7 @@ use crate::tree::Tree;
 use crate::tree::frame::*;
 use crate::tree::level::Label;
 
+#[allow(clippy::type_complexity)]
 fn destructure_frags(frags: Vec<CanonFrag>) -> (Vec<(Label, String)>, Vec<(Vec<Block>, Frame)>) {
 	let mut procs = vec![];
 	let mut strings = vec![];

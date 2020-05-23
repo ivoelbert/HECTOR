@@ -1,3 +1,13 @@
+//! From a list of cleaned trees, produce a list of
+//! basic blocks satisfying the following properties:
+//! 1. and 2. as in linearize;
+//! 3.  Every block begins with a LABEL;
+//! 4.  A LABEL appears only at the beginning of a block;
+//! 5.  Any JUMP or CJUMP is the last stm in a block;
+//! 6.  Every block ends with a JUMP or CJUMP;
+//! Also produce the "label" to which control will be passed
+//! upon exit.
+
 use super::*;
 use level::{Label, unique_named_label, named_label};
 // pub type Block = Vec<Tree::Stm>;
@@ -9,6 +19,7 @@ pub struct Block {
     pub target: Vec<Label>
 }
 
+/// Transform a linear IR into Basic Blocks
 pub fn basic_blocks(stms: Vec<Tree::Stm>) -> Vec<Block> {
     use Tree::Stm::*;
     use Tree::Exp::*;
@@ -55,8 +66,8 @@ pub fn basic_blocks(stms: Vec<Tree::Stm>) -> Vec<Block> {
                     let new_block = vec![LABEL(unique_named_label("newblock-jump"))];
                     (blocks, new_block)
                 },
-                CJUMP(o, a, b, t, f) => {
-                    this_block.push(CJUMP(o, a, b, t.clone(), f.clone()));
+                CJUMP(oper, left, right, t, f) => {
+                    this_block.push(CJUMP(oper, left, right, t.clone(), f.clone()));
                     blocks.push(Block {
                         label: if let LABEL(l) = this_block.first().unwrap() {
                             l.clone()

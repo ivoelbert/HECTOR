@@ -1,10 +1,15 @@
+//! Position in the source code for an AST component
+
 use std::fmt::{self, Display, Debug, Formatter};
 use serde::Serialize;
 use std::u32;
 
 #[derive(Clone, Copy, PartialEq, Eq, Serialize)]
+/// Position in the source code for an AST component
 pub struct Pos {
+    /// The column number
     pub column: u32,
+    /// The line number
     pub line: u32,
 }
 
@@ -15,6 +20,7 @@ impl Debug for Pos {
 }
 
 impl Pos {
+    /// Create a new Pos
     pub fn new(line: u32, column: u32) -> Self {
         Self {
             column,
@@ -26,33 +32,5 @@ impl Pos {
 impl Display for Pos {
     fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
         write!(formatter, "{}:{}:", self.line, self.column)
-    }
-}
-
-#[derive(Clone)]
-pub struct WithPos<T> {
-    pub node: T,
-    pub pos: Pos,
-}
-
-impl<T> WithPos<T> {
-    pub fn new(node: T, pos: Pos) -> Self {
-        Self {
-            node,
-            pos,
-        }
-    }
-
-    pub fn dummy(node: T) -> Self {
-        Self {
-            node,
-            pos: Pos::new(u32::max_value(), u32::max_value()),
-        }
-    }
-}
-
-impl<T: PartialEq> PartialEq for WithPos<T> {
-    fn eq(&self, other: &Self) -> bool {
-        self.node == other.node
     }
 }

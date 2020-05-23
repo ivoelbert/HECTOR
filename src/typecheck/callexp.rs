@@ -29,9 +29,7 @@ pub fn typecheck(
             // If any argument is not of it's formal type, fail.
             if formals.iter()
                 .zip(typed_args.iter())
-                .any(|(formal, typed_arg)| -> bool {
-                    **formal != *typed_arg.typ
-                }){
+                .any(|(formal, typed_arg)|**formal != *typed_arg.typ) {
                 return Err(TypeError::InvalidCallArgument(pos));
             };
             Ok(AST {

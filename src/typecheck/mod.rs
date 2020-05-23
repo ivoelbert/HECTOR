@@ -217,25 +217,24 @@ impl PartialEq for TigerType {
 }
 
 fn type_exp(ast : AST, type_env : &TypeEnviroment, value_env: &ValueEnviroment) -> Result<AST, TypeError> {
-    match &ast {
-        AST {node, ..} => match node {
-            Exp::Var(..) => varexp::typecheck(ast, type_env, value_env),
-            Exp::Unit => unitexp::typecheck(ast, type_env, value_env),
-            Exp::Nil => nilexp::typecheck(ast, type_env, value_env),
-            Exp::Int(..) => intexp::typecheck(ast, type_env,&value_env),
-            Exp::String(..) => stringexp::typecheck(ast, type_env, value_env),
-            Exp::Call{..} => callexp::typecheck(ast, type_env, value_env),
-            Exp::Op{..} => opexp::typecheck(ast,&type_env, value_env),
-            Exp::Assign{..} => assignexp::typecheck(ast, type_env, value_env),
-            Exp::Record{..} => recordexp::typecheck(ast, type_env, value_env),
-            Exp::Seq(..) => seqexp::typecheck(ast, type_env, value_env),
-            Exp::If{..} => ifexp::typecheck(ast, type_env, value_env),
-            Exp::While{..} => whileexp::typecheck(ast, type_env, value_env),
-            Exp::For{..} => forexp::typecheck(ast, type_env, value_env),
-            Exp::Let{..} => letexp::typecheck(ast, type_env, value_env),
-            Exp::Break => breakexp::typecheck(ast, type_env, value_env),
-            Exp::Array{..} => arrayexp::typecheck(ast, type_env, value_env),
-        }
+    let AST {node, ..} = &ast;
+    match node {
+        Exp::Var(..) => varexp::typecheck(ast, type_env, value_env),
+        Exp::Unit => unitexp::typecheck(ast, type_env, value_env),
+        Exp::Nil => nilexp::typecheck(ast, type_env, value_env),
+        Exp::Int(..) => intexp::typecheck(ast, type_env,&value_env),
+        Exp::String(..) => stringexp::typecheck(ast, type_env, value_env),
+        Exp::Call{..} => callexp::typecheck(ast, type_env, value_env),
+        Exp::Op{..} => opexp::typecheck(ast,&type_env, value_env),
+        Exp::Assign{..} => assignexp::typecheck(ast, type_env, value_env),
+        Exp::Record{..} => recordexp::typecheck(ast, type_env, value_env),
+        Exp::Seq(..) => seqexp::typecheck(ast, type_env, value_env),
+        Exp::If{..} => ifexp::typecheck(ast, type_env, value_env),
+        Exp::While{..} => whileexp::typecheck(ast, type_env, value_env),
+        Exp::For{..} => forexp::typecheck(ast, type_env, value_env),
+        Exp::Let{..} => letexp::typecheck(ast, type_env, value_env),
+        Exp::Break => breakexp::typecheck(ast, type_env, value_env),
+        Exp::Array{..} => arrayexp::typecheck(ast, type_env, value_env),
     }
 }
 

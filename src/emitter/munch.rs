@@ -15,7 +15,7 @@ fn get_global_index(name: &str) -> u32 {
 }
 
 
-fn wasm_binop(oper: Tree::BinOp) -> Instruction {
+fn wasm_binop(oper: &Tree::BinOp) -> Instruction {
     use Tree::BinOp::*;
     match oper {
         PLUS => I32Add,
@@ -109,7 +109,7 @@ fn munch_stm(stm: Tree::Stm, locals : LocalEnv, labels: &LabelEnv, functions: &F
                 left,
                 right,
             vec![
-                wasm_binop(oper),
+                wasm_binop(&oper),
                 If(BlockType::NoResult),
                     // CHEQUEAR: esto asume que un CJUMP nunca te puede mandar a done
                     I32Const(i32::try_from(t_index).unwrap()),
@@ -138,7 +138,7 @@ pub fn munch_exp(exp: Tree::Exp, locals : LocalEnv, functions: &FunctionEnv, str
             (vec![
                 left_code,
                 right_code,
-                vec![wasm_binop(oper)]
+                vec![wasm_binop(&oper)]
             ].concat(), locals)
         },
 		CALL(label_exp, args) => match *label_exp {
@@ -209,7 +209,6 @@ pub fn munch_body(blocks: Vec<Block>, locals : LocalEnv, functions: &FunctionEnv
             (instructions, locals)
         });
     let mut table = std::ops::Range { start: 1, end: u32::try_from(first_block_index).unwrap() + 1}
-        .into_iter()
         .collect::<Box<[u32]>>();
     table.reverse();
     (vec![

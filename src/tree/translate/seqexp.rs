@@ -5,7 +5,7 @@ fn trans_seq(
     exps: &[AST],
     level: Level,
     value_env: &ValueEnviroment,
-    breaks_stack: &Vec<Option<Label>>,
+    breaks_stack: &[Option<Label>],
     frags: Vec<Fragment>,
 ) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
     exps.iter().try_fold(
@@ -21,7 +21,7 @@ pub fn trans_exp(
     AST { node, .. }: &AST,
     level: Level,
     value_env: &ValueEnviroment,
-    breaks_stack: &Vec<Option<Label>>,
+    breaks_stack: &[Option<Label>],
     frags: Vec<Fragment>,
 ) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
     match node {
@@ -43,7 +43,7 @@ pub fn trans_stm(
     AST { node, .. }: &AST,
     level: Level,
     value_env: &ValueEnviroment,
-    breaks_stack: &Vec<Option<Label>>,
+    breaks_stack: &[Option<Label>],
     frags: Vec<Fragment>,
 ) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
     match node {

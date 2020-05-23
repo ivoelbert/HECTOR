@@ -48,9 +48,9 @@ fn trav_decs(mut decs: Vec<Dec>, table: EscapeTable, current_depth: u32) -> (Vec
         match dec {
             Dec::VarDec(_VarDec{name, typ, init, ..}, pos) => {
                 // traverse the init
-                let (r_init, init_table) = trav_exp(*init.clone(), table, current_depth);
+                let (r_init, init_table) = trav_exp(*init, table, current_depth);
                 // Add this dec to an inner table
-                let mut inner_table = init_table.clone();
+                let mut inner_table = init_table;
                 inner_table.insert(name.clone(), (current_depth, false));
                 // traverse previous declarations using the inner table
                 let (mut r_later_decs, later_decs_outer_table, mut later_decs_inner_table) = trav_decs(decs, inner_table, current_depth);
@@ -85,7 +85,7 @@ fn trav_decs(mut decs: Vec<Dec>, table: EscapeTable, current_depth: u32) -> (Vec
                 (r_decs, merge_tables(outer_table, function_decs_table.clone()), merge_tables(inner_table, function_decs_table))
             },
             Dec::TypeDec(td) => {
-                let (mut r_prev_decs, outer_table, inner_table) = trav_decs(decs, table.clone(), current_depth);
+                let (mut r_prev_decs, outer_table, inner_table) = trav_decs(decs, table, current_depth);
                 r_prev_decs.push(Dec::TypeDec(td));
                 (r_prev_decs, outer_table, inner_table)
             },
@@ -349,7 +349,7 @@ mod test {
                 if let Some(((_FunctionDec{params, ..}, ..), ..)) = funs.split_first() {
                     if let Some((Field {escape, ..}, ..)) = params.split_first() {
                         if *escape {
-                            return () // PASS
+                            return // PASS
                         } else {
                             panic!("wrong escape")
                         }
@@ -413,7 +413,7 @@ mod test {
                 if let Some(((_FunctionDec{params, ..}, ..), ..)) = funs.split_first() {
                     if let Some((Field {escape, ..}, ..)) = params.split_first() {
                         if !escape {
-                            return () // PASS
+                            return // PASS
                         } else {
                             panic!("wrong escape")
                         }
@@ -455,7 +455,7 @@ mod test {
         if let AST {node: Exp::Let {decs, ..}, ..} = find_escapes(exp) {
             if let Some((Dec::VarDec(_VarDec{escape, ..}, ..), ..)) = decs.split_first() {
                 if *escape {
-                    return () // PASS
+                    return // PASS
                 } else {
                     panic!("wrong escape")
                 }
@@ -494,7 +494,7 @@ mod test {
         if let AST {node: Exp::Let {decs, ..}, ..} = find_escapes(exp) {
             if let Some((Dec::VarDec(_VarDec{escape, ..}, ..), ..)) = decs.split_first() {
                 if !*escape {
-                    return () // PASS
+                    return // PASS
                 } else {
                     panic!("wrong escape")
                 }

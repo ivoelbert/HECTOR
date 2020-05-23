@@ -1,10 +1,8 @@
 extern crate wasm_bindgen_test;
-extern crate tigerust;
-use wasm_bindgen_test::*;
+extern crate hector;
 use std::fs::{read_dir, read_to_string};
 
 #[test]
-#[wasm_bindgen_test]
 fn good() {
     let good_path = "./tiger_sources/good/";
     let source_files = read_dir(good_path).expect("read_dir");
@@ -12,9 +10,9 @@ fn good() {
         let path = direntry.expect("direntry").path();
         println!("NOW COMPILING: {:?}", &path);
         let contents = read_to_string(&path).expect("read_to_string");
-        let compile_result = tigerust::run_compile(&contents);
+        let compile_result = hector::run_compile(&contents);
         match compile_result {
-            tigerust::CompilerResult {
+            hector::CompilerResult {
                 parse: Ok(..),
                 typecheck: Some(Ok(..)),
                 translate: Some(Ok(..)),
@@ -34,9 +32,9 @@ fn bad_syntax() {
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
-        let compile_result = tigerust::run_compile(&contents);
+        let compile_result = hector::run_compile(&contents);
         match compile_result {
-            tigerust::CompilerResult {
+            hector::CompilerResult {
                 parse: Err(..),
                 typecheck: None,
                 translate: None,
@@ -55,9 +53,9 @@ fn bad_type() {
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
-        let compile_result = tigerust::run_compile(&contents);
+        let compile_result = hector::run_compile(&contents);
         match compile_result {
-            tigerust::CompilerResult {
+            hector::CompilerResult {
                 parse: Ok(..),
                 typecheck: Some(Err(..)),
                 translate: None,
@@ -76,9 +74,9 @@ fn bad_translate() {
     for direntry in source_files {
         let path = direntry.expect("direntry").path();
         let contents = read_to_string(&path).expect("read_to_string");
-        let compile_result = tigerust::run_compile(&contents);
+        let compile_result = hector::run_compile(&contents);
         match compile_result {
-            tigerust::CompilerResult {
+            hector::CompilerResult {
                 parse: Ok(..),
                 typecheck: Some(Ok(..)),
                 translate: Some(Err(..)),

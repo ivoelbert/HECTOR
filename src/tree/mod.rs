@@ -8,7 +8,6 @@ pub mod level;
 
 use crate::ast::position::Pos;
 use serde::{Serialize};
-#[allow(non_snake_case)]
 use level::*;
 type Access = frame::Access;
 pub use level::Fragment;
@@ -61,7 +60,7 @@ pub fn initial_value_env() -> ValueEnviroment {
         "+str_greater",
         "+str_greater_or_equals"
     ];
-    externals.into_iter().map(|name| -> (String, EnvEntry) {
+    externals.iter().map(|name| -> (String, EnvEntry) {
         (name.to_string(), EnvEntry::Func {
             label: named_label(name),
             external: true,

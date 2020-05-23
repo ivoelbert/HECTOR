@@ -47,22 +47,22 @@ pub enum BinOp {
     UGE
 }
 
-pub fn not_rel(ro : BinOp) -> BinOp {
-    use BinOp::*;
-    match ro {
-        EQ => NE,
-	    NE => EQ,
-	    LT => GE,
-	    GE => LT,
-	    GT => LE,
-	    LE => GT,
-	    ULT => UGE,
-	    UGE => ULT,
-	    ULE => UGT,
-        UGT => ULE,
-        _ => panic!()
-    }
-}
+// pub fn not_rel(ro : BinOp) -> BinOp {
+//     use BinOp::*;
+//     match ro {
+//         EQ => NE,
+// 	    NE => EQ,
+// 	    LT => GE,
+// 	    GE => LT,
+// 	    GT => LE,
+// 	    LE => GT,
+// 	    ULT => UGE,
+// 	    UGE => ULT,
+// 	    ULE => UGT,
+//         UGT => ULE,
+//         _ => panic!()
+//     }
+// }
 
 pub fn seq(mut stms: Vec<Stm>) -> Stm {
     let stm =  if stms.is_empty() {Stm::EXP(Box::new(Exp::CONST(0)))} else {stms.remove(0)};

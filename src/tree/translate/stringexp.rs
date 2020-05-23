@@ -4,7 +4,7 @@ pub fn trans_exp(
     AST {node, ..}: &AST,
     level: Level,
     _value_env: &ValueEnviroment,
-    _breaks_stack: &Vec<Option<Label>>,
+    _breaks_stack: &[Option<Label>],
     mut frags: Vec<Fragment>,
 ) -> Result<(Tree::Exp, Level, Vec<Fragment>), TransError> {
     match node {
@@ -37,7 +37,7 @@ mod test {
         };
         let level = Level::outermost();
         let value_env = initial_value_env();
-        let res = translate::stringexp::trans_exp(&exp, level, &value_env, &vec![], vec![]);
+        let res = translate::stringexp::trans_exp(&exp, level, &value_env, &[], vec![]);
         match res {
             Ok((NAME(_), _level, fragments)) => {
                 assert!(!fragments.is_empty());

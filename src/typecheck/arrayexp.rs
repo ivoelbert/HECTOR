@@ -33,13 +33,19 @@ pub fn typecheck(
                                         typ: array_of_symbol
                                     },
                                     pos,
-                                    typ: Arc::new(TArray(array_of_type.clone(), type_id.clone()))})
+                                    typ: Arc::new(TArray(Arc::<TigerType>::clone(&array_of_type), *type_id))})
                             } else {
                                 console_log!("array mismatch");
                                 Err(TypeError::TypeMismatch(pos))
                             }
                         }
-                        _ => Err(TypeError::NonIntegerSize(pos)),
+                        TigerType::TUnit
+                        | TigerType::TNil
+                        | TigerType::TString
+                        | TigerType::TArray(..)
+                        | TigerType::TRecord(..)
+                        | TigerType::Internal(..)
+                        | TigerType::Untyped => Err(TypeError::NonIntegerSize(pos)),
                     }
                 },
                 _ => Err(TypeError::NotArrayType(pos)),
@@ -68,7 +74,7 @@ mod test {
             Arc::new(TigerType::TInt(R::RW)),
             TypeId::new(),
         ));
-        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        type_env.insert(Symbol::from("FooType"), Arc::<TigerType>::clone(&foo_type));
         let res = type_exp(ast, &type_env, &value_env);
         match res {
             Ok(AST{typ, ..}) if *typ == *foo_type => (),

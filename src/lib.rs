@@ -1,25 +1,18 @@
+#![deny(missing_docs)]
 #![warn(
     clippy::all,
-    clippy::restriction,
-    clippy::pedantic,
+    // clippy::restriction,
+    // clippy::pedantic,
 )]
 #![allow(
-   clippy::missing_docs_in_private_items, // esto es una verdadera paja
    clippy::implicit_return, // se contradice con otro?
    clippy::use_debug, // para debuguear el parser
    clippy::print_stdout,
-   clippy::needless_pass_by_value, // para tener los translate muertos
-   clippy::missing_inline_in_public_items,
-   dead_code,
 )]
-#![feature(inner_deref)]
-#![feature(try_trait)]
-#![feature(bind_by_move_pattern_guards)]
-#![feature(start)]
-extern crate lalrpop_util;
-extern crate pathfinding;
-extern crate uuid;
 
+//! HECTOR
+//! Heuristically Excessive Compiler for Tiger On Rust
+//! By Federico Badaloni & Ivo Elbert, Licenciatura en Ciencias de la Computación, FCEIA, UNR.
 
 #[macro_use]
 mod utils;
@@ -30,7 +23,7 @@ mod canonization;
 mod emitter;
 
 use typecheck::typecheck;
-pub use utils::{log, set_panic_hook};
+use utils::{set_panic_hook};
 
 use wasm_bindgen::prelude::*;
 extern crate serde_derive;
@@ -40,16 +33,33 @@ use serde::{Serialize};
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[derive(Serialize, Debug)]
+/// The final result of the compiler
 pub struct CompilerResult {
+    /// The parsed abstract syntax tree or a parsing error
     pub parse: Result<ast::AST, ast::parser::ParseError>,
+    /// The typechecked abstract syntax tree or a typechecking error
+    /// None if parsing failed
     pub typecheck: Option<Result<ast::AST, typecheck::TypeError>>,
+    /// Typechecked abstract syntax tree that also has correct escape flags
+    /// None if a previous step failed
     pub escape: Option<ast::AST>,
+    /// Intermediate representation of the code
+    /// None if a previous step failed
     pub translate: Option<Result<Vec<tree::Fragment>, tree::TransError>>,
+    /// Semi-canonized intermediate representation or a translation error
+    /// None if a previous step failed
     pub canon: Option<Vec<canonization::CanonFrag>>,
+    /// The WebAssembly Text Format for the compiled code
+    /// None if a previous step failed
     pub wasm: Option<String>,
+    /// The resulting WebAssembly Binary
+    /// None if a previous step failed
     pub bin: Option<Vec<u8>>
 }
 
+#[must_use]
+/// Run all compiler stages and return the results for all of them
+/// Mainly for examples and tests
 pub fn run_compile(source_code: &str) -> CompilerResult {
     let parse_result = ast::parser::parse(source_code);
     let typecheck_result = if let Ok(ast) = &parse_result {
@@ -80,6 +90,8 @@ pub fn run_compile(source_code: &str) -> CompilerResult {
 }
 
 #[wasm_bindgen]
+#[must_use]
+/// Returns a JSON encoded CompilerResult so we can load it in the browser
 pub fn compile(source_code: &str) -> JsValue {
     set_panic_hook();
     console_log!("Running WASM!");
@@ -89,5 +101,5 @@ pub fn compile(source_code: &str) -> JsValue {
         return JsValue::from(-1)
     }
 
-    JsValue::from_serde(&run_compile(source_code)).unwrap()
+    JsValue::from_serde(&run_compile(source_code)).expect("Should encode correctly")
 }

@@ -5,7 +5,7 @@ pub fn trans_stm(
     AST { node, .. }: &AST,
     mut level: Level,
     value_env: &ValueEnviroment,
-    breaks_stack: &Vec<Option<Label>>,
+    breaks_stack: &[Option<Label>],
     frags: Vec<Fragment>,
 ) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
     match node {
@@ -17,7 +17,7 @@ pub fn trans_stm(
             escape,
         } => {
             let mut new_value_env = value_env.clone();
-            let mut new_breaks_stack = breaks_stack.clone();
+            let mut new_breaks_stack = breaks_stack.to_vec();
             let access = level.alloc_local(*escape, Some(var.clone()));
             new_value_env.insert(
                 var.clone(),
@@ -50,7 +50,7 @@ pub fn trans_stm(
             // We should move them to temps
             Ok((
                 Tree::seq(vec![
-                    Move!(var_exp.clone(), lo_exp.clone()),
+                    Move!(var_exp.clone(), lo_exp),
                     CJUMP(LE,
                         Box::new(var_exp.clone()),
                         Box::new(hi_exp.clone()),
@@ -62,8 +62,8 @@ pub fn trans_stm(
                     CJUMP(LT, Box::new(var_exp.clone()), Box::new(hi_exp), continue_label.clone(), done_label.clone()),
                     LABEL(continue_label),
                     Move!(var_exp.clone(), plus!(var_exp, CONST(1))),
-                    JUMP(NAME(start_label.clone()), vec![start_label.clone()]),
-                    LABEL(done_label.clone()),
+                    JUMP(NAME(start_label.clone()), vec![start_label]),
+                    LABEL(done_label),
                 ]),
                 body_level,
                 body_frags,
