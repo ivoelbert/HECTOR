@@ -1,26 +1,6 @@
 use crate::ast::*;
 use crate::tree::*;
 
-// fn gen_init_stm(memaddr: Tree::Exp, typ: Arc<TigerType>, mut fields: HashMap<String, Tree::Exp>) -> Tree::Stm {
-//     if let TigerType::TRecord(formals, ..) = &*typ {
-//         seq(formals
-//             .iter()
-//             .map(|(name, _, order)| {
-//                 Move!(
-//                     MEM(Box::new(plus!(
-//                         memaddr.clone(),
-//                         CONST(*order * frame::WORD_SIZE)
-//                     ))),
-//                     fields.remove(name).expect("typechecking should handle this")
-//                 )
-//             })
-//             .collect()
-//         )
-//     } else {
-//         panic!("typechecking should handle this")
-//     }
-// }
-
 pub fn trans_exp(
     AST {node, ..}: &AST,
     level: Level,

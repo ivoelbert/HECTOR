@@ -32,6 +32,9 @@ use serde::{Serialize};
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
+#[macro_use]
+extern crate lazy_static;
+
 #[derive(Serialize, Debug)]
 /// The final result of the compiler
 pub struct CompilerResult {

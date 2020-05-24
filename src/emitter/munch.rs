@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 use super::*;
 use Tree::Exp::*;
 use Tree::Stm::*;
@@ -145,7 +147,7 @@ pub fn munch_exp(exp: Tree::Exp, locals : LocalEnv, functions: &FunctionEnv, str
             NAME(label) => {
                 let index = functions.get(&label).unwrap();
                 let args_code = args
-                    .into_iter()
+                    .into_par_iter()
                     .map(|arg| -> Vec<Instruction> {
                         munch_exp(arg, locals.clone(), functions, strings).0
                     }).collect::<Vec<Vec<Instruction>>>().concat();
@@ -193,7 +195,7 @@ pub fn munch_block(block: Block, locals : LocalEnv, labels: &LabelEnv, functions
 }
 
 pub fn munch_body(blocks: Vec<Block>, locals : LocalEnv, functions: &FunctionEnv, strings: &StringEnv) -> (Vec<Instruction>, LocalEnv) {
-    let block_instructions : Vec<Instruction>= blocks.iter().map(|_| Block(BlockType::NoResult)).collect();
+    let block_instructions : Vec<Instruction>= blocks.par_iter().map(|_| Block(BlockType::NoResult)).collect();
     let first_block_index : i32 = (blocks.len() + 1).try_into().unwrap();
     let labels : LabelEnv = blocks
         .iter()

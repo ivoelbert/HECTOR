@@ -23,8 +23,9 @@ pub enum CanonFrag {
 }
 
 pub fn canonize(frags: Vec<Fragment>) -> Vec<CanonFrag> {
+    use rayon::prelude::*;
     frags
-        .into_iter()
+        .into_par_iter()
         .map(|frag| {
             match frag {
                 Fragment::Proc{body, frame} =>

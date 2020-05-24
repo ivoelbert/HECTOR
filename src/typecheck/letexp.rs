@@ -2,6 +2,7 @@ use crate::ast::*;
 use crate::typecheck::*;
 use pathfinding::directed::topological_sort;
 use std::convert::TryInto;
+use rayon::prelude::*;
 
 fn typecheck_vardec(
     _VarDec {
@@ -100,7 +101,7 @@ fn add_prototype_to_env(
     };
     // Check that argument names are not repeated
     let names : Vec<&String> = params
-        .iter()
+        .par_iter()
         .map(|Field { name, .. }: &Field| name)
         .collect();
 
@@ -110,7 +111,7 @@ fn add_prototype_to_env(
 
     // get parameter types
     let formals: Vec<Arc<TigerType>> = params
-        .iter()
+        .par_iter()
         .map(
             |Field { typ, .. }: &Field| -> Result<Arc<TigerType>, TypeError> {
                 ty_to_tigertype(typ, type_env, pos)
@@ -187,7 +188,7 @@ fn typecheck_functiondec_batch(
     type_env: &TypeEnviroment,
     mut value_env: ValueEnviroment,
 ) -> Result<(Vec<(_FunctionDec, Pos)>, ValueEnviroment), TypeError> {
-    let names = decs.iter().map(|(_FunctionDec{name, ..}, ..)| -> String {name.clone()}).collect::<Vec<String>>();
+    let names = decs.par_iter().map(|(_FunctionDec{name, ..}, ..)| -> String {name.clone()}).collect::<Vec<String>>();
     if (1..decs.len()).any(|i| names[i..].contains(&names[i - 1])) {
         return Err(TypeError::DuplicatedDefinitions(decs[0].1))
     }
@@ -205,7 +206,7 @@ fn typecheck_functiondec_batch(
 
     // Type the functions with the new ValueEnviroment
     Ok((decs
-        .into_iter()
+        .into_par_iter()
         .map(
             |(dec, pos): (_FunctionDec, Pos)| -> Result<(_FunctionDec, Pos), TypeError> {
                 Ok((typecheck_functiondec(dec, &value_env, type_env, pos)?, pos))
@@ -272,7 +273,7 @@ fn sort_type_decs(decs: &[(_TypeDec, Pos)]) -> Result<(DecList, DecList), Symbol
         }
         topological_sort::topological_sort(&elements(pairs), |n| -> Vec<Symbol> {
             pairs
-                .iter()
+                .par_iter()
                 .filter(|(_, b)| b == n)
                 .map(|(a, _)| a.clone())
                 .collect::<Vec<Symbol>>()
@@ -306,7 +307,7 @@ fn typecheck_typedec_batch(
     mut type_env: TypeEnviroment,
 ) -> Result<TypeEnviroment, TypeError> {
     // Sort by type dependency
-    let names = decs.iter().map(|(_TypeDec{name, ..}, ..)| -> String {name.clone()}).collect::<Vec<String>>();
+    let names = decs.par_iter().map(|(_TypeDec{name, ..}, ..)| -> String {name.clone()}).collect::<Vec<String>>();
     if (1..decs.len()).any(|i| names[i..].contains(&names[i - 1])) {
         return Err(TypeError::DuplicatedDefinitions(decs[0].1))
     }

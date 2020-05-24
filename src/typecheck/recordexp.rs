@@ -1,5 +1,6 @@
 use crate::ast::*;
 use crate::typecheck::*;
+use rayon::prelude::*;
 
 pub fn typecheck(
     AST{node, pos, ..}: AST,
@@ -8,12 +9,11 @@ pub fn typecheck(
 ) -> Result<AST, TypeError> {
     let type_fields = |args: Vec<(Symbol, Box<AST>)>| -> Result<HashMap<Symbol, AST>, TypeError> {
         args
-            .into_iter()
+            .into_par_iter()
             .map(|(symbol, ast)| -> Result<(Symbol, AST), TypeError> {
                 Ok((symbol, type_exp(*ast, type_env, value_env)?))
             })
             .collect()
-        //args.iter().map(|arg| (arg.0.clone(), type_exp(*arg.1, type_env, value_env))).rev().collect()
     };
     match node {
         Exp::Record{fields, typ: record_type_symbol} => {

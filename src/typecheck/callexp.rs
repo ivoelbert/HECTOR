@@ -1,4 +1,5 @@
 use super::*;
+use rayon::prelude::*;
 
 pub fn typecheck(
     AST{node, pos, ..}: AST,
@@ -21,14 +22,14 @@ pub fn typecheck(
                 return Err(TypeError::TooManyArguments(pos));
             }
             let typed_args : Vec<AST> = args
-                .into_iter() // into_iter moves the values instead of borrowing
+                .into_par_iter()
                 .map(|arg| -> Result<AST, TypeError> {
                     type_exp(arg, type_env, value_env)
                 })
                 .collect::<Result<Vec<AST>, TypeError>>()?;
             // If any argument is not of it's formal type, fail.
-            if formals.iter()
-                .zip(typed_args.iter())
+            if formals.par_iter()
+                .zip(typed_args.par_iter())
                 .any(|(formal, typed_arg)|**formal != *typed_arg.typ) {
                 return Err(TypeError::InvalidCallArgument(pos));
             };

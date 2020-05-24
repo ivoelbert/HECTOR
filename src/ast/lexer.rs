@@ -89,105 +89,71 @@ pub enum LexicalError {
     LexError,
 }
 
+type TokenGeneratorFunction = Box<dyn (Fn(String) -> Tok) + Sync>;
+
+lazy_static! {
+    static ref REGEXES: Vec<(Regex, TokenGeneratorFunction)> = vec![
+        (Regex::new(r"^\.$").unwrap(), Box::new(|_| Tok::Point)),
+        (Regex::new(r"^:$").unwrap(), Box::new(|_| Tok::Colon)),
+        (Regex::new(r"^:=$").unwrap(), Box::new(|_| Tok::Assign)),
+        (Regex::new(r"^,$").unwrap(), Box::new(|_| Tok::Comma)),
+        (Regex::new(r"^;$").unwrap(), Box::new(|_| Tok::Semicolon)),
+        (Regex::new(r"^\($").unwrap(), Box::new(|_| Tok::OpenParen)),
+        (Regex::new(r"^\)$").unwrap(), Box::new(|_| Tok::CloseParen)),
+        (Regex::new(r"^\[$").unwrap(), Box::new(|_| Tok::OpenBracket)),
+        (Regex::new(r"^\]$").unwrap(), Box::new(|_| Tok::CloseBracket)),
+        (Regex::new(r"^\{$").unwrap(), Box::new(|_| Tok::OpenBraces)),
+        (Regex::new(r"^}$").unwrap(), Box::new(|_| Tok::CloseBraces)),
+        (Regex::new(r"^&$").unwrap(), Box::new(|_| Tok::Ampersand)),
+        (Regex::new(r"^\|$").unwrap(), Box::new(|_| Tok::Pipe)),
+        (Regex::new(r"^=$").unwrap(), Box::new(|_| Tok::Equals)),
+        (Regex::new(r"^<$").unwrap(), Box::new(|_| Tok::Lt)),
+        (Regex::new(r"^<=$").unwrap(), Box::new(|_| Tok::Lte)),
+        (Regex::new(r"^>$").unwrap(), Box::new(|_| Tok::Gt)),
+        (Regex::new(r"^>=$").unwrap(), Box::new(|_| Tok::Gte)),
+        (Regex::new(r"^<>$").unwrap(), Box::new(|_| Tok::Neq)),
+        (Regex::new(r"^\+$").unwrap(), Box::new(|_| Tok::Plus)),
+        (Regex::new(r"^\-$").unwrap(), Box::new(|_| Tok::Minus)),
+        (Regex::new(r"^\*$").unwrap(), Box::new(|_| Tok::Times)),
+        (Regex::new(r"^/$").unwrap(), Box::new(|_| Tok::Div)),
+        (Regex::new(r"^type$").unwrap(), Box::new(|_| Tok::Type)),
+        (Regex::new(r"^array$").unwrap(), Box::new(|_| Tok::Array)),
+        (Regex::new(r"^of$").unwrap(), Box::new(|_| Tok::Of)),
+        (Regex::new(r"^var$").unwrap(), Box::new(|_| Tok::Var)),
+        (Regex::new(r"^function$").unwrap(), Box::new(|_| Tok::Function)),
+        (Regex::new(r"^let$").unwrap(), Box::new(|_| Tok::Let)),
+        (Regex::new(r"^in$").unwrap(), Box::new(|_| Tok::In)),
+        (Regex::new(r"^end$").unwrap(), Box::new(|_| Tok::End)),
+        (Regex::new(r"^if$").unwrap(), Box::new(|_| Tok::If)),
+        (Regex::new(r"^then$").unwrap(), Box::new(|_| Tok::Then)),
+        (Regex::new(r"^else$").unwrap(), Box::new(|_| Tok::Else)),
+        (Regex::new(r"^while$").unwrap(), Box::new(|_| Tok::While)),
+        (Regex::new(r"^do$").unwrap(), Box::new(|_| Tok::Do)),
+        (Regex::new(r"^for$").unwrap(), Box::new(|_| Tok::For)),
+        (Regex::new(r"^to$").unwrap(), Box::new(|_| Tok::To)),
+        (Regex::new(r"^break$").unwrap(), Box::new(|_| Tok::Break)),
+        (Regex::new(r"^nil$").unwrap(), Box::new(|_| Tok::Nil)),
+        (Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_]*$").unwrap(), Box::new(Tok::Symbol)),
+        (Regex::new(r"^[0-9]+$").unwrap(), Box::new(|string_token| Tok::Number(string_token.parse::<i32>().unwrap()))),
+        (Regex::new(r"^/\*$").unwrap(), Box::new(|_| Tok::OpenComen)),
+        (Regex::new(r"^\*/$").unwrap(), Box::new(|_| Tok::CloseComen)),
+        (Regex::new(r"^//$").unwrap(), Box::new(|_| Tok::LineComen)),
+        (Regex::new(r#"^"$"#).unwrap(), Box::new(|_| Tok::Quote)),
+    ];
+}
+
 fn get_token(string_token: String) -> Option<Tok> {
-    if Regex::new(r"^\.$").unwrap().is_match(&string_token) {
-        Some(Tok::Point)
-    } else if Regex::new(r"^:$").unwrap().is_match(&string_token) {
-        Some(Tok::Colon)
-    } else if Regex::new(r"^:=$").unwrap().is_match(&string_token) {
-        Some(Tok::Assign)
-    } else if Regex::new(r"^,$").unwrap().is_match(&string_token) {
-        Some(Tok::Comma)
-    } else if Regex::new(r"^;$").unwrap().is_match(&string_token) {
-        Some(Tok::Semicolon)
-    } else if Regex::new(r"^\($").unwrap().is_match(&string_token) {
-        Some(Tok::OpenParen)
-    } else if Regex::new(r"^\)$").unwrap().is_match(&string_token) {
-        Some(Tok::CloseParen)
-    } else if Regex::new(r"^\[$").unwrap().is_match(&string_token) {
-        Some(Tok::OpenBracket)
-    } else if Regex::new(r"^\]$").unwrap().is_match(&string_token) {
-        Some(Tok::CloseBracket)
-    } else if Regex::new(r"^\{$").unwrap().is_match(&string_token) {
-        Some(Tok::OpenBraces)
-    } else if Regex::new(r"^}$").unwrap().is_match(&string_token) {
-        Some(Tok::CloseBraces)
-    } else if Regex::new(r"^&$").unwrap().is_match(&string_token) {
-        Some(Tok::Ampersand)
-    } else if Regex::new(r"^\|$").unwrap().is_match(&string_token) {
-        Some(Tok::Pipe)
-    } else if Regex::new(r"^=$").unwrap().is_match(&string_token) {
-        Some(Tok::Equals)
-    } else if Regex::new(r"^<$").unwrap().is_match(&string_token) {
-        Some(Tok::Lt)
-    } else if Regex::new(r"^<=$").unwrap().is_match(&string_token) {
-        Some(Tok::Lte)
-    } else if Regex::new(r"^>$").unwrap().is_match(&string_token) {
-        Some(Tok::Gt)
-    } else if Regex::new(r"^>=$").unwrap().is_match(&string_token) {
-        Some(Tok::Gte)
-    } else if Regex::new(r"^<>$").unwrap().is_match(&string_token) {
-        Some(Tok::Neq)
-    } else if Regex::new(r"^\+$").unwrap().is_match(&string_token) {
-        Some(Tok::Plus)
-    } else if Regex::new(r"^\-$").unwrap().is_match(&string_token) {
-        Some(Tok::Minus)
-    } else if Regex::new(r"^\*$").unwrap().is_match(&string_token) {
-        Some(Tok::Times)
-    } else if Regex::new(r"^/$").unwrap().is_match(&string_token) {
-        Some(Tok::Div)
-    } else if Regex::new(r"^type$").unwrap().is_match(&string_token) {
-        Some(Tok::Type)
-    } else if Regex::new(r"^array$").unwrap().is_match(&string_token) {
-        Some(Tok::Array)
-    } else if Regex::new(r"^of$").unwrap().is_match(&string_token) {
-        Some(Tok::Of)
-    } else if Regex::new(r"^var$").unwrap().is_match(&string_token) {
-        Some(Tok::Var)
-    } else if Regex::new(r"^function$").unwrap().is_match(&string_token) {
-        Some(Tok::Function)
-    } else if Regex::new(r"^let$").unwrap().is_match(&string_token) {
-        Some(Tok::Let)
-    } else if Regex::new(r"^in$").unwrap().is_match(&string_token) {
-        Some(Tok::In)
-    } else if Regex::new(r"^end$").unwrap().is_match(&string_token) {
-        Some(Tok::End)
-    } else if Regex::new(r"^if$").unwrap().is_match(&string_token) {
-        Some(Tok::If)
-    } else if Regex::new(r"^then$").unwrap().is_match(&string_token) {
-        Some(Tok::Then)
-    } else if Regex::new(r"^else$").unwrap().is_match(&string_token) {
-        Some(Tok::Else)
-    } else if Regex::new(r"^while$").unwrap().is_match(&string_token) {
-        Some(Tok::While)
-    } else if Regex::new(r"^do$").unwrap().is_match(&string_token) {
-        Some(Tok::Do)
-    } else if Regex::new(r"^for$").unwrap().is_match(&string_token) {
-        Some(Tok::For)
-    } else if Regex::new(r"^to$").unwrap().is_match(&string_token) {
-        Some(Tok::To)
-    } else if Regex::new(r"^break$").unwrap().is_match(&string_token) {
-        Some(Tok::Break)
-    } else if Regex::new(r"^nil$").unwrap().is_match(&string_token) {
-        Some(Tok::Nil)
-    } else if Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
-        .unwrap()
-        .is_match(&string_token)
-    {
-        Some(Tok::Symbol(string_token))
-    } else if Regex::new(r"^[0-9]+$").unwrap().is_match(&string_token) {
-        Some(Tok::Number(string_token.parse::<i32>().unwrap()))
-    } else if Regex::new(r"^/\*$").unwrap().is_match(&string_token) {
-        Some(Tok::OpenComen)
-    } else if Regex::new(r"^\*/$").unwrap().is_match(&string_token) {
-        Some(Tok::CloseComen)
-    } else if Regex::new(r"^//$").unwrap().is_match(&string_token) {
-        Some(Tok::LineComen)
-    } else if Regex::new(r#"^"$"#).unwrap().is_match(&string_token) {
-        Some(Tok::Quote)
-    } else {
-        None
-    }
+    use rayon::prelude::*;
+    Some(REGEXES
+        .par_iter()
+        .map(|(r, t)| {
+            if r.is_match(&string_token) {
+                Some(t)
+            } else {
+                None
+            }
+        })
+        .find_first(|t| t.is_some())??(string_token))
 }
 
 #[derive(PartialEq, Eq, Clone, Debug)]
