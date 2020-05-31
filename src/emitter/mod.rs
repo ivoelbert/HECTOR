@@ -105,7 +105,7 @@ pub fn emit_module(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 		.build();
 	// println!("{:#?}", &module);
 	// (format!("{:?}", &module), parity_wasm::serialize(module).unwrap())
-	parity_wasm::serialize_to_file("asd.wasm", module.clone()).unwrap();
+	// parity_wasm::serialize_to_file("asd.wasm", module.clone()).unwrap();
 	let bytes = parity_wasm::serialize(module).unwrap();
 	let text = wasmprinter::print_bytes(&bytes).unwrap();
 	// console_log!("{:?}", &text);

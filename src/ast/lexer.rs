@@ -143,9 +143,8 @@ lazy_static! {
 }
 
 fn get_token(string_token: String) -> Option<Tok> {
-    use rayon::prelude::*;
     Some(REGEXES
-        .par_iter()
+        .iter()
         .map(|(r, t)| {
             if r.is_match(&string_token) {
                 Some(t)
@@ -153,7 +152,7 @@ fn get_token(string_token: String) -> Option<Tok> {
                 None
             }
         })
-        .find_first(|t| t.is_some())??(string_token))
+        .find(|t| t.is_some())??(string_token))
 }
 
 #[derive(PartialEq, Eq, Clone, Debug)]
