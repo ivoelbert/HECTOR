@@ -200,7 +200,7 @@ pub fn munch_body(blocks: Vec<Block>, locals : LocalEnv, functions: &FunctionEnv
         .enumerate()
         .map(|(i, block)| (block.label.clone(), u32::try_from(first_block_index).unwrap() - u32::try_from(i).unwrap()))
         .collect();
-    console_log!("{:#?}", labels);
+    // console_log!("{:#?}", labels);
     let (body, locals) = blocks.into_iter()
         .fold((vec![], locals), |(mut instructions, locals): (Vec<Instruction>, LocalEnv), block: Block| -> (Vec<Instruction>, LocalEnv) {
             let block_index = *labels.get(&block.label).unwrap();
