@@ -1,6 +1,6 @@
 const _fs = require('fs');
 const fs = _fs.promises;
-const wasm = require('../../testPkg/tigerust');
+const wasm = require('../../testPkg/hector');
 
 const generateTestInputs = async () => {
     console.log('Generating test inputs...');
