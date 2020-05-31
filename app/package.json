@@ -25,7 +25,8 @@
     "scripts": {
         "start": "react-app-rewired start",
         "build": "react-app-rewired build",
-        "test": "node testUtils/generateTestCases.js && react-app-rewired test"
+        "test": "node test/generateTestCases.js && react-app-rewired test",
+        "gen-tests": "node test/generateTestCases.js"
     },
     "eslintConfig": {
         "extends": "react-app"

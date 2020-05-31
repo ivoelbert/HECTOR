@@ -9,7 +9,7 @@ import {
 } from './treeTypes';
 import { assertExists, UnreachableError, IncludeMap } from './utils/utils';
 import { accessExpsFromFormals } from './frame';
-import { findLabelIndex, evalBinop } from './utils/treeUtils';
+import { findLabelIndex, evalBinop, flatStms } from './utils/treeUtils';
 import { isFunFrag, isStringFrag } from './utils/fragPatterns';
 import {
     isMemExp,
@@ -110,7 +110,7 @@ export class TreeInterpreter {
         await this.setupFormals(args, frame.formals);
 
         // The machine state is ready to run the body, do it.
-        await this.execStms(body);
+        await this.execStms(flatStms(body));
 
         // Restore locals
         this.locals = localsToRestore;
@@ -141,6 +141,9 @@ export class TreeInterpreter {
             if (maybeLabel === null) {
                 // If no jump continue executing the next stm
                 executedStmIndex++;
+            } else if(maybeLabel === 'done') {
+                // If the label is 'done', the program finished.
+                break;
             } else {
                 // We've got a label, find the corresponding stm and continue executing from there
                 const nextStmIndex = findLabelIndex(stms, maybeLabel);

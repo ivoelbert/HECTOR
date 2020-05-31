@@ -1,0 +1,11 @@
+
+let var  b := 1
+    type a = int
+in
+    let var  c := 2
+        function a (a : a) : a = a + b + c
+        var b := 3
+    in
+        a(1)
+    end
+end

@@ -1,4 +1,4 @@
-import { Label, Stm, BinOp } from '../treeTypes';
+import { Label, Stm, BinOp, FragStm } from '../treeTypes';
 import { isLabelStm } from './stmPatterns';
 import { UnreachableError } from './utils';
 
@@ -13,6 +13,16 @@ export const findLabelIndex = (stms: Stm[], label: Label): number => {
 
     return foundIndex;
 };
+
+export const flatStms = (fragStms: FragStm[]): Stm[] => {
+    const stms: Stm[] = []
+
+    fragStms.forEach(fragStm => {
+        stms.push(...fragStm.stms)
+    })
+
+    return stms;
+}
 
 export const evalBinop = (op: BinOp, leftVal: number, rightVal: number): number => {
     switch (op) {

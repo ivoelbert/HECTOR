@@ -50,9 +50,13 @@ export type Frame = {
     memindex: number;
 };
 
+export type FragStm = {
+    stms: Stm[]
+}
+
 export type FunFrag = {
     Proc: {
-        body: Stm[];
+        body: FragStm[];
         frame: Frame;
     };
 };
