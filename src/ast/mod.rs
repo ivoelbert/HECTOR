@@ -184,9 +184,9 @@ pub struct _TypeDec {
 
 #[derive(Debug, Clone, Serialize)]
 pub enum Dec {
-    FunctionDec(Vec<(_FunctionDec, Pos)>),
-    VarDec(_VarDec, Pos),
-    TypeDec(Vec<(_TypeDec, Pos)>),
+    Function(Vec<(_FunctionDec, Pos)>),
+    Var(_VarDec, Pos),
+    Type(Vec<(_TypeDec, Pos)>),
 }
 
 impl _FunctionDec {
@@ -237,31 +237,31 @@ pub struct Field {
 
 #[derive(Clone, Copy, Serialize)]
 pub enum Oper {
-    PlusOp,
-    MinusOp,
-    TimesOp,
-    DivideOp,
-    EqOp,
-    NeqOp,
-    LtOp,
-    LeOp,
-    GtOp,
-    GeOp,
+    Plus,
+    Minus,
+    Times,
+    Divide,
+    Eq,
+    Neq,
+    Lt,
+    Le,
+    Gt,
+    Ge,
 }
 
 impl Debug for Oper {
     fn fmt(&self, formatter: &mut Formatter) -> fmt::Result {
         match self {
-            Oper::PlusOp => write!(formatter, "+"),
-            Oper::MinusOp => write!(formatter, "-"),
-            Oper::TimesOp => write!(formatter, "*"),
-            Oper::DivideOp => write!(formatter, "/"),
-            Oper::EqOp => write!(formatter, "="),
-            Oper::NeqOp => write!(formatter, "<>"),
-            Oper::LtOp => write!(formatter, "<"),
-            Oper::LeOp => write!(formatter, "<="),
-            Oper::GtOp => write!(formatter, ">"),
-            Oper::GeOp => write!(formatter, ">="),
+            Oper::Plus => write!(formatter, "+"),
+            Oper::Minus => write!(formatter, "-"),
+            Oper::Times => write!(formatter, "*"),
+            Oper::Divide => write!(formatter, "/"),
+            Oper::Eq => write!(formatter, "="),
+            Oper::Neq => write!(formatter, "<>"),
+            Oper::Lt => write!(formatter, "<"),
+            Oper::Le => write!(formatter, "<="),
+            Oper::Gt => write!(formatter, ">"),
+            Oper::Ge => write!(formatter, ">="),
         }
     }
 }
@@ -276,10 +276,12 @@ pub fn posed_exp(exp: Exp, line: u32, column: u32) -> Box<AST> {
     Box::new(pos_exp)
 }
 
+#[allow( clippy::module_name_repetitions)]
 pub fn make_ast(exp: Exp) -> AST {
     AST {node: exp, pos: Pos {line: 0, column: 0}, typ: Arc::new(TigerType::Untyped)}
 }
 
+#[allow( clippy::module_name_repetitions)]
 pub fn boxed_ast(exp: Exp) -> Box<AST> {
     Box::new(AST {node: exp, pos: Pos {line: 0, column: 0}, typ: Arc::new(TigerType::Untyped)})
 }
@@ -293,7 +295,7 @@ pub fn append_dec(new_dec: Dec, decs: Vec<Dec>) -> Vec<Dec> {
     let cloned_new_dec = new_dec.clone();
 
     match (new_dec, first_dec) {
-        (Dec::FunctionDec(new_fd), Dec::FunctionDec(fds)) => {
+        (Dec::Function(new_fd), Dec::Function(fds)) => {
             // return the same decs, with the new_fd pushed into fds
             let mut new_decs: Vec<Dec> = vec![];
             for dec in decs {
@@ -305,11 +307,11 @@ pub fn append_dec(new_dec: Dec, decs: Vec<Dec>) -> Vec<Dec> {
                 new_fds.push(fd);
             }
 
-            new_decs[0] = Dec::FunctionDec(new_fds);
+            new_decs[0] = Dec::Function(new_fds);
 
             new_decs
         },
-        (Dec::TypeDec(new_td), Dec::TypeDec(tds)) => {
+        (Dec::Type(new_td), Dec::Type(tds)) => {
             // return the same decs, with the new_td pushed into tds
             let mut new_decs: Vec<Dec> = vec![];
             for dec in decs {
@@ -321,7 +323,7 @@ pub fn append_dec(new_dec: Dec, decs: Vec<Dec>) -> Vec<Dec> {
                 new_tds.push(td);
             }
 
-            new_decs[0] = Dec::TypeDec(new_tds);
+            new_decs[0] = Dec::Type(new_tds);
 
             new_decs
         },

@@ -134,12 +134,12 @@ CompExp: Box<AST> = {
 }
 
 CompOp: Oper = {
-    "=" => Oper::EqOp,
-    "<" => Oper::LtOp,
-    ">" => Oper::GtOp,
-    ">=" => Oper::GeOp,
-    "<=" => Oper::LeOp,
-    "<>" => Oper::NeqOp,
+    "=" => Oper::Eq,
+    "<" => Oper::Lt,
+    ">" => Oper::Gt,
+    ">=" => Oper::Ge,
+    "<=" => Oper::Le,
+    "<>" => Oper::Neq,
 }
 
 AddExp: Box<AST> = {
@@ -151,8 +151,8 @@ AddExp: Box<AST> = {
 }
 
 AddOp: Oper = {
-    "+" => Oper::PlusOp,
-    "-" => Oper::MinusOp,
+    "+" => Oper::Plus,
+    "-" => Oper::Minus,
 };
 
 MultExp: Box<AST> = {
@@ -164,14 +164,14 @@ MultExp: Box<AST> = {
 };
 
 MultOp: Oper = {
-    "*" => Oper::TimesOp,
-    "/" => Oper::DivideOp,
+    "*" => Oper::Times,
+    "/" => Oper::Divide,
 };
 
 NegTerm: Box<AST> = {
     "-" <t: Term> => {
         let posed_zero_exp = posed_exp(Exp::Int(0), 0, 0);
-        let no_pos_exp = Exp::Op {left: posed_zero_exp, oper: Oper::MinusOp, right: t};
+        let no_pos_exp = Exp::Op {left: posed_zero_exp, oper: Oper::Minus, right: t};
         return posed_exp(no_pos_exp, 0, 0);
     },
     Term,
@@ -329,7 +329,7 @@ DecsEx: Vec<Dec> = {
 
 DecEx: Dec = {
     "type" <name:Sym> "=" <ty:TyEx> => {
-        Dec::TypeDec(vec![(_TypeDec::new(name, ty), Pos::new(0, 0))])
+        Dec::Type(vec![(_TypeDec::new(name, ty), Pos::new(0, 0))])
     },
     VardecEx,
     FundecEx,
@@ -337,25 +337,25 @@ DecEx: Dec = {
 
 FundecEx: Dec = {
     "function" <name: Sym> "(" ")" "=" <body: Expr> => {
-        Dec::FunctionDec(vec![(_FunctionDec::new(name, vec![], None, body), Pos::new(0, 0))])
+        Dec::Function(vec![(_FunctionDec::new(name, vec![], None, body), Pos::new(0, 0))])
     },
     "function" <name: Sym> "(" ")" ":" <result: Sym> "=" <body: Expr> => {
-        Dec::FunctionDec(vec![(_FunctionDec::new(name, vec![], Some(result), body), Pos::new(0, 0))])
+        Dec::Function(vec![(_FunctionDec::new(name, vec![], Some(result), body), Pos::new(0, 0))])
     },
     "function" <name: Sym> "(" <params: TyFieldsEx> ")" "=" <body: Expr> => {
-        Dec::FunctionDec(vec![(_FunctionDec::new(name, params, None, body), Pos::new(0, 0))])
+        Dec::Function(vec![(_FunctionDec::new(name, params, None, body), Pos::new(0, 0))])
     },
     "function" <name: Sym> "(" <params: TyFieldsEx> ")" ":" <result: Sym> "=" <body: Expr> => {
-        Dec::FunctionDec(vec![(_FunctionDec::new(name, params, Some(result), body), Pos::new(0, 0))])
+        Dec::Function(vec![(_FunctionDec::new(name, params, Some(result), body), Pos::new(0, 0))])
     },
 }
 
 VardecEx: Dec = {
     "var" <name: Sym> ":=" <init: Expr> => {
-        Dec::VarDec(_VarDec::new(name, None, init), Pos::new(0, 0))
+        Dec::Var(_VarDec::new(name, None, init), Pos::new(0, 0))
     },
     "var" <name: Sym> ":" <typ: Sym> ":=" <init: Expr> => {
-        Dec::VarDec(_VarDec::new(name, Some(typ), init), Pos::new(0, 0))
+        Dec::Var(_VarDec::new(name, Some(typ), init), Pos::new(0, 0))
     },
 }
 

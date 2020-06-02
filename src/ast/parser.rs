@@ -172,7 +172,7 @@ mod test {
             Ok(AST {
                 node:
                     Exp::Op {
-                        oper: Oper::PlusOp,
+                        oper: Oper::Plus,
                         ..
                     },
                 pos: Pos { line: 0, column: 0 },
@@ -192,7 +192,7 @@ mod test {
             Ok(AST {
                 node:
                     Exp::Op {
-                        oper: Oper::TimesOp,
+                        oper: Oper::Times,
                         ..
                     },
                 pos: Pos { line: 0, column: 0 },
@@ -212,7 +212,7 @@ mod test {
             Ok(AST {
                 node:
                     Exp::Op {
-                        oper: Oper::GeOp,
+                        oper: Oper::Ge,
                         ..
                     },
                 pos: Pos { line: 0, column: 0 },

@@ -1,17 +1,22 @@
 #![deny(missing_docs)]
 #![warn(
     clippy::all,
-    // clippy::restriction,
-    // clippy::pedantic,
+    clippy::restriction,
+    clippy::pedantic,
 )]
 #![allow(
    clippy::implicit_return, // se contradice con otro?
    clippy::use_debug, // para debuguear el parser
    clippy::print_stdout,
+   clippy::option_expect_used,
+   clippy::wildcard_imports,
+   clippy::enum_glob_use
 )]
 
-//! HECTOR
+//! # HECTOR
+//!
 //! Heuristically Excessive Compiler for Tiger On Rust
+//!
 //! By Federico Badaloni & Ivo Elbert, Licenciatura en Ciencias de la Computación, FCEIA, UNR.
 
 #[macro_use]

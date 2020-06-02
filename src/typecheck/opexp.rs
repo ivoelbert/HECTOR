@@ -21,7 +21,7 @@ pub fn typecheck(
                 typ: Arc::new(TigerType::TInt(R::RW))
             };
             match oper {
-                Oper::EqOp | Oper::NeqOp => {
+                Oper::Eq | Oper::Neq => {
                     if left_type == right_type {
                         Ok(op_ast)
                     } else {
@@ -29,7 +29,7 @@ pub fn typecheck(
                         Err(TypeError::TypeMismatch(pos))
                     }
                 },
-                Oper::PlusOp | Oper::MinusOp | Oper::TimesOp | Oper::DivideOp => {
+                Oper::Plus | Oper::Minus | Oper::Times | Oper::Divide => {
                     if es_int(&left_type) && es_int(&right_type)  {
                         Ok(op_ast)
                     } else {
@@ -37,7 +37,7 @@ pub fn typecheck(
                         Err(TypeError::TypeMismatch(pos))
                     }
                 },
-                Oper::LtOp | Oper::LeOp | Oper::GtOp | Oper::GeOp => {
+                Oper::Lt | Oper::Le | Oper::Gt | Oper::Ge => {
                     if (es_int(&left_type) && es_int(&right_type)) || (*left_type == TigerType::TString && *right_type == TigerType::TString) {
                         Ok(op_ast)
                     } else {
@@ -61,7 +61,7 @@ mod test {
     fn opexp_ok() {
         let ast = make_ast(Exp::Op {
             left: boxed_ast(Exp::Int(1)),
-            oper: Oper::PlusOp,
+            oper: Oper::Plus,
             right: boxed_ast(Exp::Int(1)),
         });
         let type_env = initial_type_env();
@@ -79,7 +79,7 @@ mod test {
     fn opexp_type_mismatch() {
         let ast = make_ast(Exp::Op {
             left: boxed_ast(Exp::Int(1)),
-            oper: Oper::PlusOp,
+            oper: Oper::Plus,
             right: boxed_ast(Exp::String(String::from("perro"))),
         });
         let type_env = initial_type_env();

@@ -13,9 +13,16 @@ use level::{Label, unique_named_label, named_label};
 // pub type Block = Vec<Tree::Stm>;
 
 #[derive(Clone, Debug, Serialize)]
+/// Basic Block
+///
+/// A block of instructions that begins with a labe and end with a jump,
+/// meaning that they all execute with no internal branching.
 pub struct Block {
+    /// The block statements
     pub stms: Vec<Tree::Stm>,
+    /// Label on the first statement
     pub label: Label,
+    /// List of labels in the jump statement at the end of the block
     pub target: Vec<Label>
 }
 
@@ -39,7 +46,7 @@ pub fn basic_blocks(stms: Vec<Tree::Stm>) -> Vec<Block> {
                 LABEL(l) => {
                     this_block.push(JUMP(NAME(l.clone()), vec![l.clone()]));
                     blocks.push(Block {
-                        label: if let LABEL(l) = this_block.first().unwrap() {
+                        label: if let LABEL(l) = this_block.first().expect("empty block") {
                             l.clone()
                         } else {
                             panic!("all blocks should start with a label")

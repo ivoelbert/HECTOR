@@ -92,7 +92,7 @@ pub fn translate(exp: AST) -> Result<Vec<Fragment>, TransError> {
     let level = Level::outermost();
     let value_env = initial_value_env();
     let tiger_main = make_ast(Exp::Let {
-        decs: vec![Dec::FunctionDec(vec![(_FunctionDec{
+        decs: vec![Dec::Function(vec![(_FunctionDec{
             name: String::from("_tigermain"),
             params: vec![],
             body: Box::new(exp),

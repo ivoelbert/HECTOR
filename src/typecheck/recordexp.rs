@@ -21,12 +21,11 @@ pub fn typecheck(
             // If some field doesn't match the formal type, error.
             // if field <-> formals is a 1:1, error.
             let mut typed_fields = type_fields(fields)?;
-            let record_type = match type_env.get(&record_type_symbol) {
-                Some(tipo) => tipo_real(tipo.clone(), type_env),
-                None => {
-                    console_log!("arrayexp undeclared");
-                    return Err(TypeError::UndeclaredType(pos))
-                }
+            let record_type = if let Some(tipo) = type_env.get(&record_type_symbol) {
+                tipo_real(tipo.clone(), type_env)
+            } else {
+                console_log!("arrayexp undeclared");
+                return Err(TypeError::UndeclaredType(pos))
             };
             match &*record_type {
                 TigerType::TRecord(formals, type_id) => {

@@ -6,8 +6,11 @@
     clippy::enum_variant_names,
     clippy::cognitive_complexity,
     clippy::trivial_regex,
-    clippy::single_match
+    clippy::single_match,
+    clippy::result_unwrap_used,
+    clippy::as_conversions
 )]
+
 
 use regex::Regex;
 use std::str::{Chars, Lines, SplitWhitespace};
@@ -156,6 +159,7 @@ fn get_token(string_token: String) -> Option<Tok> {
 }
 
 #[derive(PartialEq, Eq, Clone, Debug)]
+#[allow(clippy::pub_enum_variant_names, clippy::module_name_repetitions)]
 pub enum LexerState {
     LexingTokens,
     LexingLineComment,
@@ -421,7 +425,7 @@ impl<'input> Iterator for LineLexer<'input> {
                         self.current_word = &self.current_word[quote_loc..];
                     } else if token == Some(Tok::CloseComen) {
                         self.current_word = "";
-                    }
+                    } else {}
                     return Some(Ok(Consumpion::new(token, state_transition)));
                 }
                 Some(Err(e)) => return Some(Err(e)),

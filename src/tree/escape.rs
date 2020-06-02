@@ -46,7 +46,7 @@ fn trav_decs(mut decs: Vec<Dec>, table: EscapeTable, current_depth: u32) -> (Vec
     let maybe_dec = decs.pop();
     if let Some(dec) = maybe_dec {
         match dec {
-            Dec::VarDec(_VarDec{name, typ, init, ..}, pos) => {
+            Dec::Var(_VarDec{name, typ, init, ..}, pos) => {
                 // traverse the init
                 let (r_init, init_table) = trav_exp(*init, table, current_depth);
                 // Add this dec to an inner table
@@ -56,14 +56,14 @@ fn trav_decs(mut decs: Vec<Dec>, table: EscapeTable, current_depth: u32) -> (Vec
                 let (mut r_later_decs, later_decs_outer_table, mut later_decs_inner_table) = trav_decs(decs, inner_table, current_depth);
                 // find the resulting escape for this var, build a (so far) correct VarDec
                 let escape = later_decs_inner_table.remove(&name).unwrap();
-                let r_dec = Dec::VarDec(_VarDec{name: name.clone(), typ, init: Box::new(r_init), escape: escape.1}, pos);
+                let r_dec = Dec::Var(_VarDec{name: name.clone(), typ, init: Box::new(r_init), escape: escape.1}, pos);
                 r_later_decs.push(r_dec);
                 // Add the dec to the outer table, so that it can be escaped in the body.
                 // If dec is repeated in we
                 later_decs_inner_table.insert(name, escape);
                 (r_later_decs, later_decs_outer_table, later_decs_inner_table)
             },
-            Dec::FunctionDec(funtion_decs) => {
+            Dec::Function(funtion_decs) => {
                 let (r_function_decs, function_decs_table) = funtion_decs
                     .iter()
                     .fold((vec![], table.clone()), |(mut prev_decs, prev_table), (_FunctionDec{name, params, result, body}, pos)| {
@@ -81,12 +81,12 @@ fn trav_decs(mut decs: Vec<Dec>, table: EscapeTable, current_depth: u32) -> (Vec
                         (prev_decs, merge_tables(prev_table, body_table))
                     });
                 let (mut r_decs, outer_table, inner_table) = trav_decs(decs, table, current_depth);
-                r_decs.push(Dec::FunctionDec(r_function_decs));
+                r_decs.push(Dec::Function(r_function_decs));
                 (r_decs, merge_tables(outer_table, function_decs_table.clone()), merge_tables(inner_table, function_decs_table))
             },
-            Dec::TypeDec(td) => {
+            Dec::Type(td) => {
                 let (mut r_prev_decs, outer_table, inner_table) = trav_decs(decs, table, current_depth);
-                r_prev_decs.push(Dec::TypeDec(td));
+                r_prev_decs.push(Dec::Type(td));
                 (r_prev_decs, outer_table, inner_table)
             },
         }
@@ -103,16 +103,16 @@ fn post_decs(decs: Vec<Dec>, table: EscapeTable) -> (Vec<Dec>, EscapeTable) {
         match maybe_dec {
             Some(dec) => {
                 match dec {
-                    Dec::VarDec(_VarDec{name, init, typ, ..}, pos) => {
+                    Dec::Var(_VarDec{name, init, typ, ..}, pos) => {
                         // We don't remove to not break test37
                         let escape = table.get(&name).expect("post_decs").1;
-                        prev.push(Dec::VarDec(_VarDec{name, init, typ, escape}, pos))
+                        prev.push(Dec::Var(_VarDec{name, init, typ, escape}, pos))
                     },
-                    Dec::FunctionDec(fd) => {
-                        prev.push(Dec::FunctionDec(fd));
+                    Dec::Function(fd) => {
+                        prev.push(Dec::Function(fd));
                     },
-                    Dec::TypeDec(td) => {
-                        prev.push(Dec::TypeDec(td));
+                    Dec::Type(td) => {
+                        prev.push(Dec::Type(td));
                     },
                 }
                 post_decs_internal(decs, table, prev)
@@ -135,16 +135,21 @@ fn merge_tables(outer_table: EscapeTable, inner_table: EscapeTable) -> EscapeTab
         .collect()
 }
 
+/// This function consumes consumes an AST and generates a new one with correct variable escapes.
+///
+/// If a variable is declared, then a new entry is inserted in the table with a False value (replacing if we are hiding a previous variable).
+///      Then, the lower branches are computed and the resulting table is checked for escapes.
+///
+/// If a variable is called, then the escape will be checked and set to true in the returned table if needed.
+///
+/// Function declarations have + 1 depth (a new frame is created)
+///
+/// All functions here should keep the invariant: the returned table only contains variables defined higher up in the AST, never in lower branches.
+///
+/// This means that a node that has a variable declaration should add, check and remove. Or clone or whatever.
+///
+/// Branches are checked sequentially. This could be parallelized, but a table-combining function should be defined fot that.
 fn trav_exp(AST {node, typ, pos}: AST, table: EscapeTable, current_depth: u32) -> (AST, EscapeTable) {
-    // This function consumes consumes an AST and generates a new one with correct variable escapes.
-    // If a variable is declared, then a new entry is inserted in the table with a False value (replacing if we are hiding a previous variable).
-    //      Then, the lower branches are computed and the resulting table is checked for escapes.
-    // If a variable is called, then the escape will be checked and set to true in the returned table if needed.
-    // Function declarations have + 1 depth (a new frame is created)
-    // All functions here should keep the invariant: the returned table only contains variables defined higher up in the AST, never in lower branches.
-    // This means that a node that has a variable declaration should add, check and remove. Or clone or whatever.
-    //
-    // Branches are checked sequentially. This could be parallelized, but a table-combining function should be defined fot that.
     match node {
         Exp::Array {init, typ: array_type, size} => {
             let (r_init, r_table) = trav_exp(*init, table, current_depth);
@@ -301,7 +306,7 @@ mod test {
     fn escaped_arguments() {
         let exp = make_ast(Exp::Let {
             decs: vec![
-                Dec::FunctionDec(vec![(
+                Dec::Function(vec![(
                     _FunctionDec::new(
                         Symbol::from("fun1"),
                         vec![Field {
@@ -312,7 +317,7 @@ mod test {
                         Some(Symbol::from("int")),
                         boxed_ast(Exp::Let {
                             decs: vec![
-                                Dec::FunctionDec(vec![(
+                                Dec::Function(vec![(
                                     _FunctionDec::new(
                                         Symbol::from("fun2"),
                                         vec![Field {
@@ -324,7 +329,7 @@ mod test {
                                         boxed_ast(Exp::Op {
                                             left: boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("arg1"))))),
                                             right: boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("arg2"))))),
-                                            oper: Oper::PlusOp
+                                            oper: Oper::Plus
                                         }),
                                     ),
                                     Pos{line: 0, column: 0}
@@ -345,7 +350,7 @@ mod test {
             })
         });
         if let AST {node: Exp::Let {decs, ..}, ..} = find_escapes(exp) {
-            if let Some((Dec::FunctionDec(funs), ..)) = decs.split_first() {
+            if let Some((Dec::Function(funs), ..)) = decs.split_first() {
                 if let Some(((_FunctionDec{params, ..}, ..), ..)) = funs.split_first() {
                     if let Some((Field {escape, ..}, ..)) = params.split_first() {
                         if *escape {
@@ -365,7 +370,7 @@ mod test {
     fn not_escaped_arguments() {
         let exp = make_ast(Exp::Let {
             decs: vec![
-                Dec::FunctionDec(vec![(
+                Dec::Function(vec![(
                     _FunctionDec::new(
                         Symbol::from("fun1"),
                         vec![Field {
@@ -376,7 +381,7 @@ mod test {
                         Some(Symbol::from("int")),
                         boxed_ast(Exp::Let {
                             decs: vec![
-                                Dec::FunctionDec(vec![(
+                                Dec::Function(vec![(
                                     _FunctionDec::new(
                                         Symbol::from("fun2"),
                                         vec![Field {
@@ -388,7 +393,7 @@ mod test {
                                         boxed_ast(Exp::Op {
                                             left: boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("arg2"))))),
                                             right: boxed_ast(Exp::Var(make_var(VarKind::Simple(Symbol::from("arg2"))))),
-                                            oper: Oper::PlusOp
+                                            oper: Oper::Plus
                                         }),
                                     ),
                                     Pos{line: 0, column: 0}
@@ -409,13 +414,13 @@ mod test {
             })
         });
         if let AST {node: Exp::Let {decs, ..}, ..} = find_escapes(exp) {
-            if let Some((Dec::FunctionDec(funs), ..)) = decs.split_first() {
+            if let Some((Dec::Function(funs), ..)) = decs.split_first() {
                 if let Some(((_FunctionDec{params, ..}, ..), ..)) = funs.split_first() {
                     if let Some((Field {escape, ..}, ..)) = params.split_first() {
-                        if !escape {
-                            return // PASS
-                        } else {
+                        if *escape {
                             panic!("wrong escape")
+                        } else {
+                            return // PASS
                         }
                     }
                 }
@@ -429,11 +434,11 @@ mod test {
     fn escaped_var() {
         let exp = make_ast(Exp::Let {
             decs: vec![
-                Dec::VarDec(
+                Dec::Var(
                     _VarDec{name: Symbol::from("var1"), escape: false, init: boxed_ast(Exp::Int(1)), typ: None}, // var defined here
                     Pos{line: 0, column: 0}
                 ),
-                Dec::FunctionDec(vec![(
+                Dec::Function(vec![(
                     _FunctionDec::new(
                         Symbol::from("fun1"),
                         vec![Field {
@@ -453,7 +458,7 @@ mod test {
             })
         });
         if let AST {node: Exp::Let {decs, ..}, ..} = find_escapes(exp) {
-            if let Some((Dec::VarDec(_VarDec{escape, ..}, ..), ..)) = decs.split_first() {
+            if let Some((Dec::Var(_VarDec{escape, ..}, ..), ..)) = decs.split_first() {
                 if *escape {
                     return // PASS
                 } else {
@@ -468,11 +473,11 @@ mod test {
     fn not_escaped_var() {
         let exp = make_ast(Exp::Let {
             decs: vec![
-                Dec::VarDec(
+                Dec::Var(
                     _VarDec{name: Symbol::from("var1"), escape: false, init: boxed_ast(Exp::Int(1)), typ: None}, // var defined, never used
                     Pos{line: 0, column: 0}
                 ),
-                Dec::FunctionDec(vec![(
+                Dec::Function(vec![(
                     _FunctionDec::new(
                         Symbol::from("fun1"),
                         vec![Field {
@@ -492,8 +497,8 @@ mod test {
             })
         });
         if let AST {node: Exp::Let {decs, ..}, ..} = find_escapes(exp) {
-            if let Some((Dec::VarDec(_VarDec{escape, ..}, ..), ..)) = decs.split_first() {
-                if !*escape {
+            if let Some((Dec::Var(_VarDec{escape, ..}, ..), ..)) = decs.split_first() {
+                if *escape {
                     return // PASS
                 } else {
                     panic!("wrong escape")
@@ -512,7 +517,7 @@ mod test {
             hi: boxed_ast(Exp::Int(1)),
             body: boxed_ast(Exp::Let {
                 decs: vec![
-                    Dec::FunctionDec(vec![(
+                    Dec::Function(vec![(
                         _FunctionDec::new(
                             Symbol::from("fun1"),
                             vec![Field {
@@ -546,7 +551,7 @@ mod test {
             hi: boxed_ast(Exp::Int(1)),
             body: boxed_ast(Exp::Let {
                 decs: vec![
-                    Dec::FunctionDec(vec![(
+                    Dec::Function(vec![(
                         _FunctionDec::new(
                             Symbol::from("fun1"),
                             vec![Field {

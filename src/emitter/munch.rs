@@ -1,3 +1,5 @@
+#![allow( clippy::module_name_repetitions)]
+
 use super::*;
 use Tree::Exp::*;
 use Tree::Stm::*;

@@ -96,7 +96,7 @@ impl Level {
         }
         let delta_depth = self.nesting_depth - depth;
         match access {
-            Access::InMem(i) => {
+            Access::Mem(i) => {
                 if delta_depth == 0 {
                     MEM(Box::new(BINOP(PLUS,
                         Box::new(GLOBAL(named_global(FRAME_POINTER))),
@@ -110,8 +110,8 @@ impl Level {
                     )))
                 }
             },
-            Access::InGlobal(l) => GLOBAL(l),
-            Access::InLocal(l) => {
+            Access::Global(l) => GLOBAL(l),
+            Access::Local(l) => {
                 if delta_depth != 0 {
                     panic!("escaped local!")
                 }

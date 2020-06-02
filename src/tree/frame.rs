@@ -28,9 +28,9 @@ pub type LocalTemp = String;
 
 #[derive(Clone, Debug, Serialize)]
 pub enum Access {
-    InLocal(LocalTemp),
-    InGlobal(GlobalTemp),
-    InMem(MemAddress)
+    Local(LocalTemp),
+    Global(GlobalTemp),
+    Mem(MemAddress)
 }
 
 impl Frame {
@@ -44,24 +44,18 @@ impl Frame {
 
     pub fn alloc_arg(self: &mut Self, name: String, escape: bool) -> Access {
         self.formals.push((name.clone(), escape));
-        match escape {
-            true => {
-                self.memindex += 1;
-                Access::InMem(self.memindex)
-            },
-            false => Access::InLocal(name)
-        }
+        if escape {
+            self.memindex += 1;
+            Access::Mem(self.memindex)
+        } else { Access::Local(name) }
     }
 
     pub fn alloc_local(self: &mut Self, escape: bool, name: Option<String>) -> Access {
         let label = if let Some(name) = name {name} else {unique_named_local("-alloc-local")};
-        match escape {
-            true => {
-                self.memindex += 1;
-                Access::InMem(self.memindex)
-            },
-            false => Access::InLocal(label)
-        }
+        if escape {
+            self.memindex += 1;
+            Access::Mem(self.memindex)
+        } else { Access::Local(label) }
     }
 
     pub fn generate_move_escaped_arguments_statement(self: &Self) -> Tree::Stm {
@@ -90,15 +84,14 @@ impl Frame {
         // - La convencion de llamada (todo lo que se puede en locals)
         // - El vector de escapes.
         // Tiene que ser consistente con como incrementamos el contador de locals en el constructor.
-        use Access::*;
         self.formals.iter().fold(
             (vec![], -1),
             |(mut formals, mut current_index): (Vec<(String, Access)>, i32), (name, escape): &(String, bool)| -> (Vec<(String, Access)>, i32) {
                 formals.push(if *escape {
                     current_index += 1;
-                    (name.to_string(), InMem(current_index))
+                    (name.to_string(), Access::Mem(current_index))
                 } else {
-                    (name.to_string(), InLocal(name.clone()))
+                    (name.to_string(), Access::Local(name.clone()))
                 });
                 (formals, current_index)
         }).0

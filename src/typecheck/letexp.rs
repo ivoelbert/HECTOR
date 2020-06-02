@@ -13,19 +13,16 @@ fn typecheck_vardec(
 ) -> Result<(_VarDec, ValueEnviroment), TypeError> {
     let init_ast = type_exp(*init, type_env, &value_env)?;
     let dec_type = if let Some(typ_symbol) = &typ {
-        match type_env.get(typ_symbol) {
-            Some(table_type) => {
-                if **table_type == *init_ast.typ {
-                    (*table_type).clone()
-                } else {
-                    console_log!("let vardec mismatch");
-                    return Err(TypeError::TypeMismatch(pos));
-                }
+        if let Some(table_type) = type_env.get(typ_symbol) {
+            if **table_type == *init_ast.typ {
+                (*table_type).clone()
+            } else {
+                console_log!("let vardec mismatch");
+                return Err(TypeError::TypeMismatch(pos));
             }
-            None => {
-                console_log!("let vardec undeclared");
-                return Err(TypeError::UndeclaredType(pos))
-            }
+        } else {
+            console_log!("let vardec undeclared");
+            return Err(TypeError::UndeclaredType(pos))
         }
     } else {
         if let TigerType::TNil = *init_ast.typ {
@@ -364,17 +361,17 @@ fn typecheck_decs(
     let mut typed_decs : Vec<Dec> = vec![];
     for dec in decs {
         match dec {
-            Dec::VarDec(vd, pos) => {
+            Dec::Var(vd, pos) => {
                 let (typed_vd, venv) = typecheck_vardec(vd, &new_type_env, new_value_env, pos)?;
                 new_value_env = venv;
-                typed_decs.push(Dec::VarDec(typed_vd, pos));
+                typed_decs.push(Dec::Var(typed_vd, pos));
             }
-            Dec::FunctionDec(fd) => {
+            Dec::Function(fd) => {
                 let (typed_fd, venv) = typecheck_functiondec_batch(fd, &new_type_env, new_value_env)?;
                 new_value_env = venv;
-                typed_decs.push(Dec::FunctionDec(typed_fd));
+                typed_decs.push(Dec::Function(typed_fd));
             }
-            Dec::TypeDec(td) => new_type_env = typecheck_typedec_batch(&td, new_type_env)?
+            Dec::Type(td) => new_type_env = typecheck_typedec_batch(&td, new_type_env)?
         };
     }
     Ok((typed_decs, new_type_env, new_value_env))
@@ -415,7 +412,7 @@ mod test {
     #[wasm_bindgen_test]
     fn letexp_vardec_no_type_ok() {
         let ast =  make_ast(Exp::Let {
-            decs: vec![Dec::VarDec(
+            decs: vec![Dec::Var(
                 _VarDec::new(
                     Symbol::from("foo"),
                     None,
@@ -439,7 +436,7 @@ mod test {
     #[wasm_bindgen_test]
     fn letexp_vardec_type_ok() {
         let ast =  make_ast(Exp::Let {
-            decs: vec![Dec::VarDec(
+            decs: vec![Dec::Var(
                 _VarDec::new(
                     Symbol::from("foo"),
                     Some(Symbol::from("int")),
@@ -464,7 +461,7 @@ mod test {
     #[wasm_bindgen_test]
     fn letexp_vardec_undeclared_type() {
         let ast =  make_ast(Exp::Let {
-            decs: vec![Dec::VarDec(
+            decs: vec![Dec::Var(
                 _VarDec::new(
                     Symbol::from("foo"),
                     Some(Symbol::from("un_tipo_no_declarado")),
@@ -488,7 +485,7 @@ mod test {
     #[wasm_bindgen_test]
     fn letexp_vardec_type_mismatch() {
         let ast =  make_ast(Exp::Let {
-            decs: vec![Dec::VarDec(
+            decs: vec![Dec::Var(
                 _VarDec::new(
                     Symbol::from("foo"),
                     Some(Symbol::from("string")),
@@ -513,14 +510,14 @@ mod test {
     fn letexp_typedec_name_ok() {
         let ast =  make_ast(Exp::Let {
             decs: vec![
-                Dec::TypeDec(vec![(
+                Dec::Type(vec![(
                     _TypeDec::new(
                         Symbol::from("FooType"),
                         Ty::Name(Symbol::from("int"))
                     ),
                     Pos{line: 0, column: 0}
                 )]),
-                Dec::VarDec(
+                Dec::Var(
                     _VarDec::new(
                         Symbol::from("foo"),
                         Some(Symbol::from("FooType")),
@@ -546,14 +543,14 @@ mod test {
     fn letexp_typedec_array_ok() {
         let ast =  make_ast(Exp::Let {
             decs: vec![
-                Dec::TypeDec(vec![(
+                Dec::Type(vec![(
                     _TypeDec::new(
                         Symbol::from("FooType"),
                         Ty::Array(Symbol::from("int"))
                     ),
                     Pos{line: 0, column: 0}
                 )]),
-                Dec::VarDec(
+                Dec::Var(
                     _VarDec::new(
                         Symbol::from("foo"),
                         Some(Symbol::from("FooType")),
@@ -588,7 +585,7 @@ mod test {
     fn letexp_typedec_record_ok() {
         let ast =  make_ast(Exp::Let {
             decs: vec![
-                Dec::TypeDec(vec![(
+                Dec::Type(vec![(
                     _TypeDec::new(
                         Symbol::from("FooType"),
                         Ty::Record(vec![
@@ -601,7 +598,7 @@ mod test {
                     ),
                     Pos{line: 0, column: 1}
                 )]),
-                Dec::VarDec(
+                Dec::Var(
                     _VarDec::new(
                         Symbol::from("foo"),
                         Some(Symbol::from("FooType")),
@@ -633,7 +630,7 @@ mod test {
     #[wasm_bindgen_test]
     fn letexp_typedec_infinite_recursion() {
        let ast =  make_ast(Exp::Let {
-            decs: vec![Dec::TypeDec(vec![
+            decs: vec![Dec::Type(vec![
                 (_TypeDec::new(Symbol::from("FooType"), Ty::Name(Symbol::from("BaazType"))), Pos{line: 0, column: 0}),
                 (_TypeDec::new(Symbol::from("BaazType"), Ty::Name(Symbol::from("FooType"))), Pos{line: 0, column: 0}),
             ])],
@@ -652,7 +649,7 @@ mod test {
     #[wasm_bindgen_test]
     fn test_typedec_recursive_ok() {
        let ast =  make_ast(Exp::Let {
-            decs: vec![Dec::TypeDec(vec![
+            decs: vec![Dec::Type(vec![
                 (_TypeDec::new(Symbol::from("C"), Ty::Name(Symbol::from("B"))), Pos{line: 0, column: 0}),
                 (_TypeDec::new(Symbol::from("B"), Ty::Name(Symbol::from("A"))), Pos{line: 0, column: 0}),
                 (_TypeDec::new(Symbol::from("A"), Ty::Name(Symbol::from("int"))), Pos{line: 0, column: 0}),
@@ -673,7 +670,7 @@ mod test {
     #[wasm_bindgen_test]
     fn letexp_typedec_undeclared_type() {
         let ast =  make_ast(Exp::Let {
-            decs: vec![Dec::TypeDec(vec![(
+            decs: vec![Dec::Type(vec![(
                 _TypeDec::new(
                     Symbol::from("FooType"),
                     Ty::Name(Symbol::from("BaazType"))
@@ -697,7 +694,7 @@ mod test {
     fn record_type_cycle_ok() {
         let ast =  make_ast(Exp::Let {
             decs: vec![
-                Dec::TypeDec(vec![(
+                Dec::Type(vec![(
                     _TypeDec::new(
                         Symbol::from("List"),
                         Ty::Record(vec![
@@ -715,7 +712,7 @@ mod test {
                     ),
                     Pos{line: 0, column: 1}
                 )]),
-                Dec::VarDec(
+                Dec::Var(
                     _VarDec::new(
                         Symbol::from("foo"),
                         Some(Symbol::from("List")),
@@ -768,7 +765,7 @@ mod test {
     #[wasm_bindgen_test]
     fn letexp_functiondec_ok() {
         let ast =  make_ast(Exp::Let {
-            decs: vec![Dec::FunctionDec(vec![(
+            decs: vec![Dec::Function(vec![(
                 _FunctionDec::new(
                     Symbol::from("foo"),
                     vec![Field {
@@ -798,7 +795,7 @@ mod test {
     fn letexp_functiondec_called_ok() {
         let ast =  make_ast(Exp::Let {
             decs: vec![
-                Dec::FunctionDec(vec![(
+                Dec::Function(vec![(
                     _FunctionDec::new(
                         Symbol::from("foo"),
                         vec![Field {
@@ -811,7 +808,7 @@ mod test {
                     ),
                     Pos{line: 0, column: 0}
                 )]),
-                Dec::FunctionDec(vec![(
+                Dec::Function(vec![(
                     _FunctionDec::new(
                         Symbol::from("baaz"),
                         vec![Field {
@@ -847,7 +844,7 @@ mod test {
     #[wasm_bindgen_test]
     fn letexp_functiondec_body_type_error() {
         let ast =  make_ast(Exp::Let {
-            decs: vec![Dec::FunctionDec(vec![(
+            decs: vec![Dec::Function(vec![(
                 _FunctionDec::new(
                     Symbol::from("foo"),
                     vec![Field {
@@ -876,7 +873,7 @@ mod test {
     #[wasm_bindgen_test]
     fn letexp_functiondec_body_result_type_mismatch() {
         let ast =  make_ast(Exp::Let {
-            decs: vec![Dec::FunctionDec(vec![(
+            decs: vec![Dec::Function(vec![(
                 _FunctionDec::new(
                     Symbol::from("foo"),
                     vec![Field {
@@ -906,7 +903,7 @@ mod test {
     fn letexp_functiondec_repeated_param_names() {
         // TODO
         let ast =  make_ast(Exp::Let {
-            decs: vec![Dec::FunctionDec(vec![(
+            decs: vec![Dec::Function(vec![(
                 _FunctionDec::new(
                     Symbol::from("foo"),
                     vec![Field {
@@ -936,7 +933,7 @@ mod test {
     fn letexp_functiondec_repeated_function_names() {
         // TODO
         let ast =  make_ast(Exp::Let {
-            decs: vec![Dec::FunctionDec(vec![(
+            decs: vec![Dec::Function(vec![(
                 _FunctionDec::new(
                     Symbol::from("foo"),
                     vec![Field {
@@ -965,7 +962,7 @@ mod test {
     #[wasm_bindgen_test]
     fn letexp_functiondec_recursion() {
         let ast =  make_ast(Exp::Let {
-            decs: vec![Dec::FunctionDec(vec![(
+            decs: vec![Dec::Function(vec![(
                 _FunctionDec::new(
                     Symbol::from("foo"),
                     vec![Field {
@@ -994,14 +991,14 @@ mod test {
     fn letexp_todas_all_decs_ok() {
         let ast =  make_ast(Exp::Let {
             decs: vec![
-                Dec::TypeDec(vec![(
+                Dec::Type(vec![(
                     _TypeDec::new(
                         Symbol::from("FooType"),
                         Ty::Name(Symbol::from("int")),
                     ),
                     Pos{line: 0, column: 0}
                 )]),
-                Dec::VarDec(
+                Dec::Var(
                     _VarDec::new(
                         Symbol::from("foo"),
                         Some(Symbol::from("FooType")),
@@ -1009,7 +1006,7 @@ mod test {
                     ),
                     Pos{line: 0, column: 0}
                 ),
-                Dec::FunctionDec(vec![(
+                Dec::Function(vec![(
                     _FunctionDec::new(
                         Symbol::from("baaz"),
                         vec![Field {
