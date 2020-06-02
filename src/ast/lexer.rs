@@ -155,7 +155,7 @@ fn get_token(string_token: String) -> Option<Tok> {
                 None
             }
         })
-        .find(|t| t.is_some())??(string_token))
+        .find(Option::is_some)??(string_token))
 }
 
 #[derive(PartialEq, Eq, Clone, Debug)]

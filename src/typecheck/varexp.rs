@@ -1,14 +1,18 @@
 use super::*;
 
+/// Inefficient lookup of field types.
+///
+/// fiels should actually be a HashMap
 fn find_field_type(fields: &[(String, Arc<TigerType>, i32)], symbol: &str) -> Option<Arc<TigerType>> {
     for field in fields {
         if field.0 == symbol {
-            return Some(field.1.clone());
+            return Some(Arc::clone(&field.1));
         }
     }
     None
 }
 
+/// Rebuild a `Var` with the correct types given the context in the enviroments or return a `TypeError`
 pub fn typecheck_var(
     Var {kind, pos, ..}: Var,
     type_env: &TypeEnviroment,
@@ -20,7 +24,7 @@ pub fn typecheck_var(
             // a := foo
             Some(EnvEntry::Var { ty: var_type, .. }) => Ok(Var {
                 kind: VarKind::Simple(var_symbol),
-                typ: var_type.clone(),
+                typ: Arc::clone(&var_type),
                 pos
             }),
             Some(..) => Err(TypeError::NotSimpleVar(pos)),
@@ -31,13 +35,13 @@ pub fn typecheck_var(
             // a := foo[3]
             let typed_subscript_var = typecheck_var(*subscript_var, type_env, value_env)?;
             let array_of = if let TigerType::TArray(array_of, ..) = &*typed_subscript_var.typ {
-                array_of.clone()
+                Arc::clone(&array_of)
             } else {
                 return Err(TypeError::NotArrayType(pos))
             };
             let typed_index = type_exp(*index, type_env, value_env)?;
             if *typed_index.typ != TigerType::TInt(R::RW) {
-                return Err(TypeError::SubscriptNotInteger(pos))
+                return Err(TypeError::NonIntegerSubscript(pos))
             };
             Ok(Var{
                 kind: VarKind::Subscript(Box::new(typed_subscript_var), Box::new(typed_index)),
@@ -57,7 +61,7 @@ pub fn typecheck_var(
             let field_type = if let Some(ty) = find_field_type(&record_fields, &field_symbol) {
                 ty
             } else {
-                return Err(TypeError::FieldDoesNotExist(pos))
+                return Err(TypeError::UndeclaredField(pos))
             };
             Ok(Var{
                 kind: VarKind::Field(Box::new(typed_field_var), field_symbol),
@@ -68,6 +72,7 @@ pub fn typecheck_var(
     }
 }
 
+/// Rebuild an `Exp::Var` with the correct types given the context in the enviroments or return a `TypeError`
 pub fn typecheck(
     AST{node, pos, ..}: AST,
     type_env: &TypeEnviroment,
@@ -77,7 +82,7 @@ pub fn typecheck(
     match node {
         Exp::Var(var) => {
             let typed_var = typecheck_var(var, type_env, value_env)?;
-            let typ = typed_var.typ.clone();
+            let typ = Arc::clone(&typed_var.typ);
             Ok(AST {
                 node: Exp::Var(typed_var),
                 pos,
@@ -159,7 +164,7 @@ mod test {
                 vec![(String::from("bar"),
                     field_type,
                     0)], TypeId::new()));
-        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        type_env.insert(Symbol::from("FooType"), Arc::clone(&foo_type));
         value_env.insert(Symbol::from("foo"), EnvEntry::Var{
             ty: foo_type,
         });
@@ -185,13 +190,13 @@ mod test {
                 vec![(String::from("bar"),
                     Arc::new(TigerType::TInt(R::RW)),
                     0)], TypeId::new()));
-        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        type_env.insert(Symbol::from("FooType"), Arc::clone(&foo_type));
         value_env.insert(Symbol::from("foo"), EnvEntry::Var{
             ty: foo_type,
         });
         let res = type_exp(ast, &type_env, &value_env);
         match res {
-            Err(TypeError::FieldDoesNotExist(_)) => (),
+            Err(TypeError::UndeclaredField(_)) => (),
             Err(type_error) => panic!("Wrong type error: {:?}", type_error),
             Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
         }
@@ -208,7 +213,7 @@ mod test {
         let mut type_env = initial_type_env();
         let mut value_env = initial_value_env();
         let foo_type = Arc::new(TigerType::TInt(R::RW));
-        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        type_env.insert(Symbol::from("FooType"), Arc::clone(&foo_type));
         value_env.insert(Symbol::from("foo"), EnvEntry::Var{
             ty: foo_type,
         });
@@ -233,7 +238,7 @@ mod test {
             Arc::new(TigerType::TInt(R::RW)),
             TypeId::new(),
         ));
-        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        type_env.insert(Symbol::from("FooType"), Arc::clone(&foo_type));
         value_env.insert(Symbol::from("foo"), EnvEntry::Var{
             ty: foo_type,
         });
@@ -260,13 +265,13 @@ mod test {
             Arc::new(TigerType::TInt(R::RW)),
             TypeId::new(),
         ));
-        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        type_env.insert(Symbol::from("FooType"), Arc::clone(&foo_type));
         value_env.insert(Symbol::from("foo"), EnvEntry::Var{
             ty: foo_type,
         });
         let res = type_exp(ast, &type_env, &value_env);
         match res {
-            Err(TypeError::SubscriptNotInteger(_)) => (),
+            Err(TypeError::NonIntegerSubscript(_)) => (),
             Err(type_error) => panic!("Wrong type error: {:?}", type_error),
             Ok(tiger_type) => panic!("Should error, returns: {:?}", tiger_type)
         }
@@ -282,7 +287,7 @@ mod test {
         let mut type_env = initial_type_env();
         let mut value_env = initial_value_env();
         let foo_type = Arc::new(TigerType::TInt(R::RW));
-        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        type_env.insert(Symbol::from("FooType"), Arc::clone(&foo_type));
         value_env.insert(Symbol::from("foo"), EnvEntry::Var{
             ty: foo_type,
         });

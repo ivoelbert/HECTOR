@@ -1,5 +1,6 @@
 use super::*;
 
+/// Rebuild an `Exp::Assign` with the correct types given the context in the enviroments or return a `TypeError`
 pub fn typecheck(
     ast: AST,
     type_env: &TypeEnviroment,

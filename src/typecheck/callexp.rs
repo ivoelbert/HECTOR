@@ -1,5 +1,6 @@
 use super::*;
 
+/// Rebuild an `Exp::Call` with the correct types given the context in the enviroments or return a `TypeError`
 pub fn typecheck(
     AST{node, pos, ..}: AST,
     type_env: &TypeEnviroment,
@@ -38,7 +39,7 @@ pub fn typecheck(
                     args: typed_args
                 },
                 pos,
-                typ: return_type.clone()
+                typ: Arc::clone(&return_type)
             })
         }
         _ => panic!("delegation error"),

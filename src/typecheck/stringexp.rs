@@ -1,5 +1,6 @@
 use super::*;
 
+/// Rebuild an `Exp::String` with the correct types given the context in the enviroments or return a `TypeError`
 pub fn typecheck(AST{node, pos, ..}: AST, _type_env: &TypeEnviroment, _value_env: &ValueEnviroment) -> Result<AST, TypeError> {
     match &node {
         Exp::String(..) => Ok(AST {node, pos, typ: Arc::new(TigerType::TString)}),

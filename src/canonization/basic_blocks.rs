@@ -62,7 +62,7 @@ pub fn basic_blocks(stms: Vec<Tree::Stm>) -> Vec<Block> {
                 JUMP(l, ls) => {
                     this_block.push(JUMP(l, ls.clone()));
                     blocks.push(Block {
-                        label: if let LABEL(l) = this_block.first().unwrap() {
+                        label: if let LABEL(l) = this_block.first().expect("empty block") {
                             l.clone()
                         } else {
                             panic!("all blocks should start with a label")
@@ -76,7 +76,7 @@ pub fn basic_blocks(stms: Vec<Tree::Stm>) -> Vec<Block> {
                 CJUMP(oper, left, right, t, f) => {
                     this_block.push(CJUMP(oper, left, right, t.clone(), f.clone()));
                     blocks.push(Block {
-                        label: if let LABEL(l) = this_block.first().unwrap() {
+                        label: if let LABEL(l) = this_block.first().expect("empty block") {
                             l.clone()
                         } else {
                             panic!("all blocks should start with a label")
@@ -88,7 +88,9 @@ pub fn basic_blocks(stms: Vec<Tree::Stm>) -> Vec<Block> {
                     (blocks, new_block)
                 },
                 // Cualquier otra instruccion simplemente se agrega al bloque.
-                stm => {
+                stm @ EXP(..)
+                | stm @ MOVE(..)
+                | stm @ SEQ(..) => {
                     this_block.push(stm);
                     (blocks, this_block)
                 },
@@ -97,7 +99,7 @@ pub fn basic_blocks(stms: Vec<Tree::Stm>) -> Vec<Block> {
         });
     last_block.push(JUMP(NAME(done_label.clone()), vec![done_label.clone()]));
     blocks.push(Block {
-        label: if let LABEL(l) = last_block.first().unwrap() {
+        label: if let LABEL(l) = last_block.first().expect("empty block") {
             l.clone()
         } else {
             panic!("all blocks should start with a label")

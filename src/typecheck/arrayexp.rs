@@ -1,5 +1,6 @@
 use crate::typecheck::*;
 
+/// Rebuild an `Exp::Array` with the correct types given the context in the enviroments or return a `TypeError`
 pub fn typecheck(
     AST {node, pos, ..}: AST,
     type_env: &TypeEnviroment,

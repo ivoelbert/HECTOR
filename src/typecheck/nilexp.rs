@@ -1,11 +1,13 @@
 use super::*;
 
+/// Rebuild an `Exp::Nil` with the correct types given the context in the enviroments or return a `TypeError`
 pub fn typecheck(AST{node, pos, ..}: AST, _type_env: &TypeEnviroment, _value_env: &ValueEnviroment) -> Result<AST, TypeError> {
     match &node {
         Exp::Nil => Ok(AST {node, pos, typ: Arc::new(TigerType::TNil)}),
         _ => panic!("delegation error")
     }
 }
+
 #[cfg(test)]
 mod test {
     extern crate wasm_bindgen_test;

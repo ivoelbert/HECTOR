@@ -1,5 +1,6 @@
 use super::*;
 
+/// Rebuild an `Exp::For` with the correct types given the context in the enviroments or return a `TypeError`
 pub fn typecheck(
     AST{node, pos, ..}: AST,
     type_env: &TypeEnviroment,
@@ -9,8 +10,8 @@ pub fn typecheck(
         Exp::For {var, lo, hi, body, escape} => {
             let lo_ast = type_exp(*lo, type_env, value_env)?;
             let hi_ast = type_exp(*hi, type_env, value_env)?;
-            let lo_type = tipo_real(lo_ast.typ.clone(), type_env);
-            let hi_type = tipo_real(hi_ast.typ.clone(), type_env);
+            let lo_type = tipo_real(Arc::clone(&lo_ast.typ), type_env);
+            let hi_type = tipo_real(Arc::clone(&hi_ast.typ), type_env);
             if !es_int(&lo_type) || !es_int(&hi_type) {
                 return Err(TypeError::NonIntegerForRange(pos));
             }

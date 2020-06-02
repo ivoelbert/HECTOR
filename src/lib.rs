@@ -1,8 +1,8 @@
 #![deny(missing_docs)]
 #![warn(
     clippy::all,
-    clippy::restriction,
-    clippy::pedantic,
+    // clippy::restriction,
+    // clippy::pedantic,
 )]
 #![allow(
    clippy::implicit_return, // se contradice con otro?

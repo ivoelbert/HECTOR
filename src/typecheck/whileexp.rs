@@ -1,5 +1,6 @@
 use super::*;
 
+/// Rebuild an `Exp::While` with the correct types given the context in the enviroments or return a `TypeError`
 pub fn typecheck(
     AST{node, pos, ..}: AST,
     type_env: &TypeEnviroment,
@@ -8,7 +9,7 @@ pub fn typecheck(
     match node {
         Exp::While {test, body} => {
             let test_ast = type_exp(*test, type_env, value_env)?;
-            if !es_int(&tipo_real(test_ast.typ.clone(), type_env)) {
+            if !es_int(&tipo_real(Arc::clone(&test_ast.typ), type_env)) {
                 return Err(TypeError::NonIntegerCondition(pos));
             }
             let body_ast = type_exp(*body, type_env, value_env)?;

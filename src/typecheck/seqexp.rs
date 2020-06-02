@@ -1,5 +1,6 @@
 use super::*;
 
+/// Rebuild an `Exp::Seq` with the correct types given the context in the enviroments or return a `TypeError`
 pub fn typecheck(
     AST{node, pos, ..}: AST,
     type_env: &TypeEnviroment,
@@ -7,12 +8,11 @@ pub fn typecheck(
 -> Result<AST, TypeError> {
     match node {
         Exp::Seq(exps) => {
-            assert!(!exps.is_empty());
             let typed_seq = exps
                 .into_iter()
                 .map(|exp| type_exp(exp, type_env, value_env))
                 .collect::<Result<Vec<AST>, TypeError>>()?;
-            let typ = typed_seq.last().unwrap().typ.clone();
+            let typ = Arc::clone(&typed_seq.last().expect("empty Seq").typ);
             Ok(AST {
                 node: Exp::Seq(typed_seq),
                 pos,

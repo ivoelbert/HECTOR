@@ -3,6 +3,8 @@ use crate::typecheck::*;
 use pathfinding::directed::topological_sort;
 use std::convert::TryInto;
 
+
+/// Rebuild an `_VarDec` with the correct types given the context in the enviroments or return a `TypeError`
 fn typecheck_vardec(
     _VarDec {
         name, typ, init, escape
@@ -15,7 +17,7 @@ fn typecheck_vardec(
     let dec_type = if let Some(typ_symbol) = &typ {
         if let Some(table_type) = type_env.get(typ_symbol) {
             if **table_type == *init_ast.typ {
-                (*table_type).clone()
+                Arc::clone(table_type)
             } else {
                 console_log!("let vardec mismatch");
                 return Err(TypeError::TypeMismatch(pos));
@@ -28,7 +30,7 @@ fn typecheck_vardec(
         if let TigerType::TNil = *init_ast.typ {
             return Err(TypeError::UnconstrainedNilInitialization(pos))
         };
-        init_ast.typ.clone()
+        Arc::clone(&init_ast.typ)
     };
     value_env.insert(name.clone(), EnvEntry::Var { ty: dec_type });
     Ok((_VarDec {
@@ -39,6 +41,7 @@ fn typecheck_vardec(
     }, value_env))
 }
 
+/// Get the correct declared `TigerType` for a Ty in a definition, or return a `TypeError`
 fn ty_to_tigertype(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<Arc<TigerType>, TypeError> {
     match ty {
         Ty::Name(symbol) => match type_env.get(symbol) {
@@ -73,6 +76,7 @@ fn ty_to_tigertype(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<Arc<T
     }
 }
 
+/// Perform checkups and add a function declaration to the `ValueEnviroment`, before typing.
 fn add_prototype_to_env(
     _FunctionDec {
         name,
@@ -102,7 +106,7 @@ fn add_prototype_to_env(
         .collect();
 
     if (1..names.len()).any(|i| names[i..].contains(&names[i - 1])) {
-        return Err(TypeError::DuplicatedDefinitions(pos))
+        return Err(TypeError::DuplicatedDeclarations(pos))
     }
 
     // get parameter types
@@ -186,7 +190,7 @@ fn typecheck_functiondec_batch(
 ) -> Result<(Vec<(_FunctionDec, Pos)>, ValueEnviroment), TypeError> {
     let names = decs.iter().map(|(_FunctionDec{name, ..}, ..)| -> String {name.clone()}).collect::<Vec<String>>();
     if (1..decs.len()).any(|i| names[i..].contains(&names[i - 1])) {
-        return Err(TypeError::DuplicatedDefinitions(decs[0].1))
+        return Err(TypeError::DuplicatedDeclarations(decs[0].1))
     }
 
     // Add prototypes to ValueEnviroment
@@ -194,7 +198,7 @@ fn typecheck_functiondec_batch(
     for (dec, pos) in &decs {
         // Check for repeated names, in a very inneficient way.
         if added_names.contains(&dec.name) {
-            return Err(TypeError::DuplicatedDefinitions(*pos))
+            return Err(TypeError::DuplicatedDeclarations(*pos))
         }
         value_env = add_prototype_to_env(dec, value_env, type_env, *pos)?;
         added_names.push(dec.name.clone())
@@ -305,7 +309,7 @@ fn typecheck_typedec_batch(
     // Sort by type dependency
     let names = decs.iter().map(|(_TypeDec{name, ..}, ..)| -> String {name.clone()}).collect::<Vec<String>>();
     if (1..decs.len()).any(|i| names[i..].contains(&names[i - 1])) {
-        return Err(TypeError::DuplicatedDefinitions(decs[0].1))
+        return Err(TypeError::DuplicatedDeclarations(decs[0].1))
     }
     let (sorted_decs, records) = match sort_type_decs(decs) {
         Ok((sd, rr)) => (sd, rr),
@@ -351,6 +355,9 @@ fn typecheck_typedec_batch(
     Ok(type_env)
 }
 
+/// Rebuild a `Dec` with the correct types given the context in the enviroments or return a `TypeError`
+///
+///  Also return the enviroments containing the declarations.
 fn typecheck_decs(
     decs: Vec<Dec>,
     type_env: &TypeEnviroment,
@@ -377,6 +384,7 @@ fn typecheck_decs(
     Ok((typed_decs, new_type_env, new_value_env))
 }
 
+/// Rebuild an `Exp::Let` with the correct types given the context in the enviroments or return a `TypeError`
 pub fn typecheck(
     AST{node, pos, ..}: AST,
     type_env: &TypeEnviroment,
@@ -386,7 +394,7 @@ pub fn typecheck(
         Exp::Let { decs, body } => {
             let (typed_decs, new_type_env, new_value_env) = typecheck_decs(decs, type_env, value_env)?;
             let body_ast = type_exp(*body, &new_type_env, &new_value_env)?;
-            let typ = body_ast.typ.clone();
+            let typ = Arc::clone(&body_ast.typ);
             Ok(AST {
                 node: Exp::Let {
                     decs: typed_decs,

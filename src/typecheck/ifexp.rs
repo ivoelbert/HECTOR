@@ -1,5 +1,6 @@
 use super::*;
 
+/// Rebuild an `Exp::If` with the correct types given the context in the enviroments or return a `TypeError`
 pub fn typecheck(
     AST{node, pos, ..}: AST,
     type_env: &TypeEnviroment,
@@ -8,7 +9,7 @@ pub fn typecheck(
     match node {
         Exp::If{test, then_, else_} => {
             let test_ast = type_exp(*test, type_env, value_env)?;
-            if !es_int(&tipo_real(test_ast.typ.clone(), type_env)) {
+            if !es_int(&tipo_real(Arc::clone(&test_ast.typ), type_env)) {
                 return Err(TypeError::NonIntegerCondition(pos));
             }
             let then_ast = type_exp(*then_, type_env, value_env)?;
@@ -19,7 +20,7 @@ pub fn typecheck(
                         console_log!("if mismatch");
                         return Err(TypeError::ThenElseTypeMismatch(pos))
                     }
-                    let typ = then_ast.typ.clone();
+                    let typ = Arc::clone(&then_ast.typ);
                     Ok(AST {
                         node: Exp::If {
                             test: Box::new(test_ast),
@@ -31,7 +32,7 @@ pub fn typecheck(
                     })
                 }
                 None => if *then_ast.typ == TigerType::TUnit {
-                    let typ = then_ast.typ.clone();
+                    let typ = Arc::clone(&then_ast.typ);
                     Ok(AST {
                         node: Exp::If {
                             test: Box::new(test_ast),

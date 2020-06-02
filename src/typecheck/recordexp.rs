@@ -1,6 +1,7 @@
 use crate::ast::*;
 use crate::typecheck::*;
 
+/// Rebuild an `Exp::Record` with the correct types given the context in the enviroments or return a `TypeError`
 pub fn typecheck(
     AST{node, pos, ..}: AST,
     type_env: &TypeEnviroment,
@@ -22,7 +23,7 @@ pub fn typecheck(
             // if field <-> formals is a 1:1, error.
             let mut typed_fields = type_fields(fields)?;
             let record_type = if let Some(tipo) = type_env.get(&record_type_symbol) {
-                tipo_real(tipo.clone(), type_env)
+                tipo_real(Arc::clone(&tipo), type_env)
             } else {
                 console_log!("arrayexp undeclared");
                 return Err(TypeError::UndeclaredType(pos))
@@ -85,7 +86,7 @@ mod test {
                 vec![(String::from("baz"),
                     field_type,
                     0)], TypeId::new()));
-        type_env.insert(Symbol::from("FooType"), foo_type.clone());
+        type_env.insert(Symbol::from("FooType"), Arc::clone(&foo_type));
         let res = type_exp(ast, &type_env, &value_env);
         match res {
             Ok(AST{typ, ..}) if *typ == *foo_type => (),

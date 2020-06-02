@@ -1,5 +1,6 @@
 use super::*;
 
+/// Rebuild an `Exp::Op` with the correct types given the context in the enviroments or return a `TypeError`
 pub fn typecheck(
     AST{node, pos, ..}: AST,
     type_env: &TypeEnviroment,
@@ -9,8 +10,8 @@ pub fn typecheck(
         Exp::Op{left, right, oper} => {
             let left_ast = type_exp(*left, type_env, value_env)?;
             let right_ast = type_exp(*right, type_env, value_env)?;
-            let left_type = tipo_real(left_ast.typ.clone(), type_env);
-            let right_type = tipo_real(right_ast.typ.clone(), type_env);
+            let left_type = tipo_real(Arc::clone(&left_ast.typ), type_env);
+            let right_type = tipo_real(Arc::clone(&right_ast.typ), type_env);
             let op_ast = AST {
                 node: Exp::Op {
                     oper,
