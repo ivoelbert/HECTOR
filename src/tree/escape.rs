@@ -499,9 +499,9 @@ mod test {
         if let AST {node: Exp::Let {decs, ..}, ..} = find_escapes(exp) {
             if let Some((Dec::Var(_VarDec{escape, ..}, ..), ..)) = decs.split_first() {
                 if *escape {
-                    return // PASS
-                } else {
                     panic!("wrong escape")
+                } else {
+                    return // PASS
                 }
             }
         }

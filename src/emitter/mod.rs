@@ -3,11 +3,11 @@ use std::convert::{TryFrom, TryInto};
 mod munch;
 mod enviroment;
 use munch::munch_body;
-use enviroment::{LocalEnv, FunctionEnv, StringEnv, LabelEnv};
+use enviroment::{LocalEnv, FunctionEnv, StringEnv, LabelEnv, initial_function_env};
 extern crate parity_wasm;
 extern crate wasmprinter;
 
-use parity_wasm::{builder, elements::*, elements::Instruction::*};
+use parity_wasm::{builder::{self, ModuleBuilder}, elements::*, elements::Instruction::*};
 pub use parity_wasm::SerializationError;
 
 use crate::canonization::{CanonFrag, Block};
@@ -31,18 +31,23 @@ fn destructure_frags(frags: Vec<CanonFrag>) -> (Vec<(Label, String)>, Vec<(Vec<B
 pub fn emit_module(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 	// let module = builder::module().build();
 	let (strings, procs) = destructure_frags(frags);
-	let function_env = procs
+	let mut function_env = initial_function_env();
+	let current_index = function_env.len();
+	function_env.extend(
+		procs
 		.iter()
 		.enumerate()
-		.map(|(i, (_, frame))| (frame.label.clone(), i.try_into().unwrap()))
-		.collect();
+		.map(|(i, (_, frame))| (frame.label.clone(), (current_index + i).try_into().unwrap()))
+	);
 	let string_env = strings
 		.iter()
 		.fold(StringEnv::new(), |string_env, (label, string)| string_env.insert(label.clone(), &string));
+	let module = builder::module();
+	let module = emit_imports(module);
 	let module = strings
 		.into_iter()
 		// Data Section
-		.fold(builder::module(), |module, (_, string)| emit_string(string, module));
+		.fold(module, |module, (_, string)| emit_string(string, module));
 	let module = procs
 		.into_iter()
 		// Function, Signature Sections
@@ -112,7 +117,68 @@ pub fn emit_module(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 	(text, bytes)
 }
 
-fn emit_string(string: String, module: builder::ModuleBuilder) -> builder::ModuleBuilder {
+fn emit_imports(module: ModuleBuilder) -> ModuleBuilder {
+
+	type External = (&'static str, Vec<ValueType>, Option<ValueType>);
+	let standard_library : Vec<External> = vec![
+		("print", vec![ValueType::I32], None),
+		("flush", vec![], None),
+		("getchar", vec![ValueType::I32], Some(ValueType::I32)),
+		("ord", vec![ValueType::I32], Some(ValueType::I32)),
+		("chr", vec![ValueType::I32], Some(ValueType::I32)),
+		("size", vec![ValueType::I32], Some(ValueType::I32)),
+		("substring", vec![ValueType::I32], Some(ValueType::I32)),
+		("concat", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+		("not", vec![ValueType::I32], Some(ValueType::I32)),
+		("exit", vec![ValueType::I32], None),
+		("alloc_array", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+        ("alloc_record", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+        ("check_index_array", vec![ValueType::I32], Some(ValueType::I32)),
+        ("check_nil", vec![ValueType::I32], Some(ValueType::I32)),
+        ("str_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+        ("str_not_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+        ("str_less", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+        ("str_less_or_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+        ("str_greater", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+        ("str_greater_or_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32))
+	];
+	let runtime : Vec<External> = vec![
+	];
+	let module = standard_library
+		.into_iter()
+		.fold(module, |mut module, (name, params, return_type)| {
+			let type_index = module.push_signature(
+				builder::signature()
+					.with_params(params)
+					.with_return_type(return_type)
+				.build_sig()
+			);
+			module
+				.import()
+					.module("externals")
+					.field(name)
+					.external().func(type_index)
+				.build()
+		});
+	runtime
+		.into_iter()
+		.fold(module, |mut module, (name, params, return_type)| {
+			let type_index = module.push_signature(
+				builder::signature()
+					.with_params(params)
+					.with_return_type(return_type)
+				.build_sig()
+			);
+			module
+				.import()
+					.module("runtime")
+					.field(name)
+					.external().func(type_index)
+				.build()
+		})
+}
+
+fn emit_string(string: String, module: ModuleBuilder) -> ModuleBuilder {
 	module
 		.data()
 			// Aca hay que ponerle el offset que vamos sumando
