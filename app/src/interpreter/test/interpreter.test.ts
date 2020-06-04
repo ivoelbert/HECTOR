@@ -1,4 +1,4 @@
-import { interpreterDependenciesFactory } from './testUtils';
+import { interpreterDependenciesFactory } from '../../../test/testUtils';
 
 test('Basic program that returns 42 works', async () => {
     const { interpreter } = await interpreterDependenciesFactory(
@@ -64,18 +64,14 @@ test('Return a field of a record', async () => {
 });
 
 test('Escaped variables work', async () => {
-    const { interpreter } = await interpreterDependenciesFactory(
-        'escape.tig'
-    );
+    const { interpreter } = await interpreterDependenciesFactory('escape.tig');
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(4);
 });
 
 test('Queens works', async () => {
-    const { interpreter } = await interpreterDependenciesFactory(
-        'queens.tig'
-    );
+    const { interpreter } = await interpreterDependenciesFactory('queens.tig');
     const returnValue = await interpreter.run();
 
     expect(returnValue).toBe(0);

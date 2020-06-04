@@ -1,7 +1,0 @@
-
-let
-    function addone (n : int) : int =
-        n + 1
-in
-    addone(41)
-end

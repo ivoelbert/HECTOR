@@ -1,6 +1,0 @@
-
-let
-    function id (n : int) : int = n
-in
-    id (42)
-end
