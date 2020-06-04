@@ -34,9 +34,6 @@ pub fn main() -> Result<(), String> {
         "output.wasm"
     };
 
-    println!("Using input file: {}", input);
-    println!("Using output file: {}", output);
-
     let input_path = Path::new(input);
     let output_path = Path::new(output);
 
