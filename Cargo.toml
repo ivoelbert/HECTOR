@@ -5,7 +5,12 @@ authors = ["ielvert-menlo <ielvert@menlo-technologies.com>", "QPotato <federicob
 edition = "2018"
 
 [lib]
-crate-type = ["cdylib", "rlib"]
+name = "hector"
+path = "src/lib.rs"
+
+[[bin]]
+name = "hectorc"
+path = "src/bin.rs"
 
 [features]
 default = ["console_error_panic_hook"]
@@ -25,6 +30,7 @@ serde_json = "^1.0"
 parity-wasm = "0.41.0"
 wasmprinter = "0.2.3"
 lazy_static = "1.4.0"
+clap = "2.33.1"
 
 [dependencies.wasm-bindgen]
 version = "=0.2.34"
