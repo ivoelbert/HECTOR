@@ -8,7 +8,7 @@ interface ASTViewerProps {
     ast: EscapeResult;
 }
 
-export const ASTViewer: React.FC<ASTViewerProps> = props => {
+export const ASTViewer: React.FC<ASTViewerProps> = (props) => {
     const { ast } = props;
 
     if (ast === null) {
@@ -16,10 +16,7 @@ export const ASTViewer: React.FC<ASTViewerProps> = props => {
             <div>
                 <h3>No AST to show!</h3>
                 <p>Did you compile the code?</p>
-                <p>
-                    If so, check the WASM results to see if there were any
-                    errors
-                </p>
+                <p>If so, check the WASM results to see if there were any errors</p>
             </div>
         );
     } else {
@@ -27,7 +24,7 @@ export const ASTViewer: React.FC<ASTViewerProps> = props => {
     }
 };
 
-const OkASTViewer: React.FC<ASTViewerProps> = props => {
+const OkASTViewer: React.FC<ASTViewerProps> = (props) => {
     const { ast } = props;
 
     // TODO: Interface to control this options
@@ -52,9 +49,7 @@ const OkASTViewer: React.FC<ASTViewerProps> = props => {
                 displayObjectSize={false}
                 displayDataTypes={false}
             />
-            {isValidAst && (
-                <CleanControls options={options} setOptions={setOptions} />
-            )}
+            {isValidAst && <CleanControls options={options} setOptions={setOptions} />}
         </div>
     );
 };
@@ -64,16 +59,11 @@ interface CleanControlsProps {
     setOptions: React.Dispatch<React.SetStateAction<CleanOptions>>;
 }
 
-const CleanControls: React.FC<CleanControlsProps> = ({
-    options,
-    setOptions,
-}) => {
+const CleanControls: React.FC<CleanControlsProps> = ({ options, setOptions }) => {
     const [collapsed, setCollapsed] = useState<boolean>(true);
     const toggleCollapse = () => setCollapsed(!collapsed);
 
-    const optionsClassName = `options-container ${
-        collapsed ? 'collapsed' : 'expanded'
-    }`;
+    const optionsClassName = `options-container ${collapsed ? 'collapsed' : 'expanded'}`;
 
     return (
         <div className="clean-controls-container">
@@ -82,8 +72,7 @@ const CleanControls: React.FC<CleanControlsProps> = ({
             </button>
             <div className={optionsClassName}>
                 {Object.entries(options).map(([option, value]) => {
-                    const onChange = () =>
-                        setOptions({ ...options, [option]: !value });
+                    const onChange = () => setOptions({ ...options, [option]: !value });
                     return (
                         <div className="option-checkbox" key={option}>
                             <input

@@ -13,29 +13,29 @@ export const Tabs: React.FC<TabsProps> = ({ tabs }) => {
     const [visibleKey, setVisibleKey] = useState<string>(keys[0]);
 
     const moveTo1 = useCallback(() => {
-        setVisibleKey(keys[0])
-    }, [keys])
-    useCtrlAltKeys([49], moveTo1)
+        setVisibleKey(keys[0]);
+    }, [keys]);
+    useCtrlAltKeys([49], moveTo1);
 
     const moveTo2 = useCallback(() => {
-        setVisibleKey(keys[1])
-    }, [keys])
-    useCtrlAltKeys([50], moveTo2)
+        setVisibleKey(keys[1]);
+    }, [keys]);
+    useCtrlAltKeys([50], moveTo2);
 
     const moveTo3 = useCallback(() => {
-        setVisibleKey(keys[2])
-    }, [keys])
-    useCtrlAltKeys([51], moveTo3)
+        setVisibleKey(keys[2]);
+    }, [keys]);
+    useCtrlAltKeys([51], moveTo3);
 
     const moveTo4 = useCallback(() => {
-        setVisibleKey(keys[3])
-    }, [keys])
-    useCtrlAltKeys([52], moveTo4)
+        setVisibleKey(keys[3]);
+    }, [keys]);
+    useCtrlAltKeys([52], moveTo4);
 
     const moveTo5 = useCallback(() => {
-        setVisibleKey(keys[4])
-    }, [keys])
-    useCtrlAltKeys([52], moveTo5)
+        setVisibleKey(keys[4]);
+    }, [keys]);
+    useCtrlAltKeys([52], moveTo5);
 
     return (
         <div className="tabs-container">
@@ -53,7 +53,7 @@ interface TabsButtonsProps {
 const TabsButtons: React.FC<TabsButtonsProps> = ({ keys, visibleKey, setVisibleKey }) => {
     return (
         <div className="tabs-buttons">
-            {keys.map(k => {
+            {keys.map((k) => {
                 const selectedClass = visibleKey === k ? 'selected' : '';
                 return (
                     <button key={k} className={selectedClass} onClick={() => setVisibleKey(k)}>

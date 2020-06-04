@@ -13,10 +13,7 @@ interface CodeEditorProps {
 export const CodeEditor: React.FC<CodeEditorProps> = (props) => {
     const { compileCode } = props;
 
-    const [code, setCode] = useLocalStorageState<string>(
-        'hector-code',
-        baseCode
-    );
+    const [code, setCode] = useLocalStorageState<string>('hector-code', baseCode);
 
     useCtrlKeys([13, 83], () => compileCode(code));
 

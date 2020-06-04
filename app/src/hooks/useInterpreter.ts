@@ -11,10 +11,10 @@ export const useInterpreter = (
 ): [RunFunction, boolean] => {
     const [isRunning, setIsRunning] = useState<boolean>(false);
 
-    const interpreter = useMemo(
-        () => new TreeInterpreter(frags, customConsole),
-        [frags, customConsole]
-    );
+    const interpreter = useMemo(() => new TreeInterpreter(frags, customConsole), [
+        frags,
+        customConsole,
+    ]);
 
     const run = useCallback(async () => {
         customConsole.clear();
@@ -24,9 +24,7 @@ export const useInterpreter = (
             customConsole.printLine(`Program ended returning ${result}`);
         } catch (err) {
             console.error(err);
-            customConsole.printLine(
-                'Program failed! Check the console for further details'
-            );
+            customConsole.printLine('Program failed! Check the console for further details');
         }
         setIsRunning(false);
     }, [interpreter, customConsole]);

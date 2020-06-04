@@ -37,9 +37,7 @@ export class IncludeMap<V> {
     }
 
     set = (key: string, value: V): IncludeMap<V> => {
-        const foundIndex = this.entries.findIndex((entry): boolean =>
-            entry.key.includes(key)
-        );
+        const foundIndex = this.entries.findIndex((entry): boolean => entry.key.includes(key));
 
         if (foundIndex >= 0) {
             this.entries[foundIndex] = { key, value };
@@ -51,9 +49,7 @@ export class IncludeMap<V> {
     };
 
     get = (key: string): V | undefined => {
-        const maybeEntry = this.entries.find((entry): boolean =>
-            entry.key.includes(key)
-        );
+        const maybeEntry = this.entries.find((entry): boolean => entry.key.includes(key));
 
         if (maybeEntry === undefined) {
             return undefined;

@@ -37,10 +37,7 @@ interface CompilerProps {
 }
 
 export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
-    const [compiledCode, setCompiledCode] = useLocalStorageState<string>(
-        'hector-code',
-        baseCode
-    );
+    const [compiledCode, setCompiledCode] = useLocalStorageState<string>('hector-code', baseCode);
 
     const compileResult: CompileResult = useMemo(() => {
         try {

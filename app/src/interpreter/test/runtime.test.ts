@@ -2,11 +2,7 @@ import { runtimeDependenciesFactory } from '../../../test/testUtils';
 import { WORD_SZ } from '../frame';
 
 test('print writes to a mock console', async () => {
-    const {
-        stringStorage,
-        customConsole,
-        runtime,
-    } = runtimeDependenciesFactory();
+    const { stringStorage, customConsole, runtime } = runtimeDependenciesFactory();
 
     const message = 'some string';
     const stringPtr = stringStorage.storeUnlabeledString(message);
@@ -19,11 +15,7 @@ test('print writes to a mock console', async () => {
 });
 
 test('getchar reads the mocked string', async () => {
-    const {
-        stringStorage,
-        customConsole,
-        runtime,
-    } = runtimeDependenciesFactory();
+    const { stringStorage, customConsole, runtime } = runtimeDependenciesFactory();
 
     const message = 'some string';
     customConsole.setReadResult(message);
@@ -76,11 +68,7 @@ test('substring returns the right string', async () => {
     const sliceLength = 5;
     const stringPtr = stringStorage.storeUnlabeledString(message);
     const substringFunction = runtime.getFunction('substring');
-    const substringPtr = await substringFunction([
-        stringPtr,
-        sliceStart,
-        sliceLength,
-    ]);
+    const substringPtr = await substringFunction([stringPtr, sliceStart, sliceLength]);
     const substring = stringStorage.loadString(substringPtr);
 
     expect(substring).toBe(message.slice(sliceStart, sliceLength));
@@ -94,10 +82,7 @@ test('concat returns the right string', async () => {
     const firstStrPointer = stringStorage.storeUnlabeledString(firstMsg);
     const secondStrPointer = stringStorage.storeUnlabeledString(secondMsg);
     const concatFunction = runtime.getFunction('concat');
-    const newStrPointer = await concatFunction([
-        firstStrPointer,
-        secondStrPointer,
-    ]);
+    const newStrPointer = await concatFunction([firstStrPointer, secondStrPointer]);
     const newStr = stringStorage.loadString(newStrPointer);
 
     expect(newStr).toBe(firstMsg + secondMsg);
@@ -153,10 +138,7 @@ test('+str_equals returns 0 or 1 for corresponding inputs', async () => {
     const rightStr1 = 'abc';
     const leftStr1Pointer = stringStorage.storeUnlabeledString(leftStr1);
     const rightStr1Pointer = stringStorage.storeUnlabeledString(rightStr1);
-    const firstComparison = await strEqualsFunction([
-        leftStr1Pointer,
-        rightStr1Pointer,
-    ]);
+    const firstComparison = await strEqualsFunction([leftStr1Pointer, rightStr1Pointer]);
 
     expect(firstComparison).toBe(1);
 
@@ -164,10 +146,7 @@ test('+str_equals returns 0 or 1 for corresponding inputs', async () => {
     const rightStr2 = 'cba';
     const leftStr2Pointer = stringStorage.storeUnlabeledString(leftStr2);
     const rightStr2Pointer = stringStorage.storeUnlabeledString(rightStr2);
-    const secondComparison = await strEqualsFunction([
-        leftStr2Pointer,
-        rightStr2Pointer,
-    ]);
+    const secondComparison = await strEqualsFunction([leftStr2Pointer, rightStr2Pointer]);
 
     expect(secondComparison).toBe(0);
 });
@@ -181,10 +160,7 @@ test('+str_not_equals returns 0 or 1 for corresponding inputs', async () => {
     const rightStr1 = 'abc';
     const leftStr1Pointer = stringStorage.storeUnlabeledString(leftStr1);
     const rightStr1Pointer = stringStorage.storeUnlabeledString(rightStr1);
-    const firstComparison = await strEqualsFunction([
-        leftStr1Pointer,
-        rightStr1Pointer,
-    ]);
+    const firstComparison = await strEqualsFunction([leftStr1Pointer, rightStr1Pointer]);
 
     expect(firstComparison).toBe(0);
 
@@ -192,10 +168,7 @@ test('+str_not_equals returns 0 or 1 for corresponding inputs', async () => {
     const rightStr2 = 'cba';
     const leftStr2Pointer = stringStorage.storeUnlabeledString(leftStr2);
     const rightStr2Pointer = stringStorage.storeUnlabeledString(rightStr2);
-    const secondComparison = await strEqualsFunction([
-        leftStr2Pointer,
-        rightStr2Pointer,
-    ]);
+    const secondComparison = await strEqualsFunction([leftStr2Pointer, rightStr2Pointer]);
 
     expect(secondComparison).toBe(1);
 });
@@ -208,13 +181,8 @@ test('+str_less returns 0 or 1 for corresponding inputs', async () => {
     const leftStrEdge = 'abc';
     const rightStrEdge = 'abc';
     const leftStrEdgePointer = stringStorage.storeUnlabeledString(leftStrEdge);
-    const rightStrEdgePointer = stringStorage.storeUnlabeledString(
-        rightStrEdge
-    );
-    const edgeComparison = await strLessFunction([
-        leftStrEdgePointer,
-        rightStrEdgePointer,
-    ]);
+    const rightStrEdgePointer = stringStorage.storeUnlabeledString(rightStrEdge);
+    const edgeComparison = await strLessFunction([leftStrEdgePointer, rightStrEdgePointer]);
 
     expect(edgeComparison).toBe(0);
 
@@ -222,10 +190,7 @@ test('+str_less returns 0 or 1 for corresponding inputs', async () => {
     const rightStr1 = 'cba';
     const leftStr1Pointer = stringStorage.storeUnlabeledString(leftStr1);
     const rightStr1Pointer = stringStorage.storeUnlabeledString(rightStr1);
-    const firstComparison = await strLessFunction([
-        leftStr1Pointer,
-        rightStr1Pointer,
-    ]);
+    const firstComparison = await strLessFunction([leftStr1Pointer, rightStr1Pointer]);
 
     expect(firstComparison).toBe(1);
 
@@ -233,10 +198,7 @@ test('+str_less returns 0 or 1 for corresponding inputs', async () => {
     const rightStr2 = 'abc';
     const leftStr2Pointer = stringStorage.storeUnlabeledString(leftStr2);
     const rightStr2Pointer = stringStorage.storeUnlabeledString(rightStr2);
-    const secondComparison = await strLessFunction([
-        leftStr2Pointer,
-        rightStr2Pointer,
-    ]);
+    const secondComparison = await strLessFunction([leftStr2Pointer, rightStr2Pointer]);
 
     expect(secondComparison).toBe(0);
 });
@@ -249,13 +211,8 @@ test('+str_less_or_equals returns 0 or 1 for corresponding inputs', async () => 
     const leftStrEdge = 'abc';
     const rightStrEdge = 'abc';
     const leftStrEdgePointer = stringStorage.storeUnlabeledString(leftStrEdge);
-    const rightStrEdgePointer = stringStorage.storeUnlabeledString(
-        rightStrEdge
-    );
-    const edgeComparison = await strLessOrEqualsFunction([
-        leftStrEdgePointer,
-        rightStrEdgePointer,
-    ]);
+    const rightStrEdgePointer = stringStorage.storeUnlabeledString(rightStrEdge);
+    const edgeComparison = await strLessOrEqualsFunction([leftStrEdgePointer, rightStrEdgePointer]);
 
     expect(edgeComparison).toBe(1);
 
@@ -263,10 +220,7 @@ test('+str_less_or_equals returns 0 or 1 for corresponding inputs', async () => 
     const rightStr1 = 'cba';
     const leftStr1Pointer = stringStorage.storeUnlabeledString(leftStr1);
     const rightStr1Pointer = stringStorage.storeUnlabeledString(rightStr1);
-    const firstComparison = await strLessOrEqualsFunction([
-        leftStr1Pointer,
-        rightStr1Pointer,
-    ]);
+    const firstComparison = await strLessOrEqualsFunction([leftStr1Pointer, rightStr1Pointer]);
 
     expect(firstComparison).toBe(1);
 
@@ -274,10 +228,7 @@ test('+str_less_or_equals returns 0 or 1 for corresponding inputs', async () => 
     const rightStr2 = 'abc';
     const leftStr2Pointer = stringStorage.storeUnlabeledString(leftStr2);
     const rightStr2Pointer = stringStorage.storeUnlabeledString(rightStr2);
-    const secondComparison = await strLessOrEqualsFunction([
-        leftStr2Pointer,
-        rightStr2Pointer,
-    ]);
+    const secondComparison = await strLessOrEqualsFunction([leftStr2Pointer, rightStr2Pointer]);
 
     expect(secondComparison).toBe(0);
 });
@@ -290,13 +241,8 @@ test('+str_greater returns 0 or 1 for corresponding inputs', async () => {
     const leftStrEdge = 'abc';
     const rightStrEdge = 'abc';
     const leftStrEdgePointer = stringStorage.storeUnlabeledString(leftStrEdge);
-    const rightStrEdgePointer = stringStorage.storeUnlabeledString(
-        rightStrEdge
-    );
-    const edgeComparison = await strGreaterFunction([
-        leftStrEdgePointer,
-        rightStrEdgePointer,
-    ]);
+    const rightStrEdgePointer = stringStorage.storeUnlabeledString(rightStrEdge);
+    const edgeComparison = await strGreaterFunction([leftStrEdgePointer, rightStrEdgePointer]);
 
     expect(edgeComparison).toBe(0);
 
@@ -304,10 +250,7 @@ test('+str_greater returns 0 or 1 for corresponding inputs', async () => {
     const rightStr1 = 'cba';
     const leftStr1Pointer = stringStorage.storeUnlabeledString(leftStr1);
     const rightStr1Pointer = stringStorage.storeUnlabeledString(rightStr1);
-    const firstComparison = await strGreaterFunction([
-        leftStr1Pointer,
-        rightStr1Pointer,
-    ]);
+    const firstComparison = await strGreaterFunction([leftStr1Pointer, rightStr1Pointer]);
 
     expect(firstComparison).toBe(0);
 
@@ -315,10 +258,7 @@ test('+str_greater returns 0 or 1 for corresponding inputs', async () => {
     const rightStr2 = 'abc';
     const leftStr2Pointer = stringStorage.storeUnlabeledString(leftStr2);
     const rightStr2Pointer = stringStorage.storeUnlabeledString(rightStr2);
-    const secondComparison = await strGreaterFunction([
-        leftStr2Pointer,
-        rightStr2Pointer,
-    ]);
+    const secondComparison = await strGreaterFunction([leftStr2Pointer, rightStr2Pointer]);
 
     expect(secondComparison).toBe(1);
 });
@@ -326,16 +266,12 @@ test('+str_greater returns 0 or 1 for corresponding inputs', async () => {
 test('+str_greater_or_equals returns 0 or 1 for corresponding inputs', async () => {
     const { stringStorage, runtime } = runtimeDependenciesFactory();
 
-    const strGreaterOrEqualsFunction = runtime.getFunction(
-        '+str_greater_or_equals'
-    );
+    const strGreaterOrEqualsFunction = runtime.getFunction('+str_greater_or_equals');
 
     const leftStrEdge = 'abc';
     const rightStrEdge = 'abc';
     const leftStrEdgePointer = stringStorage.storeUnlabeledString(leftStrEdge);
-    const rightStrEdgePointer = stringStorage.storeUnlabeledString(
-        rightStrEdge
-    );
+    const rightStrEdgePointer = stringStorage.storeUnlabeledString(rightStrEdge);
     const edgeComparison = await strGreaterOrEqualsFunction([
         leftStrEdgePointer,
         rightStrEdgePointer,
@@ -347,10 +283,7 @@ test('+str_greater_or_equals returns 0 or 1 for corresponding inputs', async () 
     const rightStr1 = 'cba';
     const leftStr1Pointer = stringStorage.storeUnlabeledString(leftStr1);
     const rightStr1Pointer = stringStorage.storeUnlabeledString(rightStr1);
-    const firstComparison = await strGreaterOrEqualsFunction([
-        leftStr1Pointer,
-        rightStr1Pointer,
-    ]);
+    const firstComparison = await strGreaterOrEqualsFunction([leftStr1Pointer, rightStr1Pointer]);
 
     expect(firstComparison).toBe(0);
 
@@ -358,10 +291,7 @@ test('+str_greater_or_equals returns 0 or 1 for corresponding inputs', async () 
     const rightStr2 = 'abc';
     const leftStr2Pointer = stringStorage.storeUnlabeledString(leftStr2);
     const rightStr2Pointer = stringStorage.storeUnlabeledString(rightStr2);
-    const secondComparison = await strGreaterOrEqualsFunction([
-        leftStr2Pointer,
-        rightStr2Pointer,
-    ]);
+    const secondComparison = await strGreaterOrEqualsFunction([leftStr2Pointer, rightStr2Pointer]);
 
     expect(secondComparison).toBe(1);
 });

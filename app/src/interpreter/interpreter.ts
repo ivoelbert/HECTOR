@@ -1,12 +1,4 @@
-import {
-    Exp,
-    Frag,
-    FunFrag,
-    Stm,
-    Label,
-    GlobalTemp,
-    LocalTemp,
-} from './treeTypes';
+import { Exp, Frag, FunFrag, Stm, Label, GlobalTemp, LocalTemp } from './treeTypes';
 import { assertExists, UnreachableError, IncludeMap } from './utils/utils';
 import { accessExpsFromFormals } from './frame';
 import { findLabelIndex, evalBinop, flatStms } from './utils/treeUtils';
@@ -74,11 +66,7 @@ export class TreeInterpreter {
             this.stringStorage.storeString(frag);
         });
 
-        this.runtime = new Runtime(
-            this.mem,
-            this.stringStorage,
-            this.customConsole
-        );
+        this.runtime = new Runtime(this.mem, this.stringStorage, this.customConsole);
     }
 
     public run = async (): Promise<number> => {
@@ -87,10 +75,7 @@ export class TreeInterpreter {
         return await this.evalFunction(mainLabel, [0]);
     };
 
-    private evalFunction = async (
-        name: string,
-        args: number[]
-    ): Promise<number> => {
+    private evalFunction = async (name: string, args: number[]): Promise<number> => {
         // Find the function and extract it's body and frame.
         const fragment = assertExists(
             this.functions.get(name),
@@ -141,7 +126,7 @@ export class TreeInterpreter {
             if (maybeLabel === null) {
                 // If no jump continue executing the next stm
                 executedStmIndex++;
-            } else if(maybeLabel === 'done') {
+            } else if (maybeLabel === 'done') {
                 // If the label is 'done', the program finished.
                 break;
             } else {
@@ -153,10 +138,7 @@ export class TreeInterpreter {
     };
 
     // Store each value from args in the corresponding temp/mem location
-    private setupFormals = async (
-        args: number[],
-        formals: [string, boolean][]
-    ): Promise<void> => {
+    private setupFormals = async (args: number[], formals: [string, boolean][]): Promise<void> => {
         const accessExps = accessExpsFromFormals(formals);
 
         for (let i = 0; i < args.length; i++) {
@@ -210,9 +192,7 @@ export class TreeInterpreter {
                 return null;
             }
 
-            throw new UnreachableError(
-                `MOVE to a non Local, Global or Mem expression\n${toExp}\n`
-            );
+            throw new UnreachableError(`MOVE to a non Local, Global or Mem expression\n${toExp}\n`);
         }
 
         if (isJumpStm(stm)) {
@@ -221,9 +201,7 @@ export class TreeInterpreter {
                 return where.NAME;
             }
 
-            throw new UnreachableError(
-                `JUMP to a non Label expression:\n${where}\n`
-            );
+            throw new UnreachableError(`JUMP to a non Label expression:\n${where}\n`);
         }
 
         if (isCjumpStm(stm)) {
@@ -290,10 +268,7 @@ export class TreeInterpreter {
 
         if (isMemExp(exp)) {
             const dir = await this.evalExp(exp.MEM);
-            return assertExists(
-                this.mem.get(dir),
-                `Memory location ${dir} is empty!`
-            );
+            return assertExists(this.mem.get(dir), `Memory location ${dir} is empty!`);
         }
 
         if (isCallExp(exp)) {

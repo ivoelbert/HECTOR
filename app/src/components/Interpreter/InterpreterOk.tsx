@@ -33,11 +33,7 @@ interface RunButtonProps {
 
 const RunButton: React.FC<RunButtonProps> = (props) => {
     return (
-        <button
-            className="run-button"
-            disabled={props.disabled}
-            onClick={props.onClick}
-        >
+        <button className="run-button" disabled={props.disabled} onClick={props.onClick}>
             Run interpreter
         </button>
     );
