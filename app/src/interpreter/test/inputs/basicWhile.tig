@@ -1,9 +1,0 @@
-
-let
-	var n : int := 0
-in
-    (while n < 10 do
-        n := n + 1
-    );
-    n
-end

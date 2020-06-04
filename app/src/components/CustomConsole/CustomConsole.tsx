@@ -16,7 +16,7 @@ export const CustomConsole: React.FC<CustomConsoleProps> = (props) => {
 
     const consoleRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
-        const element = consoleRef.current
+        const element = consoleRef.current;
         if (element !== null) {
             element.scrollTop = element.scrollHeight;
         }

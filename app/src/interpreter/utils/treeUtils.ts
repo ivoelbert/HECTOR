@@ -15,14 +15,14 @@ export const findLabelIndex = (stms: Stm[], label: Label): number => {
 };
 
 export const flatStms = (fragStms: FragStm[]): Stm[] => {
-    const stms: Stm[] = []
+    const stms: Stm[] = [];
 
-    fragStms.forEach(fragStm => {
-        stms.push(...fragStm.stms)
-    })
+    fragStms.forEach((fragStm) => {
+        stms.push(...fragStm.stms);
+    });
 
     return stms;
-}
+};
 
 export const evalBinop = (op: BinOp, leftVal: number, rightVal: number): number => {
     switch (op) {

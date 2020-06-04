@@ -70,7 +70,7 @@ export class Runtime {
      *  Public functions
      */
 
-    private print: RuntimeFunction = args => {
+    private print: RuntimeFunction = (args) => {
         const [strPointer] = args;
         assertExists(strPointer);
 
@@ -80,16 +80,16 @@ export class Runtime {
         return 0;
     };
 
-    private flush: RuntimeFunction = args => {
+    private flush: RuntimeFunction = (args) => {
         return 0;
     };
 
-    private getchar: AsyncRuntimeFunction = async args => {
+    private getchar: AsyncRuntimeFunction = async (args) => {
         const str = await this.console.read();
         return this.stringStorage.storeUnlabeledString(str);
     };
 
-    private ord: RuntimeFunction = args => {
+    private ord: RuntimeFunction = (args) => {
         const [strPointer] = args;
         assertExists(strPointer);
 
@@ -98,7 +98,7 @@ export class Runtime {
         return str.charCodeAt(0);
     };
 
-    private chr: RuntimeFunction = args => {
+    private chr: RuntimeFunction = (args) => {
         const [charCode] = args;
         assertExists(charCode);
 
@@ -106,7 +106,7 @@ export class Runtime {
         return this.stringStorage.storeUnlabeledString(str);
     };
 
-    private size: RuntimeFunction = args => {
+    private size: RuntimeFunction = (args) => {
         const [strPointer] = args;
         assertExists(strPointer);
 
@@ -114,7 +114,7 @@ export class Runtime {
         return str.length;
     };
 
-    private substring: RuntimeFunction = args => {
+    private substring: RuntimeFunction = (args) => {
         const [strPointer, start, count] = args;
         assertExists(strPointer);
 
@@ -124,7 +124,7 @@ export class Runtime {
         return this.stringStorage.storeUnlabeledString(slicedStr);
     };
 
-    private concat: RuntimeFunction = args => {
+    private concat: RuntimeFunction = (args) => {
         const [leftStrPointer, rightStrPointer] = args;
         assertExists(leftStrPointer);
         assertExists(rightStrPointer);
@@ -136,7 +136,7 @@ export class Runtime {
         return this.stringStorage.storeUnlabeledString(newStr);
     };
 
-    private not: RuntimeFunction = args => {
+    private not: RuntimeFunction = (args) => {
         const [value] = args;
         assertExists(value);
 
@@ -147,7 +147,7 @@ export class Runtime {
      *  Internal functions
      */
 
-    private allocArray: RuntimeFunction = args => {
+    private allocArray: RuntimeFunction = (args) => {
         const [size, init] = args;
         assertExists(size);
         assertExists(init);
@@ -164,7 +164,7 @@ export class Runtime {
         return arrayLocation;
     };
 
-    private allocRecord: RuntimeFunction = args => {
+    private allocRecord: RuntimeFunction = (args) => {
         const [size, ...values] = args;
         assertExists(size);
 
@@ -180,38 +180,38 @@ export class Runtime {
         return recordLocation;
     };
 
-    private strEquals: RuntimeFunction = args => {
+    private strEquals: RuntimeFunction = (args) => {
         const comparison = this.strCompare(args);
         return Number(comparison === 0);
     };
 
-    private strNotEquals: RuntimeFunction = args => {
+    private strNotEquals: RuntimeFunction = (args) => {
         const comparison = this.strCompare(args);
         return Number(comparison !== 0);
     };
 
-    private strLess: RuntimeFunction = args => {
+    private strLess: RuntimeFunction = (args) => {
         const comparison = this.strCompare(args);
         return Number(comparison < 0);
     };
 
-    private strLessOrEquals: RuntimeFunction = args => {
+    private strLessOrEquals: RuntimeFunction = (args) => {
         const comparison = this.strCompare(args);
         return Number(comparison <= 0);
     };
 
-    private strGreater: RuntimeFunction = args => {
+    private strGreater: RuntimeFunction = (args) => {
         const comparison = this.strCompare(args);
         return Number(comparison > 0);
     };
 
-    private strGreaterOrEquals: RuntimeFunction = args => {
+    private strGreaterOrEquals: RuntimeFunction = (args) => {
         const comparison = this.strCompare(args);
         return Number(comparison >= 0);
     };
 
     // extracts the strings and returns their localCompare
-    private strCompare: RuntimeFunction = args => {
+    private strCompare: RuntimeFunction = (args) => {
         const [leftStrPointer, rightStrPointer] = args;
 
         const leftStr = this.stringStorage.loadString(assertExists(leftStrPointer));

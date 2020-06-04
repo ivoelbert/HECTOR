@@ -51,8 +51,8 @@ export type Frame = {
 };
 
 export type FragStm = {
-    stms: Stm[]
-}
+    stms: Stm[];
+};
 
 export type FunFrag = {
     Proc: {

@@ -1,6 +1,0 @@
-
-let
-    var N := 42
-in
-    N
-end

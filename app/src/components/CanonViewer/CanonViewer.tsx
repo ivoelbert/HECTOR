@@ -6,7 +6,7 @@ interface CanonViewerProps {
     canon: CanonResult | null;
 }
 
-export const CanonViewer: React.FC<CanonViewerProps> = props => {
+export const CanonViewer: React.FC<CanonViewerProps> = (props) => {
     const { canon } = props;
 
     if (canon === null) {
@@ -14,10 +14,7 @@ export const CanonViewer: React.FC<CanonViewerProps> = props => {
             <div>
                 <h3>No fragments to show!</h3>
                 <p>Did you compile the code?</p>
-                <p>
-                    If so, check the WASM results to see if there were any
-                    errors
-                </p>
+                <p>If so, check the WASM results to see if there were any errors</p>
             </div>
         );
     } else {
@@ -25,7 +22,7 @@ export const CanonViewer: React.FC<CanonViewerProps> = props => {
     }
 };
 
-export const OkCanonViewer: React.FC<CanonViewerProps> = props => {
+export const OkCanonViewer: React.FC<CanonViewerProps> = (props) => {
     // We're sure this is NOT null
     const { canon } = props;
 

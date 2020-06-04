@@ -1,4 +1,4 @@
-import { runtimeDependenciesFactory } from './testUtils';
+import { runtimeDependenciesFactory } from '../../../test/testUtils';
 import { WORD_SZ } from '../frame';
 
 test('print writes to a mock console', async () => {

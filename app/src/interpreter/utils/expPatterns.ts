@@ -1,4 +1,14 @@
-import { Exp, MemExp, LocalExp, ConstExp, NameExp, BinopExp, CallExp, EseqExp, GlobalExp } from '../treeTypes';
+import {
+    Exp,
+    MemExp,
+    LocalExp,
+    ConstExp,
+    NameExp,
+    BinopExp,
+    CallExp,
+    EseqExp,
+    GlobalExp,
+} from '../treeTypes';
 
 export const isConstExp = (exp: Exp): exp is ConstExp => {
     return 'CONST' in exp;
@@ -14,7 +24,7 @@ export const isLocalExp = (exp: Exp): exp is LocalExp => {
 
 export const isGlobalExp = (exp: Exp): exp is GlobalExp => {
     return 'GLOBAL' in exp;
-}
+};
 
 export const isBinopExp = (exp: Exp): exp is BinopExp => {
     return 'BINOP' in exp;

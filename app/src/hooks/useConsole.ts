@@ -45,11 +45,7 @@ export const useConsole = (): [InterpConsole, string[], boolean] => {
                     setIsReading(true);
 
                     this.resolveRead = (str: string) => {
-                        setMessages((oldMessages) => [
-                            ...oldMessages,
-                            str,
-                            '',
-                        ]);
+                        setMessages((oldMessages) => [...oldMessages, str, '']);
                         setIsReading(false);
 
                         // Send this value over to the interpreter
