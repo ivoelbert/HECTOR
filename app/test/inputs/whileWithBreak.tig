@@ -1,4 +1,6 @@
-
+/*
+    @result: 10
+*/
 let
 	var n : int := 0
 in

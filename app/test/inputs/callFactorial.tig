@@ -1,4 +1,6 @@
-
+/*
+    @result: 120
+*/
 let
     function fact (n : int) : int =
         if  n = 0

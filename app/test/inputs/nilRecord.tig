@@ -1,4 +1,6 @@
-
+/*
+    @result: 0
+*/
 let
 	type rectype = {name : string, id : int}
 	var b : rectype := nil

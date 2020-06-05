@@ -1,4 +1,6 @@
-
+/*
+    @result: 0
+*/
 let
   type arrtype1 = array of int
   type rectype1 = {name : string, address : string, id : int, age : int}

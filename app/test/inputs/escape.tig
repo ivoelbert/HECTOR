@@ -1,4 +1,6 @@
-
+/*
+    @result: 4
+*/
 let var  b := 1
     type a = int
 in

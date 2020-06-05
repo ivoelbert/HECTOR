@@ -1,2 +1,4 @@
-
+/*
+    @result: 0
+*/
 (print("perro"); 0)

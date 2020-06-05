@@ -1,4 +1,6 @@
-
+/*
+    @result: 55
+*/
 let
     var N := 0
 in

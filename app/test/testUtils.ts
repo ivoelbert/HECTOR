@@ -30,9 +30,14 @@ export const runtimeDependenciesFactory = (): RuntimeTestDependencies => {
     };
 };
 
+interface ExpectedValues {
+    result: number | null;
+}
+
 interface InterpreterTestDependencies {
     interpreter: TreeInterpreter;
     customConsole: MockConsole;
+    expectedValues: ExpectedValues;
 }
 
 export const interpreterDependenciesFactory = async (
@@ -40,9 +45,15 @@ export const interpreterDependenciesFactory = async (
 ): Promise<InterpreterTestDependencies> => {
     const baseName = file.split('.tig')[0];
 
-    const inputPath = `test/inputs/canon/${baseName}.json`;
-    const rawJson = await fs.readFile(inputPath, 'utf8');
-    const canon = JSON.parse(rawJson);
+    const canonPath = `test/inputs/canon/${baseName}.json`;
+    const expectedValuesPath = `test/inputs/expectedValues/${baseName}.json`;
+    const [rawCanon, rawExpectedValues] = await Promise.all([
+        fs.readFile(canonPath, 'utf8'),
+        fs.readFile(expectedValuesPath, 'utf8'),
+    ]);
+
+    const canon = JSON.parse(rawCanon);
+    const expectedValues = JSON.parse(rawExpectedValues);
 
     const customConsole = new MockConsole();
     const interpreter = new TreeInterpreter(canon, customConsole);
@@ -50,5 +61,6 @@ export const interpreterDependenciesFactory = async (
     return {
         interpreter,
         customConsole,
+        expectedValues,
     };
 };

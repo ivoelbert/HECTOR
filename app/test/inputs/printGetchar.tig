@@ -1,2 +1,4 @@
-
+/*
+    @result: 0
+*/
 (print(getchar()); 0)

@@ -1,4 +1,6 @@
-
+/*
+    @result: 42
+*/
 let
     function id (n : int) : int = n
 in

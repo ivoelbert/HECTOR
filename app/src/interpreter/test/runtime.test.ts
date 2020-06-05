@@ -17,7 +17,7 @@ test('print writes to a mock console', async () => {
 test('getchar reads the mocked string', async () => {
     const { stringStorage, customConsole, runtime } = runtimeDependenciesFactory();
 
-    const message = 'some string';
+    const message = 'some other string';
     customConsole.setReadResult(message);
     const getcharFunction = runtime.getFunction('getchar');
     const strPointer = await getcharFunction([]);

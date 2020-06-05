@@ -1,4 +1,6 @@
-
+/*
+    @result: 42
+*/
 let
     function addone (n : int) : int =
         n + 1

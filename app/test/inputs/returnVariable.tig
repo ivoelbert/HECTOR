@@ -1,4 +1,6 @@
-
+/*
+    @result: 42
+*/
 let
     var N := 42
 in

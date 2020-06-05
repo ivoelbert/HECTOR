@@ -1,5 +1,7 @@
+/*
+    @result: 0
+*/
 /* A program to solve the 8-queens problem */
-
 let
     var N := 8
 
