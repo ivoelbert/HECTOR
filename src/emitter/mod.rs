@@ -93,18 +93,19 @@ pub fn emit_module(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 			.build()
 		.memory()
 			// CHEQUEAR: esto alcanza o hay que meter un grow?
-			.with_min(1024)
+			.with_min(8 * 1024)
 			.build()
-		// // Return value export
-		// .with_export(builder::export()
-		// 	.field("return")
-		// 	.internal().global(2)
-		// 	.build()
-		// )
+
 		// Main Wrapper value export
 		.with_export(builder::export()
 			.field("tigermain_wrapper")
 			.internal().func(function_env.len().try_into().unwrap())
+			.build()
+		)
+		// Memory export (for the JS runtime)
+		.with_export(builder::export()
+			.field("memory")
+			.internal().memory(0)
 			.build()
 		)
 		.build();
