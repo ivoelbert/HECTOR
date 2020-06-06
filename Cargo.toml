@@ -5,6 +5,7 @@ authors = ["ielvert-menlo <ielvert@menlo-technologies.com>", "QPotato <federicob
 edition = "2018"
 
 [lib]
+crate-type = ["cdylib", "rlib"]
 name = "hector"
 path = "src/lib.rs"
 

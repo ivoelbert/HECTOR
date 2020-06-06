@@ -1,13 +1,16 @@
 import { CustomConsole } from '../utils/console';
+import { MemoryManager } from './memoryManager';
 
 type TigerMain = () => number;
 
 interface InstanceExports {
     main: TigerMain;
+    memory: Uint8Array;
 }
 
 export class Runtime {
     private wasmInstance: WebAssembly.Instance;
+    private memoryManager: MemoryManager;
 
     constructor(module: WebAssembly.Module, private customConsole: CustomConsole) {
         this.wasmInstance = new WebAssembly.Instance(module, {
@@ -34,6 +37,8 @@ export class Runtime {
                 str_greater_or_equals: this.str_greater_or_equals,
             },
         });
+
+        this.memoryManager = new MemoryManager(this.exports.memory);
     }
 
     run = (): number => {
@@ -43,6 +48,7 @@ export class Runtime {
     private get exports(): InstanceExports {
         return {
             main: this.wasmInstance.exports.tigermain_wrapper as TigerMain,
+            memory: new Uint8Array((this.wasmInstance.exports.memory as WebAssembly.Memory).buffer),
         };
     }
 

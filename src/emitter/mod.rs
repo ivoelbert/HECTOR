@@ -93,7 +93,7 @@ pub fn emit_module(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 			.build()
 		.memory()
 			// CHEQUEAR: esto alcanza o hay que meter un grow?
-			.with_min(8 * 1024)
+			.with_min(512)
 			.build()
 
 		// Main Wrapper value export

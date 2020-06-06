@@ -24,6 +24,12 @@ export const assertExists = <T>(value: T | undefined, msg?: string): T => {
     }
 };
 
+export const assertCondition = (condition: boolean, msg: string): void => {
+    if (!condition) {
+        throw new Error(msg);
+    }
+};
+
 interface IncludeMapEntry<K, V> {
     key: K;
     value: V;
