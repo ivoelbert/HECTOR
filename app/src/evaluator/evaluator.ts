@@ -1,31 +1,25 @@
 import { CustomConsole } from '../utils/console';
 import binaryen from 'binaryen';
-import { RuntimeFactory } from './runtime';
+import { Runtime } from './runtime';
 
 export interface Evaluator {
     run(): number;
 }
 
-type TigerMain = () => number;
-
-export interface EvaluatorRuntime {}
-
 export class WasmEvaluator implements Evaluator {
-    private main: TigerMain;
+    private runtime: Runtime;
 
     constructor(binaryWasm: Uint8Array, customConsole: CustomConsole) {
-        const runtime = new RuntimeFactory(customConsole);
         const wasmModule = binaryen.readBinary(binaryWasm);
         binaryen.setOptimizeLevel(1);
         wasmModule.runPasses(['asyncify']);
         const binary = wasmModule.emitBinary();
-        const compiled = new WebAssembly.Module(binary);
-        const instance = new WebAssembly.Instance(compiled, { externals: runtime.build() });
+        const compiledModule = new WebAssembly.Module(binary);
 
-        this.main = instance.exports.tigermain_wrapper as TigerMain;
+        this.runtime = new Runtime(compiledModule, customConsole);
     }
 
     run = () => {
-        return this.main();
+        return this.runtime.run();
     };
 }
