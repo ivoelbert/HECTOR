@@ -1,4 +1,4 @@
-import { CustomConsole } from '../interpreter/utils/console';
+import { CustomConsole } from '../utils/console';
 import { useState, useMemo } from 'react';
 
 export interface InterpConsole extends CustomConsole {

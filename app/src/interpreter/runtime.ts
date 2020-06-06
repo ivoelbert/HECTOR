@@ -2,7 +2,7 @@ import { MemMap } from './utils/memMap';
 import { assertExists } from './utils/utils';
 import { WORD_SZ } from './frame';
 import { StringStorage } from './utils/stringStorage';
-import { CustomConsole } from './utils/console';
+import { CustomConsole } from '../utils/console';
 
 interface RuntimeFunctionsByName {
     print: RuntimeFunction | AsyncRuntimeFunction;

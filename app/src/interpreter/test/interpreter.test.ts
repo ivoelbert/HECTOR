@@ -1,4 +1,5 @@
-import { interpreterDependenciesFactory } from '../../../test/testUtils';
+import { interpreterDependenciesFactory } from './testUtils';
+import { testExpectedValues } from '../../utils/utils';
 
 test('Basic program that returns 42 works', async () => {
     const { interpreter, expectedValues } = await interpreterDependenciesFactory(
@@ -6,9 +7,7 @@ test('Basic program that returns 42 works', async () => {
     );
     const returnValue = await interpreter.run();
 
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('Define and return variable works', async () => {
@@ -17,9 +16,7 @@ test('Define and return variable works', async () => {
     );
     const returnValue = await interpreter.run();
 
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('Calling the identity function works', async () => {
@@ -28,9 +25,7 @@ test('Calling the identity function works', async () => {
     );
     const returnValue = await interpreter.run();
 
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('Calling the factorial function works', async () => {
@@ -39,18 +34,14 @@ test('Calling the factorial function works', async () => {
     );
     const returnValue = await interpreter.run();
 
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('Calling the addone function works', async () => {
     const { interpreter, expectedValues } = await interpreterDependenciesFactory('callAddone.tig');
     const returnValue = await interpreter.run();
 
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('Return the Nth element of an array', async () => {
@@ -59,9 +50,7 @@ test('Return the Nth element of an array', async () => {
     );
     const returnValue = await interpreter.run();
 
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('Return a field of a record', async () => {
@@ -70,36 +59,28 @@ test('Return a field of a record', async () => {
     );
     const returnValue = await interpreter.run();
 
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('Escaped variables work', async () => {
     const { interpreter, expectedValues } = await interpreterDependenciesFactory('escape.tig');
     const returnValue = await interpreter.run();
 
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('Queens works', async () => {
     const { interpreter, expectedValues } = await interpreterDependenciesFactory('queens.tig');
     const returnValue = await interpreter.run();
 
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('Basic for loop works', async () => {
     const { interpreter, expectedValues } = await interpreterDependenciesFactory('basicFor.tig');
     const returnValue = await interpreter.run();
 
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('Local variable hides a global', async () => {
@@ -108,9 +89,7 @@ test('Local variable hides a global', async () => {
     );
     const returnValue = await interpreter.run();
 
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('Complex structures work', async () => {
@@ -119,18 +98,14 @@ test('Complex structures work', async () => {
     );
     const returnValue = await interpreter.run();
 
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('Assign nil to a record', async () => {
     const { interpreter, expectedValues } = await interpreterDependenciesFactory('nilRecord.tig');
     const returnValue = await interpreter.run();
 
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('While with break works', async () => {
@@ -139,18 +114,14 @@ test('While with break works', async () => {
     );
     const returnValue = await interpreter.run();
 
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('Basic while works', async () => {
     const { interpreter, expectedValues } = await interpreterDependenciesFactory('basicWhile.tig');
     const returnValue = await interpreter.run();
 
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('Print getchar input', async () => {
@@ -164,9 +135,7 @@ test('Print getchar input', async () => {
     const printedMessage = customConsole.getLastMessage();
 
     expect(printedMessage).toBe(stringToRead);
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });
 
 test('Print perro works', async () => {
@@ -178,7 +147,5 @@ test('Print perro works', async () => {
     const printedMessage = customConsole.getLastMessage();
 
     expect(printedMessage).toBe('perro');
-    if (expectedValues.result !== null) {
-        expect(returnValue).toBe(expectedValues.result);
-    }
+    testExpectedValues(returnValue, expectedValues);
 });

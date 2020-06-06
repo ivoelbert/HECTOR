@@ -2404,6 +2404,11 @@ binary-extensions@^2.0.0:
   resolved "https://registry.yarnpkg.com/binary-extensions/-/binary-extensions-2.0.0.tgz#23c0df14f6a88077f5f986c0d167ec03c3d5537c"
   integrity sha512-Phlt0plgpIIBOGTT/ehfFnbNlfsDEiqmzE2KRXoX1bLIlir4X/MR+zSyBEkL05ffWgnRSf/DXv+WrUAVr93/ow==
 
+binaryen@^93.0.0:
+  version "93.0.0"
+  resolved "https://registry.yarnpkg.com/binaryen/-/binaryen-93.0.0.tgz#e37f0ea4204b27d1fbbfea25c693e96eab5b4c02"
+  integrity sha512-tvss1QAGP1gw5/7vquEqYaCmwFkFGMZcEuwOa5sdTRjViiUPhwQkGpfMdAtau3XIStxVI8SlGeFR/lH4yF9rJg==
+
 bindings@^1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/bindings/-/bindings-1.5.0.tgz#10353c9e945334bc0511a6d90b38fbc7c9c504df"

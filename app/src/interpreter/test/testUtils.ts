@@ -1,10 +1,11 @@
 import { MockConsole } from './mockConsole';
-import { Runtime } from '../src/interpreter/runtime';
-import { MemMap } from '../src/interpreter/utils/memMap';
-import { Label } from '../src/interpreter/treeTypes';
-import { StringStorage } from '../src/interpreter/utils/stringStorage';
-import { TreeInterpreter } from '../src/interpreter/interpreter';
+import { Runtime } from '../runtime';
+import { MemMap } from '../utils/memMap';
+import { Label } from '../treeTypes';
+import { StringStorage } from '../utils/stringStorage';
+import { TreeInterpreter } from '../interpreter';
 import { promises as fs } from 'fs';
+import { ExpectedValues } from '../../utils/expectedValues';
 
 interface RuntimeTestDependencies {
     memMap: MemMap;
@@ -29,10 +30,6 @@ export const runtimeDependenciesFactory = (): RuntimeTestDependencies => {
         runtime,
     };
 };
-
-interface ExpectedValues {
-    result: number | null;
-}
 
 interface InterpreterTestDependencies {
     interpreter: TreeInterpreter;

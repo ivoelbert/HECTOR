@@ -1,4 +1,4 @@
-import { CustomConsole } from '../src/interpreter/utils/console';
+import { CustomConsole } from '../../utils/console';
 
 /**
  *  A mocked console that writes to an internal array

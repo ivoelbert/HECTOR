@@ -19,7 +19,7 @@
     "include": [
         "src",
         "src/interpreter/test/runtime.test.ts",
-        "test/testUtils.ts",
+        "src/interpreter/test/testUtils.ts",
         "src/interpreter/test/interpreter.test.ts",
         "test/mockConsole.ts"
     ]

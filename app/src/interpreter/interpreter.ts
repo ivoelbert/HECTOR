@@ -23,7 +23,7 @@ import {
 } from './utils/stmPatterns';
 import { MemMap } from './utils/memMap';
 import { StringStorage } from './utils/stringStorage';
-import { CustomConsole } from './utils/console';
+import { CustomConsole } from '../utils/console';
 import { Runtime } from './runtime';
 
 const FRAME_POINTER_OFFSET = 1024 * 1024;
