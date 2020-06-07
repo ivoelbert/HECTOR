@@ -8,6 +8,7 @@ import { Interpreter } from '../Interpreter/Interpreter';
 import { Frag } from '../../interpreter/treeTypes';
 import { useLocalStorageState } from '../../hooks/useLocalStorageState';
 import { baseCode } from '../../utils/baseCode';
+import { Evaluator } from '../Evaluator/Evaluator';
 
 // Bad type. You can get either Ok or Err. Improve this.
 export type RustOption<T> = {
@@ -67,7 +68,7 @@ export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
         TREE: <TREEViewer fragments={compileResult.translate} />,
         Canon: <CanonViewer canon={compileResult.canon} />,
         Interp: <Interpreter canon={compileResult.canon} />,
-        Result: <p>{compileResult.wasm}</p>,
+        Result: <Evaluator bin={compileResult.bin} />,
     };
 
     return (
