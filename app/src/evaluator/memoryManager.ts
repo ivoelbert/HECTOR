@@ -1,6 +1,7 @@
 import { assertCondition } from '../interpreter/utils/utils';
 
-export const MEMORY_LENGTH = 32 * 1024 * 1024; // 32mb
+export const MEMORY_PAGES = 256;
+export const MEMORY_LENGTH = MEMORY_PAGES * 64 * 1024; // 16mb
 export const HEAP_START = Math.floor(MEMORY_LENGTH / 2);
 
 export const i32_SIZE = 4;
@@ -10,12 +11,14 @@ export class MemoryManager {
     private nextFreeIndex: number;
 
     constructor(private memory: Uint8Array) {
+        console.log('New memory of size ', memory.length);
         this.nextFreeIndex = HEAP_START;
     }
 
     alloc = (bytes: number): number => {
         const pointer = this.nextFreeIndex;
         this.nextFreeIndex += bytes;
+        console.log(`Alloc ${bytes} bytes, from ${pointer} (total size ${MEMORY_LENGTH})`);
         assertCondition(this.nextFreeIndex < MEMORY_LENGTH, 'Out of memory!');
         return pointer;
     };
