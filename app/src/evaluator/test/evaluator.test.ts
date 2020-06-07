@@ -70,3 +70,21 @@ test('basicWhile program works', async () => {
 
     testExpectedValues(returnValue, expectedValues);
 });
+
+test('returnArrayElement program works', async () => {
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory(
+        'returnArrayElement.tig'
+    );
+    const returnValue = await evaluator.run();
+
+    testExpectedValues(returnValue, expectedValues);
+});
+
+/*
+test('returnArrayInit program works', async () => {
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory('returnArrayInit.tig');
+    const returnValue = await evaluator.run();
+
+    testExpectedValues(returnValue, expectedValues);
+});
+*/
