@@ -91,10 +91,10 @@ pub fn emit_module(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 			.init_expr(I32Const(0))
 			.mutable()
 			.build()
-		.memory()
-			// CHEQUEAR: esto alcanza o hay que meter un grow?
-			.with_min(512)
-			.build()
+		// .memory()
+		// 	// CHEQUEAR: esto alcanza o hay que meter un grow?
+		// 	.with_min(512)
+		// 	.build()
 
 		// Main Wrapper value export
 		.with_export(builder::export()
@@ -102,12 +102,17 @@ pub fn emit_module(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 			.internal().func(function_env.len().try_into().unwrap())
 			.build()
 		)
-		// Memory export (for the JS runtime)
-		.with_export(builder::export()
+		.import()
+			.module("mem")
 			.field("memory")
-			.internal().memory(0)
+			.external().memory(0, None)
 			.build()
-		)
+		// Memory export (for the JS runtime)
+		// .with_export(builder::export()
+		// 	.field("memory")
+		// 	.internal().memory(0)
+		// 	.build()
+		// )
 		.build();
 	// println!("{:#?}", &module);
 	// (format!("{:?}", &module), parity_wasm::serialize(module).unwrap())
