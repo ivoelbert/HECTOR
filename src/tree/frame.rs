@@ -68,7 +68,7 @@ impl Frame {
                     stms.push(MOVE(
                         Box::new(MEM(Box::new(BINOP(PLUS,
                             Box::new(GLOBAL(named_global(FRAME_POINTER))),
-                            Box::new(CONST(current_index))
+                            Box::new(CONST(current_index * WORD_SIZE) )
                         )))),
                         Box::new(LOCAL(name.clone()))))
                 };

@@ -53,7 +53,6 @@ fn munch_stm(stm: Tree::Stm, locals : LocalEnv, labels: &LabelEnv, functions: &F
                     let (addr_code, locals) = munch_exp(*addr, locals, functions, strings);
                     (vec![
                         addr_code,
-                        vec![I32Const(WORD_SIZE), I32Mul],
                         value_code,
                         vec![I32Store(0, strings.offset)], // CHEQUEAR: no se que son estos parametros
                     ].concat(), locals)
@@ -174,8 +173,6 @@ pub fn munch_exp(exp: Tree::Exp, locals : LocalEnv, functions: &FunctionEnv, str
             (vec![
                 offset,
             vec![
-                I32Const(WORD_SIZE),
-                I32Mul,
                 I32Load(0, strings.offset)]
             ].concat(),
             locals)

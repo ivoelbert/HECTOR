@@ -4,7 +4,7 @@
 extern crate uuid;
 
 use super::frame::Frame;
-pub use super::frame::{LocalTemp, unique_named_local,
+pub use super::frame::{LocalTemp, unique_named_local, WORD_SIZE,
     FRAME_POINTER, STACK_POINTER, RETURN_VALUE, STATIC_LINK_OFFSET, external_call};
 use super::Access;
 use super::Tree;
@@ -86,11 +86,11 @@ impl Level {
             match remaining_depth {
                 1 => MEM(Box::new(plus!(
                     GLOBAL(named_global(FRAME_POINTER)),
-                    CONST(STATIC_LINK_OFFSET)
+                    CONST(STATIC_LINK_OFFSET * WORD_SIZE)
                 ))),
                 d => MEM(Box::new(plus!(
                     search_correct_frame_pointer(d - 1),
-                    CONST(STATIC_LINK_OFFSET)
+                    CONST(STATIC_LINK_OFFSET * WORD_SIZE)
                 ))),
             }
         }
@@ -100,13 +100,13 @@ impl Level {
                 if delta_depth == 0 {
                     MEM(Box::new(BINOP(PLUS,
                         Box::new(GLOBAL(named_global(FRAME_POINTER))),
-                        Box::new(CONST(i))
+                        Box::new(CONST(i * WORD_SIZE))
                     )))
                 } else {
                     let sl = search_correct_frame_pointer(delta_depth);
                     MEM(Box::new(BINOP(PLUS,
                         Box::new(sl),
-                        Box::new(CONST(i))
+                        Box::new(CONST(i * WORD_SIZE))
                     )))
                 }
             },
