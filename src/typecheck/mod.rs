@@ -157,11 +157,11 @@ fn initial_value_env() -> ValueEnviroment {
         formals: vec![Arc::new(TString)],
         result: Arc::new(TUnit),
     });
-    value_env.insert(Symbol::from("flush"), Func {
-        formals: vec![],
-        result: Arc::new(TUnit),
-    });
     value_env.insert(Symbol::from("getchar"), Func {
+        formals: vec![],
+        result: Arc::new(TString),
+    });
+    value_env.insert(Symbol::from("getstring"), Func {
         formals: vec![],
         result: Arc::new(TString),
     });
@@ -178,7 +178,7 @@ fn initial_value_env() -> ValueEnviroment {
         result: Arc::new(TInt(R::RW)),
     });
     value_env.insert(Symbol::from("substring"), Func {
-        formals: vec![Arc::new(TString)],
+        formals: vec![Arc::new(TString), Arc::new(TInt(R::RW)), Arc::new(TInt(R::RW))],
         result: Arc::new(TString),
     });
     value_env.insert(Symbol::from("concat"), Func {

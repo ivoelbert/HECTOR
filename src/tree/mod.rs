@@ -38,9 +38,10 @@ type ValueEnviroment = HashMap<Symbol, EnvEntry>;
 pub fn initial_value_env() -> ValueEnviroment {
     let externals = [
         "print",
-        "flush",
+        // "flush",
         "getchar",
         "getchar",
+        "getstring",
         "ord",
         "chr",
         "size",
@@ -52,7 +53,7 @@ pub fn initial_value_env() -> ValueEnviroment {
         "+alloc_array",
         "+alloc_record",
         "+check_index_array",
-        "+check_nil",
+        // "+check_nil",
         "+str_equals",
         "+str_not_equals",
         "+str_less",

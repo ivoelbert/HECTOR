@@ -47,7 +47,7 @@ pub fn emit_module(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 	let module = strings
 		.into_iter()
 		// Data Section
-		.fold(module, |module, (_, string)| emit_string(string, module));
+		.fold(module, |module, (label, string)| emit_string(label, string, &string_env, module));
 	let module = procs
 		.into_iter()
 		// Function, Signature Sections
@@ -127,26 +127,47 @@ fn emit_imports(module: ModuleBuilder) -> ModuleBuilder {
 
 	type External = (&'static str, Vec<ValueType>, Option<ValueType>);
 	let standard_library : Vec<External> = vec![
-		("print", vec![ValueType::I32], None),
-		("flush", vec![], None),
-		("getchar", vec![ValueType::I32], Some(ValueType::I32)),
+		// STANDARD LIBRARY
+		// string -> Unit
+		("print", vec![ValueType::I32, ValueType::I32], None),
+		// returns a 1 character null-terminated string
+		("getchar", vec![], Some(ValueType::I32)),
+		// reads a line and returns a null-terminated string
+		("getstring", vec![], Some(ValueType::I32)),
+		// char -> num
 		("ord", vec![ValueType::I32], Some(ValueType::I32)),
+		// num -> char
 		("chr", vec![ValueType::I32], Some(ValueType::I32)),
+		// size without \0
 		("size", vec![ValueType::I32], Some(ValueType::I32)),
-		("substring", vec![ValueType::I32], Some(ValueType::I32)),
+		// slice: string, start, count -> string
+		("substring", vec![ValueType::I32, ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+		// string -> string -> string
 		("concat", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+		// int -> int
 		("not", vec![ValueType::I32], Some(ValueType::I32)),
 		("exit", vec![ValueType::I32], None),
+
+		// RUNTIME
+		// size, init -> memory address
 		("alloc_array", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-        ("alloc_record", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-        ("check_index_array", vec![ValueType::I32], Some(ValueType::I32)),
-        ("check_nil", vec![ValueType::I32], Some(ValueType::I32)),
-        ("str_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-        ("str_not_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-        ("str_less", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-        ("str_less_or_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-        ("str_greater", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-        ("str_greater_or_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32))
+		// size -> memory address
+		("alloc_record", vec![ValueType::I32], Some(ValueType::I32)),
+		// memory address, index -> boolean
+        ("check_index_array", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+		// ("check_nil", vec![ValueType::I32], Some(ValueType::I32)),
+		// string, string -> bool
+		("str_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+		// string, string -> bool
+		("str_not_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+        // string, string -> bool
+		("str_less", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+        // string, string -> bool
+		("str_less_or_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+        // string, string -> bool
+		("str_greater", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+        // string, string -> bool
+		("str_greater_or_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32))
 	];
 	let runtime : Vec<External> = vec![
 	];
@@ -184,11 +205,13 @@ fn emit_imports(module: ModuleBuilder) -> ModuleBuilder {
 		})
 }
 
-fn emit_string(string: String, module: ModuleBuilder) -> ModuleBuilder {
+fn emit_string(label: Label, mut string: String, string_env: &StringEnv, module: ModuleBuilder) -> ModuleBuilder {
+	let offset = string_env.get(&label).unwrap();
+	string.push('\0');
 	module
 		.data()
 			// Aca hay que ponerle el offset que vamos sumando
-			.offset(I32Const(string.len().try_into().unwrap()))
+			.offset(I32Const(offset as i32))
 			.value(string.into_bytes())
 		.build()
 }

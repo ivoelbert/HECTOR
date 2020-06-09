@@ -54,8 +54,8 @@ impl StringEnv {
 
     pub fn insert(mut self, label: Label, string: &str) -> Self{
         let len : u32 = string.len().try_into().unwrap();
-        self.offset += len;
         self.table.insert(label, self.offset);
+        self.offset += len + 1;
         self
     }
 
@@ -72,8 +72,9 @@ pub type FunctionEnv = HashMap<Label, u32>;
 pub fn initial_function_env() -> FunctionEnv {
     vec![
 		("print".to_string(), 0),
-		("flush".to_string(), 1),
-		("getchar".to_string(), 2),
+		// ("flush".to_string(), 1),
+		("getchar".to_string(), 1),
+		("getstring".to_string(), 2),
 		("ord".to_string(), 3),
 		("chr".to_string(), 4),
 		("size".to_string(), 5),
@@ -84,13 +85,13 @@ pub fn initial_function_env() -> FunctionEnv {
         ("+alloc_array".to_string(), 10),
         ("+alloc_record".to_string(), 11),
         ("+check_index_array".to_string(), 12),
-        ("+check_nil".to_string(), 13),
-        ("+str_equals".to_string(), 14),
-        ("+str_not_equals".to_string(), 15),
-        ("+str_less".to_string(), 16),
-        ("+str_less_or_equals".to_string(), 17),
-        ("+str_greater".to_string(), 18),
-        ("+str_greater_or_equals".to_string(), 19)
+        // ("+check_nil".to_string(), 13),
+        ("+str_equals".to_string(), 13),
+        ("+str_not_equals".to_string(), 14),
+        ("+str_less".to_string(), 15),
+        ("+str_less_or_equals".to_string(), 16),
+        ("+str_greater".to_string(), 17),
+        ("+str_greater_or_equals".to_string(), 18)
     ].into_iter()
         .collect()
 }
