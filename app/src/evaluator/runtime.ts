@@ -1,5 +1,5 @@
 import { CustomConsole } from '../utils/console';
-import { MemoryManager, i32_SIZE, MEMORY_PAGES } from './memoryManager';
+import { MemoryManager, i32_SIZE, MEMORY_PAGES, HEAP_START } from './memoryManager';
 
 type TigerMain = () => number;
 
@@ -22,6 +22,7 @@ export class Runtime {
                 print: this.print,
                 flush: this.flush,
                 getchar: this.getchar,
+                getstring: this.getstring,
                 ord: this.ord,
                 chr: this.chr,
                 size: this.size,
@@ -47,6 +48,7 @@ export class Runtime {
 
     run = (): number => {
         const execution = this.exports.main();
+        // this.memoryManager.i32DebugSlice(HEAP_START, 10);
         return execution;
     };
 
@@ -59,6 +61,7 @@ export class Runtime {
     private print = () => {};
     private flush = () => {};
     private getchar = () => {};
+    private getstring = () => {};
     private ord = () => {};
     private chr = () => {};
     private size = () => {};
@@ -66,9 +69,7 @@ export class Runtime {
     private concat = () => {};
     private not = () => {};
     private exit = () => {};
-    private alloc_array = (size: number, init: number) => {
-        console.log('ALLOC ARRAY!!!!!!!!!!!!!!!');
-        console.log(`With size ${size}, full of ${init}`);
+    private alloc_array = (size: number, init: number): number => {
         const pointer = this.memoryManager.alloc(size * i32_SIZE);
         for (let i = 0; i < size; i++) {
             const dir = pointer + i * i32_SIZE;

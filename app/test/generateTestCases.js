@@ -36,11 +36,14 @@ const writeTestCase = async (file) => {
 };
 
 const writeExpectedValues = async (baseName, expectedValues) => {
-    await fs.writeFile(`${expectedValuesPath}/${baseName}.json`, JSON.stringify(expectedValues));
+    await fs.writeFile(
+        `${expectedValuesPath}/${baseName}.json`,
+        JSON.stringify(expectedValues, null, 4)
+    );
 };
 
 const writeCanon = async (baseName, compilation) => {
-    await fs.writeFile(`${canonPath}/${baseName}.json`, JSON.stringify(compilation.canon));
+    await fs.writeFile(`${canonPath}/${baseName}.json`, JSON.stringify(compilation.canon, null, 4));
 };
 
 const writeWasm = async (baseName, compilation) => {

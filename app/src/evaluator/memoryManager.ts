@@ -11,14 +11,12 @@ export class MemoryManager {
     private nextFreeIndex: number;
 
     constructor(private memory: Uint8Array) {
-        console.log('New memory of size ', memory.length);
         this.nextFreeIndex = HEAP_START;
     }
 
     alloc = (bytes: number): number => {
         const pointer = this.nextFreeIndex;
         this.nextFreeIndex += bytes;
-        console.log(`Alloc ${bytes} bytes, from ${pointer} (total size ${MEMORY_LENGTH})`);
         assertCondition(this.nextFreeIndex < MEMORY_LENGTH, 'Out of memory!');
         return pointer;
     };

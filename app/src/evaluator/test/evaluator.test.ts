@@ -80,11 +80,16 @@ test('returnArrayElement program works', async () => {
     testExpectedValues(returnValue, expectedValues);
 });
 
-/*
 test('returnArrayInit program works', async () => {
     const { evaluator, expectedValues } = await evaluatorDependenciesFactory('returnArrayInit.tig');
     const returnValue = await evaluator.run();
 
     testExpectedValues(returnValue, expectedValues);
 });
-*/
+
+// test('printPerro program works', async () => {
+//     const { evaluator, expectedValues } = await evaluatorDependenciesFactory('printPerro.tig');
+//     const returnValue = await evaluator.run();
+
+//     testExpectedValues(returnValue, expectedValues);
+// });
