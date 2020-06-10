@@ -1,4 +1,5 @@
 use super::*;
+use frame::WORD_SIZE;
 
 // Generates an expression that evaluates to the memory direction of the variable
 pub fn simplevar(access: Access, current_level: &Level, depth: i32) -> Tree::Exp {
@@ -33,7 +34,7 @@ pub fn trans_var(
             let (index_exp, index_level, index_frags) = super::trans_exp(index, array_level, value_env, breaks_stack, array_frags)?;
             Ok((MEM(Box::new(plus!(
                 array_exp,
-                index_exp
+                BINOP(MUL, Box::new(index_exp), Box::new(CONST(WORD_SIZE)))
             ))), index_level, index_frags))
         },
         VarKind::Field(record, field) => {
@@ -53,7 +54,7 @@ pub fn trans_var(
             Ok((MEM(Box::new(plus!(
                 record_exp,
                 // optimization candidate
-                CONST(*order)
+                CONST(*order * WORD_SIZE)
             ))), record_level, record_frags))
         },
     }
