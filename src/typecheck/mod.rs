@@ -2,7 +2,7 @@
 use std::collections::HashMap;
 use serde::{Serialize, Serializer};
 extern crate snowflake;
-pub use std::sync::{Arc, Weak};
+pub use std::sync::Arc;
 use crate::ast::*;
 
 mod intexp;
