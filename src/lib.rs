@@ -26,6 +26,7 @@ mod typecheck;
 mod tree;
 mod canonization;
 mod emitter;
+mod externals;
 
 use typecheck::typecheck;
 use utils::{set_panic_hook};

@@ -3,7 +3,9 @@ use std::collections::HashMap;
 use serde::{Serialize, Serializer};
 extern crate snowflake;
 pub use std::sync::Arc;
+
 use crate::ast::*;
+use crate::externals::{External, ArgumentType, EXTERNALS};
 
 mod intexp;
 mod opexp;
@@ -149,51 +151,79 @@ fn initial_type_env() -> TypeEnviroment {
 }
 
 /// Generate a `ValueEnv` that contains functions from the tiger standard library and the runtime.
+// fn initial_value_env() -> ValueEnviroment {
+//     use TigerType::*;
+//     use EnvEntry::*;
+//     let mut value_env = ValueEnviroment::new();
+//     value_env.insert(Symbol::from("print"), Func {
+//         formals: vec![Arc::new(TString)],
+//         result: Arc::new(TUnit),
+//     });
+//     value_env.insert(Symbol::from("getchar"), Func {
+//         formals: vec![],
+//         result: Arc::new(TString),
+//     });
+//     value_env.insert(Symbol::from("getstring"), Func {
+//         formals: vec![],
+//         result: Arc::new(TString),
+//     });
+//     value_env.insert(Symbol::from("ord"), Func {
+//         formals: vec![Arc::new(TString)],
+//         result: Arc::new(TInt(R::RW)),
+//     });
+//     value_env.insert(Symbol::from("chr"), Func {
+//         formals: vec![Arc::new(TInt(R::RW))],
+//         result: Arc::new(TString),
+//     });
+//     value_env.insert(Symbol::from("size"), Func {
+//         formals: vec![Arc::new(TString)],
+//         result: Arc::new(TInt(R::RW)),
+//     });
+//     value_env.insert(Symbol::from("substring"), Func {
+//         formals: vec![Arc::new(TString), Arc::new(TInt(R::RW)), Arc::new(TInt(R::RW))],
+//         result: Arc::new(TString),
+//     });
+//     value_env.insert(Symbol::from("concat"), Func {
+//         formals: vec![Arc::new(TString), Arc::new(TString)],
+//         result: Arc::new(TString),
+//     });
+//     value_env.insert(Symbol::from("not"), Func {
+//         formals: vec![Arc::new(TInt(R::RW))],
+//         result: Arc::new(TInt(R::RW)),
+//     });
+//     value_env.insert(Symbol::from("exit"), Func {
+//         formals: vec![Arc::new(TInt(R::RW))],
+//         result: Arc::new(TUnit),
+//     });
+//     value_env
+// }
+
+impl From<ArgumentType> for TigerType {
+    fn from(arg: ArgumentType) -> Self {
+        match arg {
+            ArgumentType::String => TigerType::TString,
+            ArgumentType::Int => TigerType::TInt(R::RO)
+        }
+    }
+}
+
 fn initial_value_env() -> ValueEnviroment {
-    use TigerType::*;
-    use EnvEntry::*;
-    let mut value_env = ValueEnviroment::new();
-    value_env.insert(Symbol::from("print"), Func {
-        formals: vec![Arc::new(TString)],
-        result: Arc::new(TUnit),
-    });
-    value_env.insert(Symbol::from("getchar"), Func {
-        formals: vec![],
-        result: Arc::new(TString),
-    });
-    value_env.insert(Symbol::from("getstring"), Func {
-        formals: vec![],
-        result: Arc::new(TString),
-    });
-    value_env.insert(Symbol::from("ord"), Func {
-        formals: vec![Arc::new(TString)],
-        result: Arc::new(TInt(R::RW)),
-    });
-    value_env.insert(Symbol::from("chr"), Func {
-        formals: vec![Arc::new(TInt(R::RW))],
-        result: Arc::new(TString),
-    });
-    value_env.insert(Symbol::from("size"), Func {
-        formals: vec![Arc::new(TString)],
-        result: Arc::new(TInt(R::RW)),
-    });
-    value_env.insert(Symbol::from("substring"), Func {
-        formals: vec![Arc::new(TString), Arc::new(TInt(R::RW)), Arc::new(TInt(R::RW))],
-        result: Arc::new(TString),
-    });
-    value_env.insert(Symbol::from("concat"), Func {
-        formals: vec![Arc::new(TString), Arc::new(TString)],
-        result: Arc::new(TString),
-    });
-    value_env.insert(Symbol::from("not"), Func {
-        formals: vec![Arc::new(TInt(R::RW))],
-        result: Arc::new(TInt(R::RW)),
-    });
-    value_env.insert(Symbol::from("exit"), Func {
-        formals: vec![Arc::new(TInt(R::RW))],
-        result: Arc::new(TUnit),
-    });
-    value_env
+    EXTERNALS
+        .iter()
+        .filter(|External {is_runtime, ..}| !is_runtime)
+        .map(|External {name, arguments, return_value, ..}|
+            (name.to_string(), EnvEntry::Func {
+                formals: arguments
+                    .iter()
+                    .map(|arg| Arc::new(TigerType::from(*arg)))
+                    .collect(),
+                result: if let Some(rt) = return_value {
+                    Arc::new(TigerType::from(*rt))
+                } else {
+                    Arc::new(TigerType::TUnit)
+                }
+            }))
+        .collect()
 }
 
 /// Errors that the typechecker can fail with.

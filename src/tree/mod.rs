@@ -36,31 +36,43 @@ use crate::ast::Symbol;
 type ValueEnviroment = HashMap<Symbol, EnvEntry>;
 
 pub fn initial_value_env() -> ValueEnviroment {
-    let externals = [
-        "print",
-        // "flush",
-        "getchar",
-        "getchar",
-        "getstring",
-        "ord",
-        "chr",
-        "size",
-        "substring",
-        "concat",
-        "not",
-        "exit",
-        // Runtime functions are preceded by a + to avoid collision with user-defined functions/variables.
-        "+alloc_array",
-        "+alloc_record",
-        "+check_index_array",
-        // "+check_nil",
-        "+str_equals",
-        "+str_not_equals",
-        "+str_less",
-        "+str_less_or_equals",
-        "+str_greater",
-        "+str_greater_or_equals"
-    ];
+    use crate::externals::*;
+    // let externals = [
+    //     "print",
+    //     // "flush",
+    //     "getchar",
+    //     "getchar",
+    //     "getstring",
+    //     "ord",
+    //     "chr",
+    //     "size",
+    //     "substring",
+    //     "concat",
+    //     "not",
+    //     "exit",
+    //     // Runtime functions are preceded by a + to avoid collision with user-defined functions/variables.
+    //     "+alloc_array",
+    //     "+alloc_record",
+    //     "+check_index_array",
+    //     // "+check_nil",
+    //     "+str_equals",
+    //     "+str_not_equals",
+    //     "+str_less",
+    //     "+str_less_or_equals",
+    //     "+str_greater",
+    //     "+str_greater_or_equals"
+    // ];
+    let externals = EXTERNALS
+        .iter()
+        .map(|External {name, is_runtime, ..}|
+            if *is_runtime {
+                let mut s = "+".to_string();
+                s.push_str(*name);
+                s
+            } else {
+                name.to_string()
+            })
+        .collect::<Vec<String>>();
     externals.iter().map(|name| -> (String, EnvEntry) {
         (name.to_string(), EnvEntry::Func {
             label: named_label(name),

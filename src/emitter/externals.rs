@@ -93,30 +93,34 @@ fn initial_value_env() -> ValueEnviroment {
 }
 
 pub fn initial_translation_value_env() -> ValueEnviroment {
-    let externals = [
-        "print",
-        "flush",
-        "getchar",
-        "getchar",
-        "ord",
-        "chr",
-        "size",
-        "substring",
-        "concat",
-        "not",
-        "exit",
-        // Runtime functions are preceded by a + to avoid collision with user-defined functions/variables.
-        "+alloc_array",
-        "+alloc_record",
-        "+check_index_array",
-        "+check_nil",
-        "+str_equals",
-        "+str_not_equals",
-        "+str_less",
-        "+str_less_or_equals",
-        "+str_greater",
-        "+str_greater_or_equals"
-    ];
+    // let externals = [
+    //     "print",
+    //     "flush",
+    //     "getchar",
+    //     "getchar",
+    //     "ord",
+    //     "chr",
+    //     "size",
+    //     "substring",
+    //     "concat",
+    //     "not",
+    //     "exit",
+    //     // Runtime functions are preceded by a + to avoid collision with user-defined functions/variables.
+    //     "+alloc_array",
+    //     "+alloc_record",
+    //     "+check_index_array",
+    //     "+check_nil",
+    //     "+str_equals",
+    //     "+str_not_equals",
+    //     "+str_less",
+    //     "+str_less_or_equals",
+    //     "+str_greater",
+    //     "+str_greater_or_equals"
+    // ];
+    let externals = EXTERNALS
+        .iter()
+        .map(|External {name, is_runtime, ..}| name.to_string())
+        .collect::<Vec<String>();
     externals.iter().map(|name| -> (String, EnvEntry) {
         (name.to_string(), EnvEntry::Func {
             label: named_label(name),

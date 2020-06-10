@@ -124,56 +124,70 @@ pub fn emit_module(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 }
 
 fn emit_imports(module: ModuleBuilder) -> ModuleBuilder {
+    use crate::externals::*;
+	type Import = (&'static str, Vec<ValueType>, Option<ValueType>);
+	EXTERNALS
+		.iter()
+		.map(|External {name, arguments, return_value, ..}| {
+			(
+				*name,
+				arguments
+					.iter()
+					.map(|_| ValueType::I32)
+					.collect(),
+				if let Some(..) = return_value {
+					Some(ValueType::I32)
+				} else { None }
+			)
+		})
+	// let standard_library : Vec<Import> = vec![
+	// 	// STANDARD LIBRARY
+	// 	// string -> Unit
+	// 	("print", vec![ValueType::I32, ValueType::I32], None),
+	// 	// returns a 1 character null-terminated string
+	// 	("getchar", vec![], Some(ValueType::I32)),
+	// 	// reads a line and returns a null-terminated string
+	// 	("getstring", vec![], Some(ValueType::I32)),
+	// 	// char -> num
+	// 	("ord", vec![ValueType::I32], Some(ValueType::I32)),
+	// 	// num -> char
+	// 	("chr", vec![ValueType::I32], Some(ValueType::I32)),
+	// 	// size without \0
+	// 	("size", vec![ValueType::I32], Some(ValueType::I32)),
+	// 	// slice: string, start, count -> string
+	// 	("substring", vec![ValueType::I32, ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+	// 	// string -> string -> string
+	// 	("concat", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+	// 	// int -> int
+	// 	("not", vec![ValueType::I32], Some(ValueType::I32)),
+	// 	("exit", vec![ValueType::I32], None),
 
-	type External = (&'static str, Vec<ValueType>, Option<ValueType>);
-	let standard_library : Vec<External> = vec![
-		// STANDARD LIBRARY
-		// string -> Unit
-		("print", vec![ValueType::I32, ValueType::I32], None),
-		// returns a 1 character null-terminated string
-		("getchar", vec![], Some(ValueType::I32)),
-		// reads a line and returns a null-terminated string
-		("getstring", vec![], Some(ValueType::I32)),
-		// char -> num
-		("ord", vec![ValueType::I32], Some(ValueType::I32)),
-		// num -> char
-		("chr", vec![ValueType::I32], Some(ValueType::I32)),
-		// size without \0
-		("size", vec![ValueType::I32], Some(ValueType::I32)),
-		// slice: string, start, count -> string
-		("substring", vec![ValueType::I32, ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-		// string -> string -> string
-		("concat", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-		// int -> int
-		("not", vec![ValueType::I32], Some(ValueType::I32)),
-		("exit", vec![ValueType::I32], None),
-
-		// RUNTIME
-		// size, init -> memory address
-		("alloc_array", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-		// size -> memory address
-		("alloc_record", vec![ValueType::I32], Some(ValueType::I32)),
-		// memory address, index -> boolean
-        ("check_index_array", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-		// ("check_nil", vec![ValueType::I32], Some(ValueType::I32)),
-		// string, string -> bool
-		("str_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-		// string, string -> bool
-		("str_not_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-        // string, string -> bool
-		("str_less", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-        // string, string -> bool
-		("str_less_or_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-        // string, string -> bool
-		("str_greater", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
-        // string, string -> bool
-		("str_greater_or_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32))
-	];
-	let runtime : Vec<External> = vec![
-	];
-	let module = standard_library
-		.into_iter()
-		.fold(module, |mut module, (name, params, return_type)| {
+	// 	// RUNTIME
+	// 	// size, init -> memory address
+	// 	("alloc_array", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+	// 	// size -> memory address
+	// 	("alloc_record", vec![ValueType::I32], Some(ValueType::I32)),
+	// 	// memory address, index -> boolean
+    //     ("check_index_array", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+	// 	// ("check_nil", vec![ValueType::I32], Some(ValueType::I32)),
+	// 	// string, string -> bool
+	// 	("str_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+	// 	// string, string -> bool
+	// 	("str_not_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+    //     // string, string -> bool
+	// 	("str_less", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+    //     // string, string -> bool
+	// 	("str_less_or_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+    //     // string, string -> bool
+	// 	("str_greater", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32)),
+    //     // string, string -> bool
+	// 	("str_greater_or_equals", vec![ValueType::I32, ValueType::I32], Some(ValueType::I32))
+	// ];
+	// let runtime : Vec<External> = vec![
+	// ];
+	// let module = standard_library
+	// 	.into_iter()
+		.fold(module, |mut module, (name, params, return_type) : Import| {
 			let type_index = module.push_signature(
 				builder::signature()
 					.with_params(params)
@@ -183,22 +197,6 @@ fn emit_imports(module: ModuleBuilder) -> ModuleBuilder {
 			module
 				.import()
 					.module("externals")
-					.field(name)
-					.external().func(type_index)
-				.build()
-		});
-	runtime
-		.into_iter()
-		.fold(module, |mut module, (name, params, return_type)| {
-			let type_index = module.push_signature(
-				builder::signature()
-					.with_params(params)
-					.with_return_type(return_type)
-				.build_sig()
-			);
-			module
-				.import()
-					.module("runtime")
 					.field(name)
 					.external().func(type_index)
 				.build()
