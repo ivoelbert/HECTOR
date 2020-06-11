@@ -150,54 +150,6 @@ fn initial_type_env() -> TypeEnviroment {
     .collect()
 }
 
-/// Generate a `ValueEnv` that contains functions from the tiger standard library and the runtime.
-// fn initial_value_env() -> ValueEnviroment {
-//     use TigerType::*;
-//     use EnvEntry::*;
-//     let mut value_env = ValueEnviroment::new();
-//     value_env.insert(Symbol::from("print"), Func {
-//         formals: vec![Arc::new(TString)],
-//         result: Arc::new(TUnit),
-//     });
-//     value_env.insert(Symbol::from("getchar"), Func {
-//         formals: vec![],
-//         result: Arc::new(TString),
-//     });
-//     value_env.insert(Symbol::from("getstring"), Func {
-//         formals: vec![],
-//         result: Arc::new(TString),
-//     });
-//     value_env.insert(Symbol::from("ord"), Func {
-//         formals: vec![Arc::new(TString)],
-//         result: Arc::new(TInt(R::RW)),
-//     });
-//     value_env.insert(Symbol::from("chr"), Func {
-//         formals: vec![Arc::new(TInt(R::RW))],
-//         result: Arc::new(TString),
-//     });
-//     value_env.insert(Symbol::from("size"), Func {
-//         formals: vec![Arc::new(TString)],
-//         result: Arc::new(TInt(R::RW)),
-//     });
-//     value_env.insert(Symbol::from("substring"), Func {
-//         formals: vec![Arc::new(TString), Arc::new(TInt(R::RW)), Arc::new(TInt(R::RW))],
-//         result: Arc::new(TString),
-//     });
-//     value_env.insert(Symbol::from("concat"), Func {
-//         formals: vec![Arc::new(TString), Arc::new(TString)],
-//         result: Arc::new(TString),
-//     });
-//     value_env.insert(Symbol::from("not"), Func {
-//         formals: vec![Arc::new(TInt(R::RW))],
-//         result: Arc::new(TInt(R::RW)),
-//     });
-//     value_env.insert(Symbol::from("exit"), Func {
-//         formals: vec![Arc::new(TInt(R::RW))],
-//         result: Arc::new(TUnit),
-//     });
-//     value_env
-// }
-
 impl From<ArgumentType> for TigerType {
     fn from(arg: ArgumentType) -> Self {
         match arg {

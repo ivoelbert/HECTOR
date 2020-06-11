@@ -54,7 +54,7 @@ fn munch_stm(stm: Tree::Stm, locals : LocalEnv, labels: &LabelEnv, functions: &F
                     (vec![
                         addr_code,
                         value_code,
-                        vec![I32Store(0, strings.offset)], // CHEQUEAR: no se que son estos parametros
+                        vec![I32Store(0, strings.offset)],
                     ].concat(), locals)
 
                 },
@@ -78,17 +78,11 @@ fn munch_stm(stm: Tree::Stm, locals : LocalEnv, labels: &LabelEnv, functions: &F
             }
         },
 		LABEL(_label) => {
-            // TODO: epilogue en done?
-            // match label {
-            //     n if n.starts_with("done") => (vec![], locals),
-            //     _ => (vec![Block(BlockType::NoResult)], locals),
-            // }
             (vec![], locals)
         },
         JUMP(NAME(label), _) => {
-                // TODO: epilogue here?
                 if label.starts_with("done") {
-                    (vec![GetGlobal(get_global_index(RETURN_VALUE)), Return, End], locals) // TODO: esto esta en cualquiera
+                    (vec![GetGlobal(get_global_index(RETURN_VALUE)), Return, End], locals)
                 } else {
                     let index = *labels.get(&label).unwrap();
                     (vec![
@@ -112,7 +106,6 @@ fn munch_stm(stm: Tree::Stm, locals : LocalEnv, labels: &LabelEnv, functions: &F
             vec![
                 wasm_binop(&oper),
                 If(BlockType::NoResult),
-                    // CHEQUEAR: esto asume que un CJUMP nunca te puede mandar a done
                     I32Const(i32::try_from(t_index).unwrap()),
                     SetGlobal(get_global_index(NEXT_JUMP)),
                     Br(block_index),
@@ -199,7 +192,6 @@ pub fn munch_body(blocks: Vec<Block>, locals : LocalEnv, functions: &FunctionEnv
         .enumerate()
         .map(|(i, block)| (block.label.clone(), u32::try_from(first_block_index).unwrap() - u32::try_from(i).unwrap()))
         .collect();
-    // console_log!("{:#?}", labels);
     let (body, locals) = blocks.into_iter()
         .fold((vec![], locals), |(mut instructions, locals): (Vec<Instruction>, LocalEnv), block: Block| -> (Vec<Instruction>, LocalEnv) {
             let block_index = *labels.get(&block.label).unwrap();
