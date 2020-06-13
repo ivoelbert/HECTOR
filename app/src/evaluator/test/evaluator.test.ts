@@ -87,9 +87,14 @@ test('returnArrayInit program works', async () => {
     testExpectedValues(returnValue, expectedValues);
 });
 
-// test('printPerro program works', async () => {
-//     const { evaluator, expectedValues } = await evaluatorDependenciesFactory('printPerro.tig');
-//     const returnValue = await evaluator.run();
+test('printPerro program works', async () => {
+    const { evaluator, expectedValues, customConsole } = await evaluatorDependenciesFactory(
+        'printPerro.tig'
+    );
+    const returnValue = await evaluator.run();
 
-//     testExpectedValues(returnValue, expectedValues);
-// });
+    const lastMessage = customConsole.getLastMessage();
+    expect(lastMessage).toBe('perro');
+
+    testExpectedValues(returnValue, expectedValues);
+});

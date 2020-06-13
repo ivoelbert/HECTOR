@@ -62,12 +62,22 @@ export class MemoryManager {
 
         console.log(values);
     };
+
+    byteDebugSlice = (start: number, count: number): void => {
+        const values = [];
+        for (let i = 0; i < count; i++) {
+            const dir = start + i * BYTE_SIZE;
+            values.push(this.byteGet(dir));
+        }
+
+        console.log(values);
+    };
 }
 
 const i32AssertRange = (dir: number): void => {
-    assertCondition(dir >= HEAP_START && dir < MEMORY_LENGTH - 4, `Index ${dir} out of range`);
+    assertCondition(dir >= 0 && dir < MEMORY_LENGTH - 4, `Index ${dir} out of range`);
 };
 
 const byteAssertRange = (dir: number): void => {
-    assertCondition(dir >= HEAP_START && dir < MEMORY_LENGTH - 1, `Index ${dir} out of range`);
+    assertCondition(dir >= 0 && dir < MEMORY_LENGTH - 1, `Index ${dir} out of range`);
 };

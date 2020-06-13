@@ -1,5 +1,6 @@
 import { CustomConsole } from '../utils/console';
-import { MemoryManager, i32_SIZE, MEMORY_PAGES, HEAP_START } from './memoryManager';
+import { MemoryManager, i32_SIZE, MEMORY_PAGES } from './memoryManager';
+import { StringStorage } from './stringStorage';
 
 type TigerMain = () => number;
 
@@ -10,6 +11,7 @@ interface InstanceExports {
 export class Runtime {
     private wasmInstance: WebAssembly.Instance;
     private memoryManager: MemoryManager;
+    private stringStorage: StringStorage;
 
     constructor(module: WebAssembly.Module, private customConsole: CustomConsole) {
         const memory = new WebAssembly.Memory({ initial: MEMORY_PAGES, maximum: MEMORY_PAGES });
@@ -44,11 +46,11 @@ export class Runtime {
         });
 
         this.memoryManager = new MemoryManager(new Uint8Array(memory.buffer));
+        this.stringStorage = new StringStorage(this.memoryManager);
     }
 
     run = (): number => {
         const execution = this.exports.main();
-        // this.memoryManager.i32DebugSlice(HEAP_START, 10);
         return execution;
     };
 
@@ -58,7 +60,10 @@ export class Runtime {
         };
     }
 
-    private print = () => {};
+    private print = (strPointer: number): void => {
+        const string = this.stringStorage.readString(strPointer);
+        this.customConsole.print(string);
+    };
     private flush = () => {};
     private getchar = () => {};
     private getstring = () => {};

@@ -1,12 +1,11 @@
 import { promises as fs } from 'fs';
 import { MockConsole } from '../../interpreter/test/mockConsole';
 import { WasmEvaluator, Evaluator } from '../evaluator';
-import { CustomConsole } from '../../utils/console';
 import { ExpectedValues } from '../../utils/expectedValues';
 
 interface EvaluatorTestDependencies {
     evaluator: Evaluator;
-    customConsole: CustomConsole;
+    customConsole: MockConsole;
     expectedValues: ExpectedValues;
 }
 
