@@ -107,8 +107,13 @@ test('stringSize program works', async () => {
 });
 
 test('stringSlice program works', async () => {
-    const { evaluator, expectedValues } = await evaluatorDependenciesFactory('stringSlice.tig');
+    const { evaluator, expectedValues, customConsole } = await evaluatorDependenciesFactory(
+        'stringSlice.tig'
+    );
     const returnValue = await evaluator.run();
+
+    const lastMessage = customConsole.getLastMessage();
+    expect(lastMessage).toBe('perro');
 
     testExpectedValues(returnValue, expectedValues);
 });
