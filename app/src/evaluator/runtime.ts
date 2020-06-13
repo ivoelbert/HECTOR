@@ -69,8 +69,16 @@ export class Runtime {
     private getstring = () => {};
     private ord = () => {};
     private chr = () => {};
-    private size = () => {};
-    private substring = () => {};
+    private size = (strPointer: number): number => {
+        const string = this.stringStorage.readString(strPointer);
+        return string.length;
+    };
+    private substring = (strPointer: number, start: number, end: number): number => {
+        const string = this.stringStorage.readString(strPointer);
+        const slicedString = string.slice(start, end);
+        const newStrPointer = this.stringStorage.writeString(slicedString);
+        return newStrPointer;
+    };
     private concat = () => {};
     private not = () => {};
     private exit = () => {};

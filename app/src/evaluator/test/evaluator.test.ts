@@ -98,3 +98,17 @@ test('printPerro program works', async () => {
 
     testExpectedValues(returnValue, expectedValues);
 });
+
+test('stringSize program works', async () => {
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory('stringSize.tig');
+    const returnValue = await evaluator.run();
+
+    testExpectedValues(returnValue, expectedValues);
+});
+
+test('stringSlice program works', async () => {
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory('stringSlice.tig');
+    const returnValue = await evaluator.run();
+
+    testExpectedValues(returnValue, expectedValues);
+});

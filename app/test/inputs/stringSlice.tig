@@ -1,0 +1,9 @@
+/*
+    @result: 5
+*/
+let
+    var str := "alto perro amigo"
+    var perro := substring(str, 5, 10)
+in
+    size(perro)
+end

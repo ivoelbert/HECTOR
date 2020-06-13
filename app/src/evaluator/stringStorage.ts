@@ -17,4 +17,15 @@ export class StringStorage {
 
         return string;
     };
+
+    writeString = (str: string): number => {
+        const pointer = this.memoryManager.alloc(str.length + 1);
+        for (let i = 0; i < str.length; i++) {
+            const charCode = str.charCodeAt(i);
+            this.memoryManager.byteStore(pointer + i, charCode);
+        }
+        this.memoryManager.byteStore(pointer + str.length, 0);
+
+        return pointer;
+    };
 }
