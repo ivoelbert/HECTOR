@@ -112,3 +112,15 @@ test('stringSlice program works', async () => {
 
     testExpectedValues(returnValue, expectedValues);
 });
+
+test('concatStrings program works', async () => {
+    const { evaluator, expectedValues, customConsole } = await evaluatorDependenciesFactory(
+        'concatStrings.tig'
+    );
+    const returnValue = await evaluator.run();
+
+    const lastMessage = customConsole.getLastMessage();
+    expect(lastMessage).toBe('milanesa');
+
+    testExpectedValues(returnValue, expectedValues);
+});

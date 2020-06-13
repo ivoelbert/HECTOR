@@ -79,7 +79,12 @@ export class Runtime {
         const newStrPointer = this.stringStorage.writeString(slicedString);
         return newStrPointer;
     };
-    private concat = () => {};
+    private concat = (str1Pointer: number, str2Pointer: number): number => {
+        const str1 = this.stringStorage.readString(str1Pointer);
+        const str2 = this.stringStorage.readString(str2Pointer);
+
+        return this.stringStorage.writeString(str1 + str2);
+    };
     private not = () => {};
     private exit = () => {};
     private alloc_array = (size: number, init: number): number => {
