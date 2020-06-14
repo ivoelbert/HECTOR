@@ -1,0 +1,8 @@
+/*
+    @result: 42
+*/
+let
+    var val := 0
+in
+    exit(42); val
+end
