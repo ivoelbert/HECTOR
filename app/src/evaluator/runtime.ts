@@ -1,6 +1,7 @@
 import { CustomConsole } from '../utils/console';
 import { MemoryManager, i32_SIZE, MEMORY_PAGES } from './memoryManager';
 import { StringStorage } from './stringStorage';
+import { RuntimeExit } from '../utils/runtimeExit';
 
 type TigerMain = () => number;
 
@@ -50,8 +51,16 @@ export class Runtime {
     }
 
     run = (): number => {
-        const execution = this.exports.main();
-        return execution;
+        try {
+            const execution = this.exports.main();
+            return execution;
+        } catch (err) {
+            if (err instanceof RuntimeExit) {
+                return err.exitCode;
+            } else {
+                throw err;
+            }
+        }
     };
 
     private get exports(): InstanceExports {
@@ -67,8 +76,14 @@ export class Runtime {
     private flush = () => {};
     private getchar = () => {};
     private getstring = () => {};
-    private ord = () => {};
-    private chr = () => {};
+    private ord = (strPointer: number): number => {
+        const string = this.stringStorage.readString(strPointer);
+        return string.charCodeAt(0);
+    };
+    private chr = (charCode: number): number => {
+        const string = String.fromCharCode(charCode);
+        return this.stringStorage.writeString(string);
+    };
     private size = (strPointer: number): number => {
         const string = this.stringStorage.readString(strPointer);
         return string.length;
@@ -85,8 +100,12 @@ export class Runtime {
 
         return this.stringStorage.writeString(str1 + str2);
     };
-    private not = () => {};
-    private exit = () => {};
+    private not = (condition: number): number => {
+        return Number(!condition);
+    };
+    private exit = (exitCode: number) => {
+        throw new RuntimeExit(exitCode);
+    };
     private alloc_array = (size: number, init: number): number => {
         const pointer = this.memoryManager.alloc(size * i32_SIZE);
         for (let i = 0; i < size; i++) {
@@ -96,8 +115,13 @@ export class Runtime {
 
         return pointer;
     };
-    private alloc_record = () => {};
-    private check_index_array = () => {};
+    private alloc_record = (size: number): number => {
+        const pointer = this.memoryManager.alloc(size * i32_SIZE);
+        return pointer;
+    };
+    private check_index_array = (pointer: number, index: number): void => {
+        return this.memoryManager.checkArrayIndex(pointer, index);
+    };
     private check_nil = () => {};
     private str_equals = (leftStrPointer: number, rightStrPointer: number): number => {
         const comparison = this.strCompare(leftStrPointer, rightStrPointer);

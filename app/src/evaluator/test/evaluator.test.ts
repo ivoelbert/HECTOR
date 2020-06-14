@@ -136,3 +136,12 @@ test('stringCompare program works', async () => {
 
     testExpectedValues(returnValue, expectedValues);
 });
+
+test('returnRecordElement program works', async () => {
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory(
+        'returnRecordElement.tig'
+    );
+    const returnValue = await evaluator.run();
+
+    testExpectedValues(returnValue, expectedValues);
+});
