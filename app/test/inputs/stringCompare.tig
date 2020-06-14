@@ -1,0 +1,9 @@
+/*
+    @result: 2
+*/
+let
+    var eq := "perro" = "perro"
+    var neq := "perro" <> "gato"
+in
+    eq + neq
+end

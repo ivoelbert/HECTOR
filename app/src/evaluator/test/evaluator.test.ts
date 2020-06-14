@@ -129,3 +129,10 @@ test('concatStrings program works', async () => {
 
     testExpectedValues(returnValue, expectedValues);
 });
+
+test('stringCompare program works', async () => {
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory('stringCompare.tig');
+    const returnValue = await evaluator.run();
+
+    testExpectedValues(returnValue, expectedValues);
+});

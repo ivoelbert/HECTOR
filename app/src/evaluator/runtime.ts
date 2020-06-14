@@ -99,10 +99,41 @@ export class Runtime {
     private alloc_record = () => {};
     private check_index_array = () => {};
     private check_nil = () => {};
-    private str_equals = () => {};
-    private str_not_equals = () => {};
-    private str_less = () => {};
-    private str_less_or_equals = () => {};
-    private str_greater = () => {};
-    private str_greater_or_equals = () => {};
+    private str_equals = (leftStrPointer: number, rightStrPointer: number): number => {
+        const comparison = this.strCompare(leftStrPointer, rightStrPointer);
+
+        return Number(comparison === 0);
+    };
+    private str_not_equals = (leftStrPointer: number, rightStrPointer: number): number => {
+        const comparison = this.strCompare(leftStrPointer, rightStrPointer);
+
+        return Number(comparison !== 0);
+    };
+    private str_less = (leftStrPointer: number, rightStrPointer: number): number => {
+        const comparison = this.strCompare(leftStrPointer, rightStrPointer);
+
+        return Number(comparison < 0);
+    };
+    private str_less_or_equals = (leftStrPointer: number, rightStrPointer: number): number => {
+        const comparison = this.strCompare(leftStrPointer, rightStrPointer);
+
+        return Number(comparison <= 0);
+    };
+    private str_greater = (leftStrPointer: number, rightStrPointer: number): number => {
+        const comparison = this.strCompare(leftStrPointer, rightStrPointer);
+
+        return Number(comparison > 0);
+    };
+    private str_greater_or_equals = (leftStrPointer: number, rightStrPointer: number): number => {
+        const comparison = this.strCompare(leftStrPointer, rightStrPointer);
+
+        return Number(comparison >= 0);
+    };
+
+    private strCompare = (leftStrPointer: number, rightStrPointer: number): number => {
+        const leftStr = this.stringStorage.readString(leftStrPointer);
+        const rightStr = this.stringStorage.readString(rightStrPointer);
+
+        return leftStr.localeCompare(rightStr);
+    };
 }
