@@ -1,0 +1,8 @@
+/*
+    @result: 5
+*/
+let
+    var str := "perro"
+in
+    size(str)
+end

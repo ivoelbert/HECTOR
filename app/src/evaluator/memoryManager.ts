@@ -8,17 +8,32 @@ export const i32_SIZE = 4;
 export const BYTE_SIZE = 1;
 
 export class MemoryManager {
+    private allocatedSizes: Map<number, number>;
     private nextFreeIndex: number;
 
     constructor(private memory: Uint8Array) {
         this.nextFreeIndex = HEAP_START;
+        this.allocatedSizes = new Map();
     }
 
     alloc = (bytes: number): number => {
         const pointer = this.nextFreeIndex;
         this.nextFreeIndex += bytes;
         assertCondition(this.nextFreeIndex < MEMORY_LENGTH, 'Out of memory!');
+        this.allocatedSizes.set(pointer, bytes);
         return pointer;
+    };
+
+    checkArrayIndex = (pointer: number, index: number): void => {
+        const byteCount = this.allocatedSizes.get(pointer);
+        if (byteCount === undefined) {
+            throw new Error('Not a valid array');
+        }
+        if (index >= byteCount * i32_SIZE || index < 0) {
+            throw new Error('Index out of bounds');
+        }
+
+        return;
     };
 
     i32Store = (dir: number, value: number): void => {
@@ -62,12 +77,22 @@ export class MemoryManager {
 
         console.log(values);
     };
+
+    byteDebugSlice = (start: number, count: number): void => {
+        const values = [];
+        for (let i = 0; i < count; i++) {
+            const dir = start + i * BYTE_SIZE;
+            values.push(this.byteGet(dir));
+        }
+
+        console.log(values);
+    };
 }
 
 const i32AssertRange = (dir: number): void => {
-    assertCondition(dir >= HEAP_START && dir < MEMORY_LENGTH - 4, `Index ${dir} out of range`);
+    assertCondition(dir >= 0 && dir < MEMORY_LENGTH - 4, `Index ${dir} out of range`);
 };
 
 const byteAssertRange = (dir: number): void => {
-    assertCondition(dir >= HEAP_START && dir < MEMORY_LENGTH - 1, `Index ${dir} out of range`);
+    assertCondition(dir >= 0 && dir < MEMORY_LENGTH - 1, `Index ${dir} out of range`);
 };

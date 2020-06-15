@@ -1,6 +1,6 @@
 import { Exp } from './treeTypes';
 
-export const WORD_SZ = 1;
+export const WORD_SZ = 4;
 
 const inLocalAccessExp = (name: string): Exp => ({
     LOCAL: name,

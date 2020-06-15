@@ -87,9 +87,68 @@ test('returnArrayInit program works', async () => {
     testExpectedValues(returnValue, expectedValues);
 });
 
-// test('printPerro program works', async () => {
-//     const { evaluator, expectedValues } = await evaluatorDependenciesFactory('printPerro.tig');
-//     const returnValue = await evaluator.run();
+test('printPerro program works', async () => {
+    const { evaluator, expectedValues, customConsole } = await evaluatorDependenciesFactory(
+        'printPerro.tig'
+    );
+    const returnValue = await evaluator.run();
 
-//     testExpectedValues(returnValue, expectedValues);
-// });
+    const lastMessage = customConsole.getLastMessage();
+    expect(lastMessage).toBe('perro');
+
+    testExpectedValues(returnValue, expectedValues);
+});
+
+test('stringSize program works', async () => {
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory('stringSize.tig');
+    const returnValue = await evaluator.run();
+
+    testExpectedValues(returnValue, expectedValues);
+});
+
+test('stringSlice program works', async () => {
+    const { evaluator, expectedValues, customConsole } = await evaluatorDependenciesFactory(
+        'stringSlice.tig'
+    );
+    const returnValue = await evaluator.run();
+
+    const lastMessage = customConsole.getLastMessage();
+    expect(lastMessage).toBe('perro');
+
+    testExpectedValues(returnValue, expectedValues);
+});
+
+test('concatStrings program works', async () => {
+    const { evaluator, expectedValues, customConsole } = await evaluatorDependenciesFactory(
+        'concatStrings.tig'
+    );
+    const returnValue = await evaluator.run();
+
+    const lastMessage = customConsole.getLastMessage();
+    expect(lastMessage).toBe('milanesa');
+
+    testExpectedValues(returnValue, expectedValues);
+});
+
+test('stringCompare program works', async () => {
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory('stringCompare.tig');
+    const returnValue = await evaluator.run();
+
+    testExpectedValues(returnValue, expectedValues);
+});
+
+test('returnRecordElement program works', async () => {
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory(
+        'returnRecordElement.tig'
+    );
+    const returnValue = await evaluator.run();
+
+    testExpectedValues(returnValue, expectedValues);
+});
+
+test('earlyExit program works', async () => {
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory('earlyExit.tig');
+    const returnValue = await evaluator.run();
+
+    testExpectedValues(returnValue, expectedValues);
+});

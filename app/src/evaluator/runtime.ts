@@ -1,5 +1,7 @@
 import { CustomConsole } from '../utils/console';
-import { MemoryManager, i32_SIZE, MEMORY_PAGES, HEAP_START } from './memoryManager';
+import { MemoryManager, i32_SIZE, MEMORY_PAGES } from './memoryManager';
+import { StringStorage } from './stringStorage';
+import { RuntimeExit } from '../utils/runtimeExit';
 
 type TigerMain = () => number;
 
@@ -10,6 +12,7 @@ interface InstanceExports {
 export class Runtime {
     private wasmInstance: WebAssembly.Instance;
     private memoryManager: MemoryManager;
+    private stringStorage: StringStorage;
 
     constructor(module: WebAssembly.Module, private customConsole: CustomConsole) {
         const memory = new WebAssembly.Memory({ initial: MEMORY_PAGES, maximum: MEMORY_PAGES });
@@ -44,12 +47,20 @@ export class Runtime {
         });
 
         this.memoryManager = new MemoryManager(new Uint8Array(memory.buffer));
+        this.stringStorage = new StringStorage(this.memoryManager);
     }
 
     run = (): number => {
-        const execution = this.exports.main();
-        // this.memoryManager.i32DebugSlice(HEAP_START, 10);
-        return execution;
+        try {
+            const execution = this.exports.main();
+            return execution;
+        } catch (err) {
+            if (err instanceof RuntimeExit) {
+                return err.exitCode;
+            } else {
+                throw err;
+            }
+        }
     };
 
     private get exports(): InstanceExports {
@@ -58,17 +69,43 @@ export class Runtime {
         };
     }
 
-    private print = () => {};
+    private print = (strPointer: number): void => {
+        const string = this.stringStorage.readString(strPointer);
+        this.customConsole.print(string);
+    };
     private flush = () => {};
     private getchar = () => {};
     private getstring = () => {};
-    private ord = () => {};
-    private chr = () => {};
-    private size = () => {};
-    private substring = () => {};
-    private concat = () => {};
-    private not = () => {};
-    private exit = () => {};
+    private ord = (strPointer: number): number => {
+        const string = this.stringStorage.readString(strPointer);
+        return string.charCodeAt(0);
+    };
+    private chr = (charCode: number): number => {
+        const string = String.fromCharCode(charCode);
+        return this.stringStorage.writeString(string);
+    };
+    private size = (strPointer: number): number => {
+        const string = this.stringStorage.readString(strPointer);
+        return string.length;
+    };
+    private substring = (strPointer: number, start: number, end: number): number => {
+        const string = this.stringStorage.readString(strPointer);
+        const slicedString = string.slice(start, end);
+        const newStrPointer = this.stringStorage.writeString(slicedString);
+        return newStrPointer;
+    };
+    private concat = (str1Pointer: number, str2Pointer: number): number => {
+        const str1 = this.stringStorage.readString(str1Pointer);
+        const str2 = this.stringStorage.readString(str2Pointer);
+
+        return this.stringStorage.writeString(str1 + str2);
+    };
+    private not = (condition: number): number => {
+        return Number(!condition);
+    };
+    private exit = (exitCode: number) => {
+        throw new RuntimeExit(exitCode);
+    };
     private alloc_array = (size: number, init: number): number => {
         const pointer = this.memoryManager.alloc(size * i32_SIZE);
         for (let i = 0; i < size; i++) {
@@ -78,13 +115,49 @@ export class Runtime {
 
         return pointer;
     };
-    private alloc_record = () => {};
-    private check_index_array = () => {};
+    private alloc_record = (size: number): number => {
+        const pointer = this.memoryManager.alloc(size * i32_SIZE);
+        return pointer;
+    };
+    private check_index_array = (pointer: number, index: number): void => {
+        return this.memoryManager.checkArrayIndex(pointer, index);
+    };
     private check_nil = () => {};
-    private str_equals = () => {};
-    private str_not_equals = () => {};
-    private str_less = () => {};
-    private str_less_or_equals = () => {};
-    private str_greater = () => {};
-    private str_greater_or_equals = () => {};
+    private str_equals = (leftStrPointer: number, rightStrPointer: number): number => {
+        const comparison = this.strCompare(leftStrPointer, rightStrPointer);
+
+        return Number(comparison === 0);
+    };
+    private str_not_equals = (leftStrPointer: number, rightStrPointer: number): number => {
+        const comparison = this.strCompare(leftStrPointer, rightStrPointer);
+
+        return Number(comparison !== 0);
+    };
+    private str_less = (leftStrPointer: number, rightStrPointer: number): number => {
+        const comparison = this.strCompare(leftStrPointer, rightStrPointer);
+
+        return Number(comparison < 0);
+    };
+    private str_less_or_equals = (leftStrPointer: number, rightStrPointer: number): number => {
+        const comparison = this.strCompare(leftStrPointer, rightStrPointer);
+
+        return Number(comparison <= 0);
+    };
+    private str_greater = (leftStrPointer: number, rightStrPointer: number): number => {
+        const comparison = this.strCompare(leftStrPointer, rightStrPointer);
+
+        return Number(comparison > 0);
+    };
+    private str_greater_or_equals = (leftStrPointer: number, rightStrPointer: number): number => {
+        const comparison = this.strCompare(leftStrPointer, rightStrPointer);
+
+        return Number(comparison >= 0);
+    };
+
+    private strCompare = (leftStrPointer: number, rightStrPointer: number): number => {
+        const leftStr = this.stringStorage.readString(leftStrPointer);
+        const rightStr = this.stringStorage.readString(rightStrPointer);
+
+        return leftStr.localeCompare(rightStr);
+    };
 }
