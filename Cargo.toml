@@ -32,6 +32,7 @@ parity-wasm = "0.41.0"
 wasmprinter = "0.2.3"
 lazy_static = "1.4.0"
 clap = "2.33.1"
+binaryen = "0.10.0"
 
 [dependencies.wasm-bindgen]
 version = "=0.2.34"
