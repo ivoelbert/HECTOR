@@ -117,7 +117,7 @@ pub fn emit_module(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 	// println!("{:#?}", &module);
 	// (format!("{:?}", &module), parity_wasm::serialize(module).unwrap())
 	// parity_wasm::serialize_to_file("asd.wasm", module.clone()).unwrap();
-	let bytes = asyncify(parity_wasm::serialize(module).unwrap());
+	let bytes = parity_wasm::serialize(module).unwrap();
 	let text = wasmprinter::print_bytes(&bytes).unwrap();
 	// console_log!("{:?}", &text);
 	(text, bytes)
@@ -180,19 +180,4 @@ fn emit_function(tree_body: Vec<Block>, frame: Frame, functions: &FunctionEnv, s
 			.with_instructions(Instructions::new(instructions))
 			.build()
 		.build()
-}
-
-pub fn asyncify(bytes: Vec<u8>) -> Vec<u8> {
-	extern crate binaryen;
-	use binaryen::{Module, CodegenConfig};
-	let mut module = Module::read(&bytes).unwrap();
-    module.run_optimization_passes(
-        vec!["asyncify"],
-        &CodegenConfig {
-            optimization_level: 1,
-            shrink_level: 1,
-            debug_info: true,
-        }
-    ).unwrap();
-    module.write()
 }
