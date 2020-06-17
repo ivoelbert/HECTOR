@@ -2,8 +2,9 @@ import { CustomConsole } from '../utils/console';
 import { MemoryManager, i32_SIZE, MEMORY_PAGES } from './memoryManager';
 import { StringStorage } from './stringStorage';
 import { RuntimeExit } from '../utils/runtimeExit';
+import * as Asyncify from './asyncify';
 
-type TigerMain = () => number;
+type TigerMain = () => Promise<number>;
 
 interface InstanceExports {
     main: TigerMain;
@@ -17,7 +18,7 @@ export class Runtime {
     constructor(module: WebAssembly.Module, private customConsole: CustomConsole) {
         const memory = new WebAssembly.Memory({ initial: MEMORY_PAGES, maximum: MEMORY_PAGES });
 
-        this.wasmInstance = new WebAssembly.Instance(module, {
+        this.wasmInstance = new Asyncify.Instance(module, {
             mem: {
                 memory,
             },
@@ -50,9 +51,9 @@ export class Runtime {
         this.stringStorage = new StringStorage(this.memoryManager);
     }
 
-    run = (): number => {
+    run = async (): Promise<number> => {
         try {
-            const execution = this.exports.main();
+            const execution = await this.exports.main();
             return execution;
         } catch (err) {
             if (err instanceof RuntimeExit) {
@@ -74,8 +75,14 @@ export class Runtime {
         this.customConsole.print(string);
     };
     private flush = () => {};
-    private getchar = () => {};
-    private getstring = () => {};
+    private getchar = async () => {
+        const string = await this.customConsole.read();
+        return this.stringStorage.writeString(string);
+    };
+    private getstring = async () => {
+        const string = await this.customConsole.read();
+        return this.stringStorage.writeString(string);
+    };
     private ord = (strPointer: number): number => {
         const string = this.stringStorage.readString(strPointer);
         return string.charCodeAt(0);

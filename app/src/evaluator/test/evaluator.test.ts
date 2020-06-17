@@ -152,3 +152,17 @@ test('earlyExit program works', async () => {
 
     testExpectedValues(returnValue, expectedValues);
 });
+
+test('printGetchar program works', async () => {
+    const { evaluator, expectedValues, customConsole } = await evaluatorDependenciesFactory(
+        'printGetchar.tig'
+    );
+
+    const stringToRead = 'perro';
+    customConsole.setReadResult('perro');
+    const returnValue = await evaluator.run();
+    const printedMessage = customConsole.getLastMessage();
+
+    expect(printedMessage).toBe(stringToRead);
+    testExpectedValues(returnValue, expectedValues);
+});
