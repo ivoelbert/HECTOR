@@ -78,7 +78,7 @@ impl Frame {
         Tree::seq(moves)
     }
 
-    pub fn formals(self: &Self) -> Vec<(String, Access)> {
+    pub fn formals(&self) -> Vec<(String, Access)> {
         // Genera los access segun:
         // - El diseño de frame que elegimos
         // - La convencion de llamada (todo lo que se puede en locals)
@@ -95,6 +95,10 @@ impl Frame {
                 });
                 (formals, current_index)
         }).0
+    }
+
+    pub fn static_size(&self) -> i32 {
+        self.memindex * WORD_SIZE
     }
 }
 

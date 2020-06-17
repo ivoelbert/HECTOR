@@ -16,6 +16,33 @@ fn get_global_index(name: &str) -> u32 {
     }
 }
 
+pub fn function_prologue(frame: &Frame) -> Vec<Instruction> {
+	vec![
+        // frame pointer <- stack pointer
+        GetGlobal(get_global_index(STACK_POINTER)),
+        SetGlobal(get_global_index(FRAME_POINTER)),
+        // stack pointer <- frame pointer + static_size
+        GetGlobal(get_global_index(FRAME_POINTER)),
+        I32Const(frame.static_size()),
+        I32Add,
+        SetGlobal(get_global_index(STACK_POINTER))
+    ]
+}
+
+pub fn function_epilogue(strings: &StringEnv) -> Vec<Instruction> {
+    vec![
+        // stack pointer <- frame pointer
+        GetGlobal(get_global_index(FRAME_POINTER)),
+        SetGlobal(get_global_index(STACK_POINTER)),
+        // frame pointer <- static link
+        GetGlobal(get_global_index(FRAME_POINTER)),
+        I32Const(STATIC_LINK_OFFSET),
+        I32Add,
+        I32Load(0, strings.offset),
+        SetGlobal(get_global_index(FRAME_POINTER)),
+        End
+    ]
+}
 
 fn wasm_binop(oper: &Tree::BinOp) -> Instruction {
     use Tree::BinOp::*;
@@ -222,7 +249,6 @@ pub fn munch_body(blocks: Vec<Block>, locals : LocalEnv, functions: &FunctionEnv
     vec![
         GetGlobal(get_global_index(RETURN_VALUE)),
         End, // Loop
-        End, // function?
     ]]
     .concat(), locals)
 }

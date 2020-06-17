@@ -2,7 +2,7 @@ use std::convert::{TryFrom, TryInto};
 
 mod munch;
 mod enviroment;
-use munch::munch_body;
+use munch::{munch_body, function_prologue, function_epilogue};
 use enviroment::{LocalEnv, FunctionEnv, StringEnv, LabelEnv, initial_function_env};
 extern crate parity_wasm;
 extern crate wasmprinter;
@@ -170,6 +170,8 @@ fn emit_string(label: Label, mut string: String, string_env: &StringEnv, module:
 fn emit_function(tree_body: Vec<Block>, frame: Frame, functions: &FunctionEnv, strings: &StringEnv, module: builder::ModuleBuilder) -> builder::ModuleBuilder {
 	let (locals, params) = LocalEnv::from_frame(&frame);
 	let (instructions, locals) : (Vec<Instruction>, LocalEnv) = munch_body(tree_body, locals, &functions, strings);
+	let prologue = function_prologue(&frame);
+	let epilogue = function_epilogue(strings);
 	module.function()
 		.signature()
 			.with_params(params)
@@ -177,7 +179,14 @@ fn emit_function(tree_body: Vec<Block>, frame: Frame, functions: &FunctionEnv, s
 			.build()
 		.body()
 			.with_locals(locals.finish())
-			.with_instructions(Instructions::new(instructions))
+			.with_instructions(Instructions::new(
+				vec![
+					prologue,
+					instructions,
+					epilogue
+				].concat()
+			))
 			.build()
 		.build()
 }
+
