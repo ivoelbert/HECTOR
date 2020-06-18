@@ -43,6 +43,13 @@ test('escape program works', async () => {
     testExpectedValues(returnValue, expectedValues);
 });
 
+test('escape2 program works', async () => {
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory('escape2.tig');
+    const returnValue = await evaluator.run();
+
+    testExpectedValues(returnValue, expectedValues);
+});
+
 test('basicFor program works', async () => {
     const { evaluator, expectedValues } = await evaluatorDependenciesFactory('basicFor.tig');
     const returnValue = await evaluator.run();
