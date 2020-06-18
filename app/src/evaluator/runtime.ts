@@ -1,5 +1,11 @@
 import { CustomConsole } from '../utils/console';
-import { MemoryManager, i32_SIZE, MEMORY_PAGES } from './memoryManager';
+import {
+    MemoryManager,
+    i32_SIZE,
+    MEMORY_PAGES,
+    ASYNCIFY_DATA_START,
+    ASYNCIFY_DATA_END,
+} from './memoryManager';
 import { StringStorage } from './stringStorage';
 import { RuntimeExit } from '../utils/runtimeExit';
 import * as Asyncify from './asyncify';
@@ -18,7 +24,7 @@ export class Runtime {
     constructor(module: WebAssembly.Module, private customConsole: CustomConsole) {
         const memory = new WebAssembly.Memory({ initial: MEMORY_PAGES, maximum: MEMORY_PAGES });
 
-        this.wasmInstance = new Asyncify.Instance(module, {
+        this.wasmInstance = new Asyncify.Instance(module, ASYNCIFY_DATA_START, ASYNCIFY_DATA_END, {
             mem: {
                 memory,
             },

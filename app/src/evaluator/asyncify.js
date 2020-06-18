@@ -1,107 +1,150 @@
-const t = new WeakMap();
-function e(t, e) {
-    return new Proxy(t, { get: (t, s) => e(t[s]) });
+const WRAPPED_EXPORTS = new WeakMap();
+
+function isPromise(obj) {
+    return (
+        !!obj &&
+        (typeof obj === 'object' || typeof obj === 'function') &&
+        typeof obj.then === 'function'
+    );
 }
-class s {
-    constructor() {
+
+function proxyGet(obj, transform) {
+    return new Proxy(obj, {
+        get: (obj, name) => transform(obj[name]),
+    });
+}
+
+class Asyncify {
+    constructor(dataAddr, dataEnd) {
+        this.dataAddr = dataAddr;
+        this.dataEnd = dataEnd;
+        this.dataStart = this.dataAddr + 8;
         this.state = { type: 'Loading' };
         this.exports = null;
     }
+
     assertNoneState() {
-        if ('None' !== this.state.type) throw new Error(`Invalid async state ${this.state.type}`);
+        if (this.state.type !== 'None') {
+            throw new Error(`Invalid async state ${this.state.type}`);
+        }
     }
-    wrapImportFn(t) {
-        return (...e) => {
-            var n;
-            if ('Rewinding' === this.state.type) {
-                let { value: t } = this.state;
+
+    wrapImportFn(fn) {
+        return (...args) => {
+            if (this.state.type === 'Rewinding') {
+                let { value } = this.state;
                 this.state = { type: 'None' };
                 this.exports.asyncify_stop_rewind();
-                return t;
+                return value;
             }
             this.assertNoneState();
-            let s = t(...e);
-            if (
-                !(n = s) ||
-                ('object' != typeof n && 'function' != typeof n) ||
-                'function' != typeof n.then
-            )
-                return s;
-            this.exports.asyncify_start_unwind(16);
-            this.state = { type: 'Unwinding', promise: s };
+            let value = fn(...args);
+            if (!isPromise(value)) {
+                return value;
+            }
+            this.exports.asyncify_start_unwind(this.dataAddr);
+            this.state = {
+                type: 'Unwinding',
+                promise: value,
+            };
         };
     }
-    wrapModuleImports(t) {
-        return e(t, (t) => ('function' == typeof t ? this.wrapImportFn(t) : t));
+
+    wrapModuleImports(module) {
+        return proxyGet(module, (value) => {
+            if (typeof value === 'function') {
+                return this.wrapImportFn(value);
+            }
+            return value;
+        });
     }
-    wrapImports(t) {
-        if (void 0 !== t) return e(t, (t) => this.wrapModuleImports(t));
+
+    wrapImports(imports) {
+        if (imports === undefined) return;
+
+        return proxyGet(imports, (moduleImports) => this.wrapModuleImports(moduleImports));
     }
-    wrapExportFn(e) {
-        let s = t.get(e);
-        return void 0 !== s
-            ? s
-            : ((s = async (...t) => {
-                  this.assertNoneState();
-                  let s = e(...t);
-                  for (; 'Unwinding' === this.state.type; ) {
-                      let { promise: t } = this.state;
-                      this.state = { type: 'None' };
-                      this.exports.asyncify_stop_unwind();
-                      let n = await t;
-                      this.assertNoneState();
-                      this.exports.asyncify_start_rewind(16);
-                      this.state = { type: 'Rewinding', value: n };
-                      s = e();
-                  }
-                  this.assertNoneState();
-                  return s;
-              }),
-              t.set(e, s),
-              s);
-    }
-    wrapExports(e) {
-        let s = Object.create(null);
-        for (let t in e) {
-            let n = e[t];
-            'function' != typeof n || t.startsWith('asyncify_') || (n = this.wrapExportFn(n));
-            Object.defineProperty(s, t, { enumerable: !0, value: n });
+
+    wrapExportFn(fn) {
+        let newExport = WRAPPED_EXPORTS.get(fn);
+
+        if (newExport !== undefined) {
+            return newExport;
         }
-        t.set(e, s);
-        return s;
+
+        newExport = async (...args) => {
+            this.assertNoneState();
+
+            let result = fn(...args);
+
+            while (this.state.type === 'Unwinding') {
+                let { promise } = this.state;
+                this.state = { type: 'None' };
+                this.exports.asyncify_stop_unwind();
+                let value = await promise;
+                this.assertNoneState();
+                this.exports.asyncify_start_rewind(this.dataAddr);
+                this.state = {
+                    type: 'Rewinding',
+                    value,
+                };
+                result = fn();
+            }
+
+            this.assertNoneState();
+
+            return result;
+        };
+
+        WRAPPED_EXPORTS.set(fn, newExport);
+
+        return newExport;
     }
-    init(t, e) {
-        const { exports: s } = t,
-            r = s.memory || (e.mem && e.mem.memory);
-        new Int32Array(r.buffer, 16).set([24, 1024]);
+
+    wrapExports(exports) {
+        let newExports = Object.create(null);
+
+        for (let exportName in exports) {
+            let value = exports[exportName];
+            if (typeof value === 'function' && !exportName.startsWith('asyncify_')) {
+                value = this.wrapExportFn(value);
+            }
+            Object.defineProperty(newExports, exportName, {
+                enumerable: true,
+                value,
+            });
+        }
+
+        WRAPPED_EXPORTS.set(exports, newExports);
+
+        return newExports;
+    }
+
+    init(instance, imports) {
+        const { exports } = instance;
+
+        const memory = exports.memory || (imports.mem && imports.mem.memory);
+
+        new Int32Array(memory.buffer, this.dataAddr).set([this.dataStart, this.dataEnd]);
+
         this.state = { type: 'None' };
-        this.exports = this.wrapExports(s);
-        Object.setPrototypeOf(t, n.prototype);
+
+        this.exports = this.wrapExports(exports);
+
+        Object.setPrototypeOf(instance, Instance.prototype);
     }
 }
-class n extends WebAssembly.Instance {
-    constructor(t, e) {
-        let n = new s();
-        super(t, n.wrapImports(e));
-        n.init(this, e);
+
+export class Instance extends WebAssembly.Instance {
+    constructor(module, dataAddr, dataEnd, imports) {
+        let state = new Asyncify(dataAddr, dataEnd);
+        super(module, state.wrapImports(imports));
+        state.init(this, imports);
     }
+
     get exports() {
-        return t.get(super.exports);
+        return WRAPPED_EXPORTS.get(super.exports);
     }
 }
-async function r(t, e) {
-    let n = new s(),
-        r = await WebAssembly.instantiate(t, n.wrapImports(e));
 
-    n.init(r instanceof WebAssembly.Instance ? r : r.instance, e);
-    return r;
-}
-async function i(t, e) {
-    let n = new s(),
-        r = await WebAssembly.instantiateStreaming(t, n.wrapImports(e));
-
-    n.init(r.instance, e);
-    return r;
-}
-Object.defineProperty(n.prototype, 'exports', { enumerable: !0 });
-export { n as Instance, r as instantiate, i as instantiateStreaming };
+Object.defineProperty(Instance.prototype, 'exports', { enumerable: true });

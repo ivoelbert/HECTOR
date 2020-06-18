@@ -1,8 +1,18 @@
 import { assertCondition } from '../interpreter/utils/utils';
+import { WORD_SZ } from '../interpreter/frame';
+
+function alignToNextWord(value: number): number {
+    return ((value + WORD_SZ - 1) / WORD_SZ) * WORD_SZ;
+}
 
 export const MEMORY_PAGES = 256;
 export const MEMORY_LENGTH = MEMORY_PAGES * 64 * 1024; // 16mb
-export const HEAP_START = Math.floor(MEMORY_LENGTH / 2);
+
+export const HEAP_START = alignToNextWord(Math.floor(MEMORY_LENGTH / 3));
+export const HEAP_END = HEAP_START * 2;
+
+export const ASYNCIFY_DATA_START = HEAP_END;
+export const ASYNCIFY_DATA_END = MEMORY_LENGTH;
 
 export const i32_SIZE = 4;
 export const BYTE_SIZE = 1;
@@ -19,7 +29,7 @@ export class MemoryManager {
     alloc = (bytes: number): number => {
         const pointer = this.nextFreeIndex;
         this.nextFreeIndex += bytes;
-        assertCondition(this.nextFreeIndex < MEMORY_LENGTH, 'Out of memory!');
+        assertCondition(this.nextFreeIndex < HEAP_END, 'Out of memory!');
         this.allocatedSizes.set(pointer, bytes);
         return pointer;
     };
@@ -90,9 +100,9 @@ export class MemoryManager {
 }
 
 const i32AssertRange = (dir: number): void => {
-    assertCondition(dir >= 0 && dir < MEMORY_LENGTH - 4, `Index ${dir} out of range`);
+    assertCondition(dir >= 0 && dir < HEAP_END - 4, `Index ${dir} out of range`);
 };
 
 const byteAssertRange = (dir: number): void => {
-    assertCondition(dir >= 0 && dir < MEMORY_LENGTH - 1, `Index ${dir} out of range`);
+    assertCondition(dir >= 0 && dir < HEAP_END - 1, `Index ${dir} out of range`);
 };
