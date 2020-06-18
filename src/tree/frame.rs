@@ -98,7 +98,7 @@ impl Frame {
     }
 
     pub fn static_size(&self) -> i32 {
-        self.memindex * WORD_SIZE
+        (self.memindex + 1) * WORD_SIZE
     }
 }
 
