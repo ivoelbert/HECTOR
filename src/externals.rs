@@ -90,7 +90,13 @@ lazy_static! {
         External {
             name: "check_index_array",
             arguments: vec![ArgumentType::Int, ArgumentType::Int],
-            return_value: Some(ArgumentType::Int),
+            return_value: None,
+            is_runtime: true
+        },
+        External {
+            name: "check_nil",
+            arguments: vec![ArgumentType::Int, ArgumentType::Int],
+            return_value: None,
             is_runtime: true
         },
         External {
