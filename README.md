@@ -8,16 +8,16 @@ By Federico Badaloni & Ivo Elbert, Licenciatura en Ciencias de la Computación, 
 
 - [Install Rust](https://www.rust-lang.org/learn/get-started)
 - [Install wasm-pack](https://rustwasm.github.io/wasm-pack/installer/)
-- Use Rust nigthly: `rustup default nightly`
-- Instal latest yarn
-- setup garco: in your .bashrc add this line at the end: `alias garco=cargo`
+- [Install latest yarn](https://classic.yarnpkg.com/en/docs/install/#debian-stable)
+- Install app dependencies: `cd app & yarn install`
+- Build the library by running: `./buildWasm.sh`
 
-## Build
+## Test
 
-- Build using: `wasm-pack build`
-- Run tests with: `garco test`
-- Build the Web App: `cd app & yarn install`
+- Run the rust-side tests with: `cargo test`
+- Run the js-side interpreter and evaluator tests: `cd app & yarn test`
 
 ## Run
 
-- Run the Web App in hte www folder using: `yarn start`
+- Compile a tiger file with `cargo run -- path/to/file.tig`. This will output the binary WebAssembly to `output.wasm`. You can change the output with the `-o` flag. Note that this doesn't link the runtime.
+- Run the app to edit and compile and run Tiger code interactively with `cd app & yarn start`.
