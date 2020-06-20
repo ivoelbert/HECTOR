@@ -31,11 +31,11 @@ pub fn unique_named_label(name: &str) -> Label {
 //     Uuid::new_v4().to_string()
 // }
 
-pub fn unique_named_global(name: &str) -> Label {
+pub fn unique_named_temp(name: &str) -> Label {
     vec![name.to_string(), "_".to_string(), Uuid::new_v4().to_string()].concat()
 }
 
-pub fn named_global(name: &str) -> GlobalTemp {
+pub fn named_temp(name: &str) -> GlobalTemp {
     String::from(name)
 }
 
@@ -85,7 +85,7 @@ impl Level {
             if remaining_depth < 1 {panic!("depth: {:?}", remaining_depth)};
             match remaining_depth {
                 1 => MEM(Box::new(plus!(
-                    GLOBAL(named_global(FRAME_POINTER)),
+                    TEMP(named_temp(FRAME_POINTER)),
                     CONST(STATIC_LINK_OFFSET * WORD_SIZE)
                 ))),
                 d => MEM(Box::new(plus!(
@@ -99,7 +99,7 @@ impl Level {
             Access::Mem(i) => {
                 if delta_depth == 0 {
                     MEM(Box::new(BINOP(PLUS,
-                        Box::new(GLOBAL(named_global(FRAME_POINTER))),
+                        Box::new(TEMP(named_temp(FRAME_POINTER))),
                         Box::new(CONST(i * WORD_SIZE))
                     )))
                 } else {
@@ -110,12 +110,12 @@ impl Level {
                     )))
                 }
             },
-            Access::Global(l) => GLOBAL(l),
+            Access::Global(l) => TEMP(l),
             Access::Local(l) => {
                 if delta_depth != 0 {
                     panic!("escaped local!")
                 }
-                LOCAL(l)
+                TEMP(l)
             }
         }
     }

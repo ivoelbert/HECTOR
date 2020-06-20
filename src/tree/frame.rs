@@ -1,7 +1,7 @@
 // Arquitecture-specific details should be abstracted here.
 // To make it easier to target diffent arquitectures, we could make Frame into a trait.
 
-use super::{Label, GlobalTemp, Tree, level::named_global};
+use super::{Label, GlobalTemp, Tree, level::named_temp};
 use Tree::{Exp::*, Stm::*, BinOp::*};
 use serde::{Serialize};
 use uuid::Uuid;
@@ -67,10 +67,10 @@ impl Frame {
                     current_index += 1;
                     stms.push(MOVE(
                         Box::new(MEM(Box::new(BINOP(PLUS,
-                            Box::new(GLOBAL(named_global(FRAME_POINTER))),
+                            Box::new(TEMP(named_temp(FRAME_POINTER))),
                             Box::new(CONST(current_index * WORD_SIZE) )
                         )))),
-                        Box::new(LOCAL(name.clone()))))
+                        Box::new(TEMP(name.clone()))))
                 };
                 (stms, current_index)
             }

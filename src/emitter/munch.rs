@@ -85,7 +85,12 @@ fn munch_stm(stm: Tree::Stm, locals : LocalEnv, labels: &LabelEnv, functions: &F
                     ].concat(), locals)
 
                 },
-                LOCAL(name) => {
+                TEMP(name) if name == FRAME_POINTER || name == RETURN_VALUE =>
+                    (vec![
+                        value_code,
+                        vec![SetGlobal(get_global_index(&name))]
+                    ].concat(), locals),
+                TEMP(name) => {
                     let index = if let Some(index) = locals.get(&name) {
                         index
                     } else {
@@ -96,11 +101,6 @@ fn munch_stm(stm: Tree::Stm, locals : LocalEnv, labels: &LabelEnv, functions: &F
                         vec![SetLocal(index)]
                     ].concat(), locals)
                 },
-                GLOBAL(global) =>
-                    (vec![
-                        value_code,
-                        vec![SetGlobal(get_global_index(&global))]
-                    ].concat(), locals),
                 _ => panic!("canonization should delete this?")
             }
         },
@@ -177,11 +177,12 @@ pub fn munch_exp(exp: Tree::Exp, locals : LocalEnv, functions: &FunctionEnv, str
             }
             _ => panic!("should not happen")
         },
-		LOCAL(local) => {
-            let index = locals.get(&local).expect("no unset local should be called");
+        TEMP(name) if name == FRAME_POINTER || name == RETURN_VALUE =>
+            (vec![GetGlobal(get_global_index(&name))], locals),
+        TEMP(name) => {
+            let index = locals.get(&name).expect("no unset local should be called");
             (vec![GetLocal(index)], locals)
         },
-		GLOBAL(global) => (vec![GetGlobal(get_global_index(&global))], locals),
 		CONST(i) => (vec![I32Const(i)], locals),
 		NAME(label) => {
             // String

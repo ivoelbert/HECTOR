@@ -31,7 +31,7 @@ fn commute(stm: &Tree::Stm, exp: &Tree::Exp) -> bool {
     fn inmut(exp: &Tree::Exp) -> bool {
         match exp {
             CONST(..) | NAME(..) => true,
-            GLOBAL(l) if *l == level::FRAME_POINTER => true, // Capaz que está al pedo
+            TEMP(l) if *l == level::FRAME_POINTER => true, // Capaz que está al pedo
             BINOP(_, x, y) => inmut(x) && inmut(y),
             _ => false
         }
@@ -59,13 +59,13 @@ fn reorder(mut exps: Vec<Tree::Exp>) -> (Tree::Stm, Vec<Tree::Exp>) {
     let first = exps.remove(0);
     match first {
         CALL(..) => {
-            let t = level::unique_named_global("-reorder_call");
+            let t = level::unique_named_temp("-reorder_call");
             exps.insert(0, ESEQ(
                 Box::new(MOVE(
-                    Box::new(LOCAL(t.clone())),
+                    Box::new(TEMP(t.clone())),
                     Box::new(first)
                 )),
-                Box::new(LOCAL(t))
+                Box::new(TEMP(t))
             ));
             reorder(exps)
         }
@@ -76,9 +76,9 @@ fn reorder(mut exps: Vec<Tree::Exp>) -> (Tree::Stm, Vec<Tree::Exp>) {
                 el.insert(0, e);
                 (seq(stms, stms_), el)
             } else {
-                let t = level::unique_named_global("-reorder");
-                el.insert(0, LOCAL(t.clone()));
-                (seq(stms, seq(MOVE(Box::new(LOCAL(t)), Box::new(e)), stms_)), el)
+                let t = level::unique_named_temp("-reorder");
+                el.insert(0, TEMP(t.clone()));
+                (seq(stms, seq(MOVE(Box::new(TEMP(t)), Box::new(e)), stms_)), el)
             }
         }
     }
@@ -113,44 +113,23 @@ fn do_stm(stm: Tree::Stm) -> Tree::Stm {
             })
         ),
         MOVE(dest, src) => match (*dest, *src) {
-            (GLOBAL(t), CALL(function_label, args)) => {
+            (TEMP(t), CALL(function_label, args)) => {
                 let mut exps = args;
                 exps.push(*function_label);
                 reorder_stm(
                     exps,
                     Box::new(|mut l| {
-                        let dest = Box::new(GLOBAL(t));
+                        let dest = Box::new(TEMP(t));
                         let src = Box::new(CALL(Box::new(l.pop().expect("move canonization")), l));
                         MOVE(dest, src)
                     })
                 )
             },
-            (GLOBAL(t), b) =>
+            (TEMP(t), b) =>
                 reorder_stm(
                     vec![b],
                     Box::new(|mut l| {
-                        let dest = Box::new(GLOBAL(t));
-                        let src = Box::new(l.pop().expect("move canonization"));
-                        MOVE(dest, src)
-                    })
-                ),
-            (LOCAL(t), CALL(function_label, args)) => {
-                let mut exps = args;
-                exps.push(*function_label);
-                reorder_stm(
-                    exps,
-                    Box::new(|mut l| {
-                        let dest = Box::new(LOCAL(t));
-                        let src = Box::new(CALL(Box::new(l.pop().expect("move canonization")), l));
-                        MOVE(dest, src)
-                    })
-                )
-            },
-            (LOCAL(t), b) =>
-                reorder_stm(
-                    vec![b],
-                    Box::new(|mut l| {
-                        let dest = Box::new(LOCAL(t));
+                        let dest = Box::new(TEMP(t));
                         let src = Box::new(l.pop().expect("move canonization"));
                         MOVE(dest, src)
                     })

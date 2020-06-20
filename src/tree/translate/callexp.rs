@@ -8,7 +8,7 @@ fn generate_static_link(delta_depth: i32) -> Tree::Exp {
     if delta_depth == 0 {
         MEM(Box::new(
             plus!(
-                GLOBAL(named_global(FRAME_POINTER)),
+                TEMP(named_temp(FRAME_POINTER)),
                 CONST(STATIC_LINK_OFFSET)
             )
         ))
@@ -38,7 +38,7 @@ pub fn trans_exp(
                 EnvEntry::Func {label, external, depth: callee_depth} => {
                     let caller_depth = level.nesting_depth;
                     let static_link_exp = if *callee_depth > caller_depth {
-                        GLOBAL(named_global(FRAME_POINTER))
+                        TEMP(named_temp(FRAME_POINTER))
                     } else {
                         generate_static_link(caller_depth - callee_depth)
                     };
