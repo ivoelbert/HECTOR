@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs';
-import { MockConsole } from '../../interpreter/test/mockConsole';
+import { MockConsole } from '../../utils/mockConsole';
 import { WasmEvaluator, Evaluator } from '../evaluator';
 import { ExpectedValues } from '../../utils/expectedValues';
 

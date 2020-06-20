@@ -9,6 +9,7 @@ interface RuntimeFunctionsByName {
     print: RuntimeFunction | AsyncRuntimeFunction;
     flush: RuntimeFunction | AsyncRuntimeFunction;
     getchar: RuntimeFunction | AsyncRuntimeFunction;
+    getstring: RuntimeFunction | AsyncRuntimeFunction;
     ord: RuntimeFunction | AsyncRuntimeFunction;
     chr: RuntimeFunction | AsyncRuntimeFunction;
     size: RuntimeFunction | AsyncRuntimeFunction;
@@ -46,6 +47,7 @@ export class Runtime {
             print: this.print,
             flush: this.flush,
             getchar: this.getchar,
+            getstring: this.getstring,
             ord: this.ord,
             chr: this.chr,
             size: this.size,
@@ -92,6 +94,11 @@ export class Runtime {
     };
 
     private getchar: AsyncRuntimeFunction = async (args) => {
+        const str = await this.console.readChar();
+        return this.stringStorage.storeUnlabeledString(str[0]);
+    };
+
+    private getstring: AsyncRuntimeFunction = async (args) => {
         const str = await this.console.read();
         return this.stringStorage.storeUnlabeledString(str);
     };

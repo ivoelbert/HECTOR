@@ -1,18 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { InterpConsole } from '../../hooks/useConsole';
+import { UserConsole } from '../../hooks/useConsole';
 
 import './CustomConsole.scss';
 
 const prompt = '>';
 
 interface CustomConsoleProps {
-    customConsole: InterpConsole;
+    customConsole: UserConsole;
     messages: string[];
     isReading: boolean;
+    isReadingChar: boolean;
 }
 
 export const CustomConsole: React.FC<CustomConsoleProps> = (props) => {
-    const { messages, isReading, customConsole } = props;
+    const { messages, isReading, isReadingChar, customConsole } = props;
 
     const consoleRef = useRef<HTMLDivElement | null>(null);
     useEffect(() => {
@@ -28,6 +29,7 @@ export const CustomConsole: React.FC<CustomConsoleProps> = (props) => {
                 return <MessageWithPrompt key={index}>{msg}</MessageWithPrompt>;
             })}
             {isReading && <ConsoleInput customConsole={customConsole} />}
+            {isReadingChar && <ConsoleCharInput customConsole={customConsole} />}
         </div>
     );
 };
@@ -48,7 +50,7 @@ const MessageWithPrompt: React.FC<MessageWithPromptProps> = (props) => {
 };
 
 interface ConsoleInputProps {
-    customConsole: InterpConsole;
+    customConsole: UserConsole;
 }
 
 const ConsoleInput: React.FC<ConsoleInputProps> = (props) => {
@@ -77,6 +79,31 @@ const ConsoleInput: React.FC<ConsoleInputProps> = (props) => {
                 onChange={onChange}
                 value={message}
                 onKeyPress={onKeyPress}
+                spellCheck={false}
+            />
+        </div>
+    );
+};
+
+const ConsoleCharInput: React.FC<ConsoleInputProps> = (props) => {
+    const [message, setMessage] = useState<string>('');
+    const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const { value } = event.target;
+        setMessage(value);
+
+        if (value.length >= 1) {
+            props.customConsole.resolveRead(value[0]);
+        }
+    };
+
+    return (
+        <div className="message-with-prompt">
+            <span className="prompt">{prompt}</span>
+            <input
+                className="input"
+                autoFocus={true}
+                onChange={onChange}
+                value={message}
                 spellCheck={false}
             />
         </div>

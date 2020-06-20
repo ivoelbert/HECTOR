@@ -9,7 +9,7 @@ interface EvaluatorOkProps {
 
 export const EvaluatorOk: React.FC<EvaluatorOkProps> = (props) => {
     const { bin } = props;
-    const [customConsole, messages, isReading] = useConsole();
+    const [customConsole, messages, isReading, isReadingChar] = useConsole();
 
     const [run, isRunning] = useEvaluator(customConsole, bin);
 
@@ -19,6 +19,7 @@ export const EvaluatorOk: React.FC<EvaluatorOkProps> = (props) => {
                 customConsole={customConsole}
                 messages={messages}
                 isReading={isReading}
+                isReadingChar={isReadingChar}
             />
             <RunButton disabled={isRunning} onClick={run} />
         </div>

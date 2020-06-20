@@ -1,7 +1,7 @@
 import { CustomConsole } from '../utils/console';
 import { useState, useMemo } from 'react';
 
-export interface InterpConsole extends CustomConsole {
+export interface UserConsole extends CustomConsole {
     clear: () => void;
     resolveRead: (str: string) => void;
     printLine: (str: string) => void;
@@ -11,13 +11,15 @@ const illegalResolve = (str: string): void => {
     throw new Error('Cannot resolve a string if not reading!');
 };
 
-export const useConsole = (): [InterpConsole, string[], boolean] => {
+export const useConsole = (): [UserConsole, string[], boolean, boolean] => {
     const [messages, setMessages] = useState<string[]>(['']);
 
     const [isReading, setIsReading] = useState<boolean>(false);
 
+    const [isReadingChar, setIsReadingChar] = useState<boolean>(false);
+
     const hookConsole = useMemo(() => {
-        class HookConsole implements InterpConsole {
+        class HookConsole implements UserConsole {
             resolveRead: (str: string) => void = illegalResolve;
 
             clear = () => {
@@ -48,8 +50,23 @@ export const useConsole = (): [InterpConsole, string[], boolean] => {
                         setMessages((oldMessages) => [...oldMessages, str, '']);
                         setIsReading(false);
 
-                        // Send this value over to the interpreter
+                        // Send this value over to the console consumer
                         resolve(str);
+                    };
+                });
+            };
+
+            readChar = () => {
+                return new Promise<string>((resolve) => {
+                    setIsReadingChar(true);
+
+                    this.resolveRead = (str: string) => {
+                        const char = str[0];
+                        setMessages((oldMessages) => [...oldMessages, char, '']);
+                        setIsReadingChar(false);
+
+                        // Send this value over to the console consumer
+                        resolve(char);
                     };
                 });
             };
@@ -58,5 +75,5 @@ export const useConsole = (): [InterpConsole, string[], boolean] => {
         return new HookConsole();
     }, []);
 
-    return [hookConsole, messages, isReading];
+    return [hookConsole, messages, isReading, isReadingChar];
 };

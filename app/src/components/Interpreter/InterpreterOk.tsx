@@ -10,7 +10,7 @@ interface InterpreterOkProps {
 
 export const InterpreterOk: React.FC<InterpreterOkProps> = (props) => {
     const { frags } = props;
-    const [customConsole, messages, isReading] = useConsole();
+    const [customConsole, messages, isReading, isReadingChar] = useConsole();
 
     const [run, isRunning] = useInterpreter(customConsole, frags);
 
@@ -20,6 +20,7 @@ export const InterpreterOk: React.FC<InterpreterOkProps> = (props) => {
                 customConsole={customConsole}
                 messages={messages}
                 isReading={isReading}
+                isReadingChar={isReadingChar}
             />
             <RunButton disabled={isRunning} onClick={run} />
         </div>

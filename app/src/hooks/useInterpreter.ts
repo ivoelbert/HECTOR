@@ -1,4 +1,4 @@
-import { InterpConsole } from './useConsole';
+import { UserConsole } from './useConsole';
 import { Frag } from '../interpreter/treeTypes';
 import { TreeInterpreter } from '../interpreter/interpreter';
 import { useMemo, useState, useCallback } from 'react';
@@ -6,7 +6,7 @@ import { useMemo, useState, useCallback } from 'react';
 export type RunFunction = () => Promise<void>;
 
 export const useInterpreter = (
-    customConsole: InterpConsole,
+    customConsole: UserConsole,
     frags: Frag[]
 ): [RunFunction, boolean] => {
     const [isRunning, setIsRunning] = useState<boolean>(false);

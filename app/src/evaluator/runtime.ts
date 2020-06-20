@@ -82,7 +82,7 @@ export class Runtime {
     };
     private flush = () => {};
     private getchar = async () => {
-        const string = await this.customConsole.read();
+        const string = await this.customConsole.readChar();
         return this.stringStorage.writeString(string);
     };
     private getstring = async () => {

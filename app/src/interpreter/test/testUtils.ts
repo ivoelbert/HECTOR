@@ -1,4 +1,4 @@
-import { MockConsole } from './mockConsole';
+import { MockConsole } from '../../utils/mockConsole';
 import { Runtime } from '../runtime';
 import { MemMap } from '../utils/memMap';
 import { Label } from '../treeTypes';

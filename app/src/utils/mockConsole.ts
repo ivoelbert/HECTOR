@@ -1,4 +1,4 @@
-import { CustomConsole } from '../../utils/console';
+import { CustomConsole } from './console';
 
 /**
  *  A mocked console that writes to an internal array
@@ -19,6 +19,10 @@ export class MockConsole implements CustomConsole {
 
     read = async (): Promise<string> => {
         return this.mockReadResult;
+    };
+
+    readChar = async (): Promise<string> => {
+        return this.mockReadResult[0];
     };
 
     setReadResult = (msg: string): void => {

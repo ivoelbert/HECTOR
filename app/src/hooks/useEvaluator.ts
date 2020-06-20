@@ -1,11 +1,11 @@
-import { InterpConsole } from './useConsole';
+import { UserConsole } from './useConsole';
 import { useMemo, useState, useCallback } from 'react';
 import { WasmEvaluator } from '../evaluator/evaluator';
 import { OutOfBoundsException, NilPointerException } from '../utils/runtimeUtils';
 
 export type RunFunction = () => Promise<void>;
 
-export const useEvaluator = (customConsole: InterpConsole, bin: any): [RunFunction, boolean] => {
+export const useEvaluator = (customConsole: UserConsole, bin: any): [RunFunction, boolean] => {
     const [isRunning, setIsRunning] = useState<boolean>(false);
 
     const evaluator = useMemo(() => new WasmEvaluator(Uint8Array.from(bin), customConsole), [
