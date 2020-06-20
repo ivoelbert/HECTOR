@@ -9,11 +9,16 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/target/debug/hector",
-            "args": [],
+            "args": [
+                "--",
+                "tiger_sources/good/merge.tig"
+            ],
             "preLaunchTask": "build",
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [],
+            "environment": [
+                // {"RUST_BACKTRACE" : 1},
+            ],
             "externalConsole": true,
             "MIMode": "gdb",
             "setupCommands": [
