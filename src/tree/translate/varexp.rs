@@ -41,9 +41,17 @@ pub fn trans_var(
             let array_memory_address_temp_exp = index_level.access_to_exp(array_memory_address_temp, index_level.nesting_depth);
             let index_temp_exp = index_level.access_to_exp(index_temp, index_level.nesting_depth);
             let evaluate_array_memory_address = Move!(array_memory_address_temp_exp.clone(), array_exp);
-            let evaluate_index = Move!(index_temp_exp.clone(), BINOP(MUL, Box::new(index_exp), Box::new(CONST(WORD_SIZE))));
+            let evaluate_index = Move!(index_temp_exp.clone(), index_exp);
             let call_external = EXP(Box::new(external_call(external_label.to_string(), vec![array_memory_address_temp_exp.clone(), index_temp_exp.clone()])));
-            let access_memory = MEM(Box::new(plus!(array_memory_address_temp_exp, index_temp_exp)));
+            let access_memory = MEM(Box::new(
+                plus!(
+                    array_memory_address_temp_exp,
+                    BINOP(MUL,
+                        Box::new(index_temp_exp),
+                        Box::new(CONST(WORD_SIZE))
+                    )
+                )
+            ));
             Ok((ESEQ(
                 Box::new(seq(vec![
                     evaluate_array_memory_address,
@@ -59,7 +67,6 @@ pub fn trans_var(
             let record_typ = record.typ.clone();
             let (record_exp, mut record_level, record_frags) = trans_var(record, level, value_env, breaks_stack, frags)?;
             let record_memory_address_temp = record_level.alloc_local(false, None);
-            let field_temp = record_level.alloc_local(false, None);
             let external_label = if let
                 EnvEntry::Func {label, ..} = value_env.get("+check_nil").expect("should be in initial value env")
                 { label } else {panic!("typechecking should handle this")};
@@ -73,15 +80,17 @@ pub fn trans_var(
                 .find(|(name, ..)| {name == field})
                 .expect("typechecking should handle this");
             let record_memory_address_temp_exp = record_level.access_to_exp(record_memory_address_temp, record_level.nesting_depth);
-            let field_temp_exp = record_level.access_to_exp(field_temp, record_level.nesting_depth);
             let evaluate_record_memory_address = Move!(record_memory_address_temp_exp.clone(), record_exp);
-            let evaluate_field = Move!(field_temp_exp.clone(), CONST(*order * WORD_SIZE));
-            let call_external = EXP(Box::new(external_call(external_label.to_string(), vec![record_memory_address_temp_exp.clone(), field_temp_exp.clone()])));
-            let access_memory = MEM(Box::new(plus!(record_memory_address_temp_exp, field_temp_exp)));
+            let call_external = EXP(Box::new(external_call(external_label.to_string(), vec![record_memory_address_temp_exp.clone(), CONST(*order)])));
+            let access_memory = MEM(Box::new(
+                plus!(
+                    record_memory_address_temp_exp,
+                    CONST(*order * WORD_SIZE)
+                )
+            ));
             Ok((ESEQ(
                 Box::new(seq(vec![
                     evaluate_record_memory_address,
-                    evaluate_field,
                     call_external,
                 ])),
                 Box::new(access_memory)
