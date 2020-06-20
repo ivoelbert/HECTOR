@@ -1,5 +1,5 @@
 import { runtimeDependenciesFactory } from './testUtils';
-import { WORD_SZ } from '../frame';
+import { WORD_SZ } from '../../utils/utils';
 
 test('print writes to a mock console', async () => {
     const { stringStorage, customConsole, runtime } = runtimeDependenciesFactory();

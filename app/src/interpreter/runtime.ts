@@ -1,8 +1,9 @@
 import { MemMap } from './utils/memMap';
 import { assertExists } from './utils/utils';
-import { WORD_SZ } from './frame';
 import { StringStorage } from './utils/stringStorage';
 import { CustomConsole } from '../utils/console';
+import { WORD_SZ } from '../utils/utils';
+import { OutOfBoundsException, NilPointerException } from '../utils/runtimeUtils';
 
 interface RuntimeFunctionsByName {
     print: RuntimeFunction | AsyncRuntimeFunction;
@@ -22,6 +23,8 @@ interface RuntimeFunctionsByName {
     '+str_less_or_equals': RuntimeFunction | AsyncRuntimeFunction;
     '+str_greater': RuntimeFunction | AsyncRuntimeFunction;
     '+str_greater_or_equals': RuntimeFunction | AsyncRuntimeFunction;
+    '+check_index_array': RuntimeFunction | AsyncRuntimeFunction;
+    '+check_nil': RuntimeFunction | AsyncRuntimeFunction;
 }
 
 export type RuntimeFunctionNames = keyof RuntimeFunctionsByName;
@@ -31,12 +34,14 @@ type AsyncRuntimeFunction = (args: number[]) => Promise<number>;
 
 export class Runtime {
     private nameMap: RuntimeFunctionsByName;
+    private arraySizes: Map<number, number>;
 
     constructor(
         private memMap: MemMap,
         private stringStorage: StringStorage,
         private console: CustomConsole
     ) {
+        this.arraySizes = new Map();
         this.nameMap = {
             print: this.print,
             flush: this.flush,
@@ -55,6 +60,8 @@ export class Runtime {
             '+str_less_or_equals': this.strLessOrEquals,
             '+str_greater': this.strGreater,
             '+str_greater_or_equals': this.strGreaterOrEquals,
+            '+check_index_array': this.checkIndexArray,
+            '+check_nil': this.checkNil,
         };
     }
 
@@ -153,8 +160,8 @@ export class Runtime {
         assertExists(init);
 
         const arrayLocation = this.memMap.alloc(size);
+        this.arraySizes.set(arrayLocation, size);
 
-        // TODO INITIALIZE MEMORY
         for (let i = 0; i < size; i++) {
             const itemLocation = arrayLocation + i * WORD_SZ;
 
@@ -162,6 +169,31 @@ export class Runtime {
         }
 
         return arrayLocation;
+    };
+
+    private checkIndexArray: RuntimeFunction = (args) => {
+        const [pointer, index] = args;
+        assertExists(pointer);
+        assertExists(index);
+
+        const size = this.arraySizes.get(pointer);
+
+        if (index < 0 || index >= assertExists(size)) {
+            throw new OutOfBoundsException(index, pointer);
+        }
+
+        return 0;
+    };
+
+    private checkNil: RuntimeFunction = (args) => {
+        const [record] = args;
+        assertExists(record);
+
+        if (record === 0) {
+            throw new NilPointerException();
+        }
+
+        return 0;
     };
 
     private allocRecord: RuntimeFunction = (args) => {

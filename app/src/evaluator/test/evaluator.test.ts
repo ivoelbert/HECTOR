@@ -1,5 +1,6 @@
 import { evaluatorDependenciesFactory } from './testUtils';
 import { testExpectedValues } from '../../utils/utils';
+import { OutOfBoundsException, NilPointerException } from '../../utils/runtimeUtils';
 
 test('returnNumber program works', async () => {
     const { evaluator, expectedValues } = await evaluatorDependenciesFactory('returnNumber.tig');
@@ -172,4 +173,26 @@ test('printGetchar program works', async () => {
 
     expect(printedMessage).toBe(stringToRead);
     testExpectedValues(returnValue, expectedValues);
+});
+
+test('indexOutOfBounds throws the correct error', async () => {
+    const { evaluator } = await evaluatorDependenciesFactory('indexOutOfBounds.tig');
+
+    try {
+        await evaluator.run();
+        fail('Out of bounds index should throw an OutOfBoundsError');
+    } catch (err) {
+        expect(err).toBeInstanceOf(OutOfBoundsException);
+    }
+});
+
+test('nilRecordError throws the correct error', async () => {
+    const { evaluator } = await evaluatorDependenciesFactory('nilRecordError.tig');
+
+    try {
+        await evaluator.run();
+        fail('nil record access field should throw a NilPointerException');
+    } catch (err) {
+        expect(err).toBeInstanceOf(NilPointerException);
+    }
 });

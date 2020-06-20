@@ -1,14 +1,14 @@
 import { CustomConsole } from '../utils/console';
 import {
     MemoryManager,
-    i32_SIZE,
     MEMORY_PAGES,
     ASYNCIFY_DATA_START,
     ASYNCIFY_DATA_END,
 } from './memoryManager';
 import { StringStorage } from './stringStorage';
-import { RuntimeExit } from '../utils/runtimeExit';
+import { RuntimeExit, NilPointerException } from '../utils/runtimeUtils';
 import * as Asyncify from './asyncify';
+import { WORD_SZ } from '../utils/utils';
 
 type TigerMain = () => Promise<number>;
 
@@ -120,22 +120,26 @@ export class Runtime {
         throw new RuntimeExit(exitCode);
     };
     private alloc_array = (size: number, init: number): number => {
-        const pointer = this.memoryManager.alloc(size * i32_SIZE);
+        const pointer = this.memoryManager.alloc(size * WORD_SZ);
         for (let i = 0; i < size; i++) {
-            const dir = pointer + i * i32_SIZE;
-            this.memoryManager.i32Store(dir, init);
+            const dir = pointer + i * WORD_SZ;
+            this.memoryManager.wordStore(dir, init);
         }
 
         return pointer;
     };
     private alloc_record = (size: number): number => {
-        const pointer = this.memoryManager.alloc(size * i32_SIZE);
+        const pointer = this.memoryManager.alloc(size * WORD_SZ);
         return pointer;
     };
     private check_index_array = (pointer: number, index: number): void => {
         return this.memoryManager.checkArrayIndex(pointer, index);
     };
-    private check_nil = () => {};
+    private check_nil = (record: number): void => {
+        if (record === 0) {
+            throw new NilPointerException();
+        }
+    };
     private str_equals = (leftStrPointer: number, rightStrPointer: number): number => {
         const comparison = this.strCompare(leftStrPointer, rightStrPointer);
 

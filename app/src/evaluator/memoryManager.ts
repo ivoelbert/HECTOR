@@ -1,5 +1,6 @@
 import { assertCondition } from '../interpreter/utils/utils';
-import { WORD_SZ } from '../interpreter/frame';
+import { OutOfBoundsException } from '../utils/runtimeUtils';
+import { WORD_SZ } from '../utils/utils';
 
 function alignToNextWord(value: number): number {
     return ((value + WORD_SZ - 1) / WORD_SZ) * WORD_SZ;
@@ -14,7 +15,6 @@ export const HEAP_END = HEAP_START * 2;
 export const ASYNCIFY_DATA_START = HEAP_END;
 export const ASYNCIFY_DATA_END = MEMORY_LENGTH;
 
-export const i32_SIZE = 4;
 export const BYTE_SIZE = 1;
 
 export class MemoryManager {
@@ -39,15 +39,15 @@ export class MemoryManager {
         if (byteCount === undefined) {
             throw new Error('Not a valid array');
         }
-        if (index >= byteCount * i32_SIZE || index < 0) {
-            throw new Error('Index out of bounds');
+        if (index * WORD_SZ >= byteCount || index < 0) {
+            throw new OutOfBoundsException(index, pointer);
         }
 
         return;
     };
 
-    i32Store = (dir: number, value: number): void => {
-        i32AssertRange(dir);
+    wordStore = (dir: number, value: number): void => {
+        wordAssertRange(dir);
 
         this.memory[dir] = value & 255;
         this.memory[dir + 1] = (value & (255 << 8)) >> 8;
@@ -55,8 +55,8 @@ export class MemoryManager {
         this.memory[dir + 3] = (value & (255 << 24)) >> 24;
     };
 
-    i32Get = (dir: number): number => {
-        i32AssertRange(dir);
+    wordGet = (dir: number): number => {
+        wordAssertRange(dir);
 
         let value = this.memory[dir];
         value += this.memory[dir + 1] << 8;
@@ -78,11 +78,11 @@ export class MemoryManager {
         return this.memory[dir];
     };
 
-    i32DebugSlice = (start: number, count: number): void => {
+    wordDebugSlice = (start: number, count: number): void => {
         const values = [];
         for (let i = 0; i < count; i++) {
-            const dir = start + i * i32_SIZE;
-            values.push(this.i32Get(dir));
+            const dir = start + i * WORD_SZ;
+            values.push(this.wordGet(dir));
         }
 
         console.log(values);
@@ -99,10 +99,10 @@ export class MemoryManager {
     };
 }
 
-const i32AssertRange = (dir: number): void => {
-    assertCondition(dir >= 0 && dir < HEAP_END - 4, `Index ${dir} out of range`);
+const wordAssertRange = (dir: number): void => {
+    assertCondition(dir >= 0 && dir < HEAP_END - WORD_SZ, `Index ${dir} out of range`);
 };
 
 const byteAssertRange = (dir: number): void => {
-    assertCondition(dir >= 0 && dir < HEAP_END - 1, `Index ${dir} out of range`);
+    assertCondition(dir >= 0 && dir < HEAP_END - BYTE_SIZE, `Index ${dir} out of range`);
 };

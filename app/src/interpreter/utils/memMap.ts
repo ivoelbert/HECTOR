@@ -1,4 +1,4 @@
-import { WORD_SZ } from '../frame';
+import { WORD_SZ } from '../../utils/utils';
 
 export class MemMap extends Map<number, number> {
     private nextFreeMem: number = 0;

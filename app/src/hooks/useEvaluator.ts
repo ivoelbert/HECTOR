@@ -1,6 +1,7 @@
 import { InterpConsole } from './useConsole';
 import { useMemo, useState, useCallback } from 'react';
 import { WasmEvaluator } from '../evaluator/evaluator';
+import { OutOfBoundsException, NilPointerException } from '../utils/runtimeUtils';
 
 export type RunFunction = () => Promise<void>;
 
@@ -16,12 +17,21 @@ export const useEvaluator = (customConsole: InterpConsole, bin: any): [RunFuncti
         customConsole.clear();
         setIsRunning(true);
         try {
-            debugger;
             const result = await evaluator.run();
             customConsole.printLine(`Program ended returning ${result}`);
         } catch (err) {
-            console.error(err);
-            customConsole.printLine('Program failed! Check the console for further details');
+            if (err instanceof OutOfBoundsException) {
+                customConsole.print(
+                    `Program failed!\nArray index out of bounds.\nCannot access index ${err.index} from pointer ${err.pointer}`
+                );
+            } else if (err instanceof NilPointerException) {
+                customConsole.print(
+                    `Program failed!\nNil record exception.\nCannot access a field of a nil record`
+                );
+            } else {
+                console.error(err);
+                customConsole.printLine('Program failed! Check the console for further details');
+            }
         }
         setIsRunning(false);
     }, [evaluator, customConsole]);

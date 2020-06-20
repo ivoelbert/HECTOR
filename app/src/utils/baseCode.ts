@@ -1,4 +1,7 @@
 export const baseCode = `
 /* Enter your tiger code */
-0
+(
+    print("Hello world!");
+    0
+)
 `;
