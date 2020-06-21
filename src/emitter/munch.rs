@@ -35,11 +35,11 @@ pub fn function_epilogue(strings: &StringEnv) -> Vec<Instruction> {
         GetGlobal(get_global_index(FRAME_POINTER)),
         SetGlobal(get_global_index(STACK_POINTER)),
         // frame pointer <- static link
-        GetGlobal(get_global_index(FRAME_POINTER)),
-        I32Const(STATIC_LINK_OFFSET),
-        I32Add,
-        I32Load(0, strings.offset),
-        SetGlobal(get_global_index(FRAME_POINTER)),
+        // GetGlobal(get_global_index(FRAME_POINTER)),
+        // I32Const(STATIC_LINK_OFFSET),
+        // I32Add,
+        // I32Load(0, strings.offset),
+        // SetGlobal(get_global_index(FRAME_POINTER)),
         End
     ]
 }
@@ -172,7 +172,13 @@ pub fn munch_exp(exp: Tree::Exp, locals : LocalEnv, functions: &FunctionEnv, str
                     }).collect::<Vec<Vec<Instruction>>>().concat();
                 (vec![
                     args_code,
-                    vec![Call(*index)],
+                    vec![
+                        GetGlobal(get_global_index(FRAME_POINTER)),
+                        SetLocal(locals.get("fp_back").unwrap()),
+                        Call(*index),
+                        GetLocal(locals.get("fp_back").unwrap()),
+                        SetGlobal(get_global_index(FRAME_POINTER)),
+                    ],
                 ].concat(), locals)
             }
             _ => panic!("should not happen")

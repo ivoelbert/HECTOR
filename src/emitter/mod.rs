@@ -168,7 +168,8 @@ fn emit_string(label: Label, mut string: String, string_env: &StringEnv, module:
 }
 
 fn emit_function(tree_body: Vec<Block>, frame: Frame, functions: &FunctionEnv, strings: &StringEnv, module: builder::ModuleBuilder) -> builder::ModuleBuilder {
-	let (locals, params) = LocalEnv::from_frame(&frame);
+	let (mut locals, params) = LocalEnv::from_frame(&frame);
+	locals.insert("fp_back".to_string());
 	let (instructions, locals) : (Vec<Instruction>, LocalEnv) = munch_body(tree_body, locals, &functions, strings);
 	let prologue = function_prologue(&frame);
 	let epilogue = function_epilogue(strings);
