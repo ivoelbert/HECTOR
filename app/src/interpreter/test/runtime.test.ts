@@ -14,10 +14,23 @@ test('print writes to a mock console', async () => {
     expect(printedMessage).toBe(message);
 });
 
-test('getchar reads the mocked string', async () => {
+test('getstring reads the mocked string', async () => {
     const { stringStorage, customConsole, runtime } = runtimeDependenciesFactory();
 
     const message = 'some other string';
+    customConsole.setReadResult(message);
+    const getcharFunction = runtime.getFunction('getstring');
+    const strPointer = await getcharFunction([]);
+
+    const readString = stringStorage.loadString(strPointer);
+
+    expect(readString).toBe(message);
+});
+
+test('getchar reads the mocked char', async () => {
+    const { stringStorage, customConsole, runtime } = runtimeDependenciesFactory();
+
+    const message = 'x';
     customConsole.setReadResult(message);
     const getcharFunction = runtime.getFunction('getchar');
     const strPointer = await getcharFunction([]);

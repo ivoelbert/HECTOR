@@ -166,8 +166,22 @@ test('printGetchar program works', async () => {
         'printGetchar.tig'
     );
 
+    const stringToRead = 'x';
+    customConsole.setReadResult(stringToRead);
+    const returnValue = await evaluator.run();
+    const printedMessage = customConsole.getLastMessage();
+
+    expect(printedMessage).toBe(stringToRead);
+    testExpectedValues(returnValue, expectedValues);
+});
+
+test('printGetstring program works', async () => {
+    const { evaluator, expectedValues, customConsole } = await evaluatorDependenciesFactory(
+        'printGetstring.tig'
+    );
+
     const stringToRead = 'perro';
-    customConsole.setReadResult('perro');
+    customConsole.setReadResult(stringToRead);
     const returnValue = await evaluator.run();
     const printedMessage = customConsole.getLastMessage();
 
