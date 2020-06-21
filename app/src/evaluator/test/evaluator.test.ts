@@ -210,3 +210,21 @@ test('nilRecordError throws the correct error', async () => {
         expect(err).toBeInstanceOf(NilPointerException);
     }
 });
+
+test('compareNilRecord program works', async () => {
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory(
+        'compareNilRecord.tig'
+    );
+    const returnValue = await evaluator.run();
+
+    testExpectedValues(returnValue, expectedValues);
+});
+
+test('compareNonNilRecord program works', async () => {
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory(
+        'compareNonNilRecord.tig'
+    );
+    const returnValue = await evaluator.run();
+
+    testExpectedValues(returnValue, expectedValues);
+});

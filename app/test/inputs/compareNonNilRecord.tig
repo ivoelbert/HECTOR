@@ -1,0 +1,11 @@
+/*
+    @result: 42
+*/
+let
+    type rectype = {name : string, age : int}
+    var rec1 : rectype := rectype {name="Nobody", age=42}
+in
+    if rec1 = nil
+    then -1
+    else rec1.age
+end
