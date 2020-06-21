@@ -14,7 +14,7 @@ export const cleanAst = (ast: any, options: CleanOptions = {}): any => {
     } = options;
 
     // If it's a json
-    if (typeof ast === 'object' && !Array.isArray(ast)) {
+    if (typeof ast === 'object' && !Array.isArray(ast) && ast !== null) {
         const prettyAst: any = {};
 
         Object.keys(ast).forEach((k) => {
@@ -41,10 +41,6 @@ export const cleanAst = (ast: any, options: CleanOptions = {}): any => {
             }
 
             prettyAst[k] = cleanAst(ast[k], options);
-
-            if (k === 'Int') {
-                console.log(ast);
-            }
         });
 
         return prettyAst;

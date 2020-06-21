@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import AceEditor, { IEditorProps } from 'react-ace';
 import { useLocalStorageState } from '../../hooks/useLocalStorageState';
 import { useCtrlKeys } from '../../hooks/useCtrlKeys';
@@ -17,6 +17,12 @@ export const CodeEditor: React.FC<CodeEditorProps> = (props) => {
 
     useCtrlKeys([13, 83], () => compileCode(code));
 
+    const editorStyles: CSSProperties = {
+        height: '600px',
+        fontSize: '14px',
+        width: '100%',
+    };
+
     return (
         <AceEditor
             mode="golang"
@@ -25,8 +31,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = (props) => {
             value={code}
             name="code-editor"
             editorProps={{ $blockScrolling: true }}
-            fontSize={14}
-            width="100%"
+            style={editorStyles}
             showPrintMargin={false}
             onLoad={(editor: IEditorProps) => editor.focus()}
             onBlur={() => compileCode(code)}

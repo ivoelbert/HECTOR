@@ -2,7 +2,6 @@ import React, { useState, useCallback } from 'react';
 import { TabProps } from './Tab';
 import { isNil } from '../../utils/utils';
 import { useCtrlAltKeys } from '../../hooks/useCtrlAltKeys';
-import './Tabs.scss';
 
 interface TabsProps {
     children: React.ReactNode;
@@ -82,7 +81,7 @@ const TabButton: React.FC<TabButtonProps> = ({ name, index, selectedIndex, setSe
 
     const moveToTab = useCallback(() => {
         setSelectedIndex(index);
-    }, [index, setSelectedIndex]);
+    }, []);
     useCtrlAltKeys([49 + index], moveToTab);
 
     return (

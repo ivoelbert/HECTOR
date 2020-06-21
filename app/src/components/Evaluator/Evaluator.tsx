@@ -1,6 +1,6 @@
 import React from 'react';
 import { EvaluatorOk } from './EvaluatorOk';
-
+import { ErrorBoundary } from './ErrorBoundary';
 import './Evaluator.scss';
 
 interface EvaluatorProps {
@@ -9,18 +9,21 @@ interface EvaluatorProps {
 
 export const Evaluator: React.FC<EvaluatorProps> = (props) => {
     if (props.bin === null) {
-        return <EvaluatorProps />;
+        return <EvaluatorError />;
     } else {
-        return <EvaluatorOk bin={props.bin} />;
+        return (
+            <ErrorBoundary fallback={<EvaluatorError />}>
+                <EvaluatorOk bin={props.bin} />
+            </ErrorBoundary>
+        );
     }
 };
 
-const EvaluatorProps: React.FC = () => {
+const EvaluatorError: React.FC = () => {
     return (
         <div className="evaluator-container">
-            <h3>No fragments to show!</h3>
-            <p>Did you compile the code?</p>
-            <p>If so, check the WASM results to see if there were any errors</p>
+            <h3>Something went wrong compiling the code!</h3>
+            <p>Check the console for further info</p>
         </div>
     );
 };
