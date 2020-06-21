@@ -49,11 +49,11 @@ pub fn trans_exp(
             let (left_exp, left_level, left_frags) = super::trans_exp(left, level, value_env, breaks_stack, frags)?;
             let (right_exp, right_level, right_frags) = super::trans_exp(right, left_level, value_env, breaks_stack, left_frags)?;
             match *left.typ {
-                TigerType::TInt(_) => Ok((
-                    BINOP(trans_int_oper(*oper), Box::new(left_exp), Box::new(right_exp)),
-                    right_level,
-                    right_frags
-                )),
+                // TigerType::TInt(_) => Ok((
+                //     BINOP(trans_int_oper(*oper), Box::new(left_exp), Box::new(right_exp)),
+                //     right_level,
+                //     right_frags
+                // )),
                 TigerType::TString => {
                     let proc_label = trans_str_oper(*oper, value_env);
                     Ok((
@@ -62,26 +62,26 @@ pub fn trans_exp(
                         right_frags
                     ))
                 },
-                TigerType::TNil => Ok((
-                    CONST(0),
-                    right_level,
-                    right_frags
-                )),
-                TigerType::TRecord(..) => if let TigerType::TNil = *right.typ {
-                    Ok((
-                        CONST(0),
-                        right_level,
-                        right_frags
-                    ))
-                } else {
+                // TigerType::TNil => Ok((
+                //     CONST(0),
+                //     right_level,
+                //     right_frags
+                // )),
+                // TigerType::TRecord(..) =>
+                    // if let TigerType::TNil = *right.typ {
+                    //     Ok((
+                    //         CONST(0),
+                    //         right_level,
+                    //         right_frags
+                    //     ))
+                    // } else {
+                    // },
+                _ => {
                     Ok((
                         BINOP(trans_int_oper(*oper), Box::new(left_exp), Box::new(right_exp)),
                         right_level,
                         right_frags
                     ))
-                },
-                _ => {
-                    panic!("typechecking should not allow this")
                 }
             }
         }
