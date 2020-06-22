@@ -183,7 +183,7 @@ test('printint program works', async () => {
     const returnValue = await evaluator.run();
     const printedMessage = customConsole.getLastMessage();
 
-    expect(printedMessage).toBe("42");
+    expect(printedMessage).toBe("2");
     testExpectedValues(returnValue, expectedValues);
 });
 
@@ -247,3 +247,12 @@ test('compareArrays program works', async () => {
 
     testExpectedValues(returnValue, expectedValues);
 });
+
+test('arrayElementConditional program works', async () => {
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory('arrayElementConditional.tig');
+    const returnValue = await evaluator.run();
+
+    testExpectedValues(returnValue, expectedValues);
+});
+
+

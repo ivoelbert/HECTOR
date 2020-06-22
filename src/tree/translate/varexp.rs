@@ -33,8 +33,8 @@ pub fn trans_var(
             // access the memory
             let (array_exp, array_level, array_frags) = trans_var(array, level, value_env, breaks_stack, frags)?;
             let (index_exp, mut index_level, index_frags) = super::trans_exp(index, array_level, value_env, breaks_stack, array_frags)?;
-            let array_memory_address_temp = index_level.alloc_local(false, None);
-            let index_temp = index_level.alloc_local(false, None);
+            let array_memory_address_temp = index_level.alloc_local(false, Some("array_memory_address_temp".to_string()));
+            let index_temp = index_level.alloc_local(false, Some("index_temp".to_string()));
             let external_label = if let
                 EnvEntry::Func {label, ..} = value_env.get("+check_index_array").expect("should be in initial value env")
                 { label } else {panic!("typechecking should handle this")};
@@ -66,7 +66,7 @@ pub fn trans_var(
             // but you use the record's field order as "index"
             let record_typ = record.typ.clone();
             let (record_exp, mut record_level, record_frags) = trans_var(record, level, value_env, breaks_stack, frags)?;
-            let record_memory_address_temp = record_level.alloc_local(false, None);
+            let record_memory_address_temp = record_level.alloc_local(false, Some("record_memory_address_temp".to_string()));
             let external_label = if let
                 EnvEntry::Func {label, ..} = value_env.get("+check_nil").expect("should be in initial value env")
                 { label } else {panic!("typechecking should handle this")};

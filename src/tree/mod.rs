@@ -45,7 +45,7 @@ pub fn initial_value_env() -> ValueEnviroment {
                 s.push_str(*name);
                 s
             } else {
-                name.to_string()
+                (*name).to_string()
             })
         .collect::<Vec<String>>();
     externals.iter().map(|name| -> (String, EnvEntry) {

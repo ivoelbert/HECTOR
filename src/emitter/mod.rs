@@ -125,26 +125,23 @@ pub fn emit_module(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 
 fn emit_imports(module: ModuleBuilder) -> ModuleBuilder {
     use crate::externals::*;
-	type Import = (&'static str, Vec<ValueType>, Option<ValueType>);
+	type Import = (&'static str, Vec<ValueType>);
 	EXTERNALS
 		.iter()
-		.map(|External {name, arguments, return_value, ..}| {
+		.map(|External {name, arguments, ..}| {
 			(
 				*name,
 				arguments
 					.iter()
 					.map(|_| ValueType::I32)
 					.collect(),
-				if let Some(..) = return_value {
-					Some(ValueType::I32)
-				} else { None }
 			)
 		})
-		.fold(module, |mut module, (name, params, return_type) : Import| {
+		.fold(module, |mut module, (name, params) : Import| {
 			let type_index = module.push_signature(
 				builder::signature()
 					.with_params(params)
-					.with_return_type(return_type)
+					.with_return_type(Some(ValueType::I32))
 				.build_sig()
 			);
 			module
@@ -172,7 +169,7 @@ fn emit_function(tree_body: Vec<Block>, frame: Frame, functions: &FunctionEnv, s
 	locals.insert("fp_back".to_string());
 	let (instructions, locals) : (Vec<Instruction>, LocalEnv) = munch_body(tree_body, locals, &functions, strings);
 	let prologue = function_prologue(&frame);
-	let epilogue = function_epilogue(strings);
+	let epilogue = function_epilogue();
 	module.function()
 		.signature()
 			.with_params(params)
@@ -184,7 +181,7 @@ fn emit_function(tree_body: Vec<Block>, frame: Frame, functions: &FunctionEnv, s
 				vec![
 					prologue,
 					instructions,
-					epilogue
+					epilogue,
 				].concat()
 			))
 			.build()

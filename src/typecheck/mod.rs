@@ -164,7 +164,7 @@ fn initial_value_env() -> ValueEnviroment {
         .iter()
         .filter(|External {is_runtime, ..}| !is_runtime)
         .map(|External {name, arguments, return_value, ..}|
-            (name.to_string(), EnvEntry::Func {
+            ((*name).to_string(), EnvEntry::Func {
                 formals: arguments
                     .iter()
                     .map(|arg| Arc::new(TigerType::from(*arg)))

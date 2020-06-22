@@ -76,9 +76,10 @@ export class Runtime {
         };
     }
 
-    private print = (strPointer: number): void => {
+    private print = (strPointer: number): number => {
         const string = this.stringStorage.readString(strPointer);
         this.customConsole.print(string);
+        return 0;
     };
     private flush = () => {};
     private getchar = async () => {
@@ -132,13 +133,15 @@ export class Runtime {
         const pointer = this.memoryManager.alloc(size * WORD_SZ);
         return pointer;
     };
-    private check_index_array = (pointer: number, index: number): void => {
-        return this.memoryManager.checkArrayIndex(pointer, index);
+    private check_index_array = (pointer: number, index: number): number => {
+        this.memoryManager.checkArrayIndex(pointer, index);
+        return 0;
     };
-    private check_nil = (record: number): void => {
+    private check_nil = (record: number): number => {
         if (record === 0) {
             throw new NilPointerException();
         }
+        return 0;
     };
     private str_equals = (leftStrPointer: number, rightStrPointer: number): number => {
         const comparison = this.strCompare(leftStrPointer, rightStrPointer);

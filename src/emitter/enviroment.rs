@@ -80,7 +80,7 @@ pub fn initial_function_env() -> FunctionEnv {
                 s.push_str(*name);
                 s
             } else {
-                name.to_string()
+                (*name).to_string()
             }, i as u32))
         .collect()
 }
