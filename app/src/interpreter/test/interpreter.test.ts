@@ -132,7 +132,7 @@ test('Print getchar input', async () => {
     const stringToRead = 'x';
     customConsole.setReadResult(stringToRead);
     const returnValue = await interpreter.run();
-    const printedMessage = customConsole.getLastMessage();
+    const printedMessage = customConsole.getPrintedText();
 
     expect(printedMessage).toBe(stringToRead);
     testExpectedValues(returnValue, expectedValues);
@@ -146,7 +146,7 @@ test('Print getstring input', async () => {
     const stringToRead = 'perro';
     customConsole.setReadResult(stringToRead);
     const returnValue = await interpreter.run();
-    const printedMessage = customConsole.getLastMessage();
+    const printedMessage = customConsole.getPrintedText();
 
     expect(printedMessage).toBe(stringToRead);
     testExpectedValues(returnValue, expectedValues);
@@ -158,7 +158,7 @@ test('Print perro works', async () => {
     );
 
     const returnValue = await interpreter.run();
-    const printedMessage = customConsole.getLastMessage();
+    const printedMessage = customConsole.getPrintedText();
 
     expect(printedMessage).toBe('perro');
     testExpectedValues(returnValue, expectedValues);

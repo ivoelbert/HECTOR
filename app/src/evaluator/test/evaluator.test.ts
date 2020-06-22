@@ -101,7 +101,7 @@ test('printPerro program works', async () => {
     );
     const returnValue = await evaluator.run();
 
-    const lastMessage = customConsole.getLastMessage();
+    const lastMessage = customConsole.getPrintedText();
     expect(lastMessage).toBe('perro');
 
     testExpectedValues(returnValue, expectedValues);
@@ -120,7 +120,7 @@ test('stringSlice program works', async () => {
     );
     const returnValue = await evaluator.run();
 
-    const lastMessage = customConsole.getLastMessage();
+    const lastMessage = customConsole.getPrintedText();
     expect(lastMessage).toBe('perro');
 
     testExpectedValues(returnValue, expectedValues);
@@ -132,7 +132,7 @@ test('concatStrings program works', async () => {
     );
     const returnValue = await evaluator.run();
 
-    const lastMessage = customConsole.getLastMessage();
+    const lastMessage = customConsole.getPrintedText();
     expect(lastMessage).toBe('milanesa');
 
     testExpectedValues(returnValue, expectedValues);
@@ -169,7 +169,7 @@ test('printGetchar program works', async () => {
     const stringToRead = 'x';
     customConsole.setReadResult(stringToRead);
     const returnValue = await evaluator.run();
-    const printedMessage = customConsole.getLastMessage();
+    const printedMessage = customConsole.getPrintedText();
 
     expect(printedMessage).toBe(stringToRead);
     testExpectedValues(returnValue, expectedValues);
@@ -181,9 +181,9 @@ test('printint program works', async () => {
     );
 
     const returnValue = await evaluator.run();
-    const printedMessage = customConsole.getLastMessage();
+    const printedMessage = customConsole.getPrintedText();
 
-    expect(printedMessage).toBe("2");
+    expect(printedMessage).toBe('42');
     testExpectedValues(returnValue, expectedValues);
 });
 
@@ -195,7 +195,7 @@ test('printGetstring program works', async () => {
     const stringToRead = 'perro';
     customConsole.setReadResult(stringToRead);
     const returnValue = await evaluator.run();
-    const printedMessage = customConsole.getLastMessage();
+    const printedMessage = customConsole.getPrintedText();
 
     expect(printedMessage).toBe(stringToRead);
     testExpectedValues(returnValue, expectedValues);
@@ -249,10 +249,10 @@ test('compareArrays program works', async () => {
 });
 
 test('arrayElementConditional program works', async () => {
-    const { evaluator, expectedValues } = await evaluatorDependenciesFactory('arrayElementConditional.tig');
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory(
+        'arrayElementConditional.tig'
+    );
     const returnValue = await evaluator.run();
 
     testExpectedValues(returnValue, expectedValues);
 });
-
-

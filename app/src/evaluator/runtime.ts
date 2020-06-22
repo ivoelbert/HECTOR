@@ -81,12 +81,14 @@ export class Runtime {
         this.customConsole.print(string);
         return 0;
     };
-    private flush = () => {};
-    private getchar = async () => {
+    private flush = (): number => {
+        return 0;
+    };
+    private getchar = async (): Promise<number> => {
         const string = await this.customConsole.readChar();
         return this.stringStorage.writeString(string);
     };
-    private getstring = async () => {
+    private getstring = async (): Promise<number> => {
         const string = await this.customConsole.read();
         return this.stringStorage.writeString(string);
     };

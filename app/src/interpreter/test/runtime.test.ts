@@ -9,7 +9,7 @@ test('print writes to a mock console', async () => {
     const printFunction = runtime.getFunction('print');
     await printFunction([stringPtr]);
 
-    const printedMessage = customConsole.getLastMessage();
+    const printedMessage = customConsole.getPrintedText();
 
     expect(printedMessage).toBe(message);
 });

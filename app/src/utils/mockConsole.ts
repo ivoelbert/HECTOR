@@ -5,16 +5,16 @@ import { CustomConsole } from './console';
  *  and always reads the string "mock"
  */
 export class MockConsole implements CustomConsole {
-    private messages: string[];
+    private printedText: string;
     private mockReadResult: string;
 
     constructor() {
-        this.messages = [];
+        this.printedText = '';
         this.mockReadResult = '';
     }
 
     print = (msg: string): void => {
-        this.messages.push(msg);
+        this.printedText += msg;
     };
 
     read = async (): Promise<string> => {
@@ -29,8 +29,7 @@ export class MockConsole implements CustomConsole {
         this.mockReadResult = msg;
     };
 
-    getLastMessage = (): string => {
-        const lastIndex = this.messages.length - 1;
-        return this.messages[lastIndex];
+    getPrintedText = (): string => {
+        return this.printedText;
     };
 }
