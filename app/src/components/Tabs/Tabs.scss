@@ -18,18 +18,18 @@
         }
 
         button::after {
-            content: "";
+            content: '';
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
             height: 0px;
             background-color: #007bff;
-            transition: height 200ms;
+            transition: height 150ms;
         }
 
         button:not(.selected):hover::after {
-            height: 3px;
+            height: 5px;
         }
 
         button.selected {

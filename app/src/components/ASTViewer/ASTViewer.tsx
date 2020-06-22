@@ -27,7 +27,6 @@ export const ASTViewer: React.FC<ASTViewerProps> = (props) => {
 const OkASTViewer: React.FC<ASTViewerProps> = (props) => {
     const { ast } = props;
 
-    // TODO: Interface to control this options
     const [options, setOptions] = useState<CleanOptions>({
         cleanType: true,
         cleanPosition: true,

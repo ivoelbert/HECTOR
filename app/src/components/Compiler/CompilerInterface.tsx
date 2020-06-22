@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { CodeEditor } from '../CodeEditor/CodeEditor';
 import { ASTViewer } from '../ASTViewer/ASTViewer';
-import { Tabs } from '../Tabs/Tabs';
 import { TREEViewer } from '../TREEViewer/TREEViewer';
 import { CanonViewer } from '../CanonViewer/CanonViewer';
 import { Interpreter } from '../Interpreter/Interpreter';
@@ -9,6 +8,8 @@ import { Frag } from '../../interpreter/treeTypes';
 import { useLocalStorageState } from '../../hooks/useLocalStorageState';
 import { baseCode } from '../../utils/baseCode';
 import { Evaluator } from '../Evaluator/Evaluator';
+import { Tab } from '../Tabs/Tab';
+import { Tabs } from '../Tabs/Tabs';
 
 // Bad type. You can get either Ok or Err. Improve this.
 export type RustOption<T> = {
@@ -61,19 +62,28 @@ export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
         }
     }, [compile, compiledCode]);
 
-    // I should make this into a nicer component
-    const tabs = {
-        Editor: <CodeEditor compileCode={setCompiledCode} />,
-        AST: <ASTViewer ast={compileResult.escape} />,
-        TREE: <TREEViewer fragments={compileResult.translate} />,
-        Canon: <CanonViewer canon={compileResult.canon} />,
-        Interp: <Interpreter canon={compileResult.canon} />,
-        Result: <Evaluator bin={compileResult.bin} />,
-    };
-
     return (
         <div className="compiler-interface">
-            <Tabs tabs={tabs} />
+            <Tabs>
+                <Tab name="Editor">
+                    <CodeEditor compileCode={setCompiledCode} />
+                </Tab>
+                <Tab name="AST">
+                    <ASTViewer ast={compileResult.escape} />
+                </Tab>
+                <Tab name="TREE">
+                    <TREEViewer fragments={compileResult.translate} />
+                </Tab>
+                <Tab name="Canon">
+                    <CanonViewer canon={compileResult.canon} />
+                </Tab>
+                <Tab name="Interpreter">
+                    <Interpreter canon={compileResult.canon} />
+                </Tab>
+                <Tab name="Evaluator">
+                    <Evaluator bin={compileResult.bin} />
+                </Tab>
+            </Tabs>
             <p className="compile-instructions">
                 Psst! compile the code with <strong>Ctrl + enter</strong> or{' '}
                 <strong>Ctrl + s</strong>

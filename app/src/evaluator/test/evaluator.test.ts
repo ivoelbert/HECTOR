@@ -240,3 +240,10 @@ test('compareNonNilRecord program works', async () => {
 
     testExpectedValues(returnValue, expectedValues);
 });
+
+test('compareArrays program works', async () => {
+    const { evaluator, expectedValues } = await evaluatorDependenciesFactory('compareArrays.tig');
+    const returnValue = await evaluator.run();
+
+    testExpectedValues(returnValue, expectedValues);
+});

@@ -1,0 +1,14 @@
+/*
+    @result: 2
+*/
+let
+    type arrtype = array of int
+    var arr1 : arrtype := arrtype [10] of 4
+    var arr2 : arrtype := arr1
+    var arr3 : arrtype := arrtype [10] of 2
+
+    var eq := arr1 = arr2
+    var neq := arr1 <> arr3
+in
+    eq + neq
+end
