@@ -10,6 +10,7 @@ import { baseCode } from '../../utils/baseCode';
 import { Evaluator } from '../Evaluator/Evaluator';
 import { Tab } from '../Tabs/Tab';
 import { Tabs } from '../Tabs/Tabs';
+import { WASMViewer } from '../WASMViewer/WASMViewer';
 
 // Bad type. You can get either Ok or Err. Improve this.
 export type RustOption<T> = {
@@ -76,6 +77,9 @@ export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
                 </Tab>
                 <Tab name="Canon">
                     <CanonViewer canon={compileResult.canon} />
+                </Tab>
+                <Tab name="WASM">
+                    <WASMViewer bin={compileResult.bin} />
                 </Tab>
                 <Tab name="Interpreter">
                     <Interpreter canon={compileResult.canon} />
