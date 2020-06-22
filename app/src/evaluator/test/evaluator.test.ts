@@ -175,6 +175,18 @@ test('printGetchar program works', async () => {
     testExpectedValues(returnValue, expectedValues);
 });
 
+test('printint program works', async () => {
+    const { evaluator, expectedValues, customConsole } = await evaluatorDependenciesFactory(
+        'printint.tig'
+    );
+
+    const returnValue = await evaluator.run();
+    const printedMessage = customConsole.getLastMessage();
+
+    expect(printedMessage).toBe("42");
+    testExpectedValues(returnValue, expectedValues);
+});
+
 test('printGetstring program works', async () => {
     const { evaluator, expectedValues, customConsole } = await evaluatorDependenciesFactory(
         'printGetstring.tig'

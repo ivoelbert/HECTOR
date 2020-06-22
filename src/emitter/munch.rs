@@ -29,7 +29,7 @@ pub fn function_prologue(frame: &Frame) -> Vec<Instruction> {
     ]
 }
 
-pub fn function_epilogue(strings: &StringEnv) -> Vec<Instruction> {
+pub fn function_epilogue(_strings: &StringEnv) -> Vec<Instruction> {
     vec![
         // stack pointer <- frame pointer
         GetGlobal(get_global_index(FRAME_POINTER)),
