@@ -129,5 +129,11 @@ lazy_static! {
             return_value: Some(ArgumentType::Int),
             is_runtime: true
         },
+        External {
+            name: "debug_memory",
+            arguments: vec![ArgumentType::Int, ArgumentType::Int],
+            return_value: None,
+            is_runtime: false,
+        }
     ];
 }

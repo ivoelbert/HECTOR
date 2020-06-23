@@ -26,8 +26,11 @@ pub fn trans_exp(
             })?;
             let record_size = fields.iter().count();
             let memory_address = fields_level.alloc_local(false, None);
-            let label = if let
+            let alloc_record_label = if let
                 EnvEntry::Func {label, ..} = value_env.get("+alloc_record").expect("should be in initial value env")
+                { label } else {panic!("typechecking should handle this")};
+            let debug_memory_label = if let
+                EnvEntry::Func {label, ..} = value_env.get("+debug_memory").expect("should be in initial value env")
                 { label } else {panic!("typechecking should handle this")};
             let formals = if let
                 TigerType::TRecord(formals, ..) = &**typ
@@ -53,9 +56,9 @@ pub fn trans_exp(
                     Box::new(seq(vec![
                         Move!(
                             fields_level.access_to_exp(memory_address.clone(), fields_level.nesting_depth),// This returns the memory address of the malloc result
-                            external_call(label.to_string(), vec![CONST(record_size.try_into().unwrap())])
+                            external_call(alloc_record_label.to_string(), vec![CONST(record_size.try_into().unwrap())])
                         ),
-                        init_statement
+                        init_statement,
                     ])),
                     Box::new(fields_level.access_to_exp(memory_address, fields_level.nesting_depth)),
                 ),
