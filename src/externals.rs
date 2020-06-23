@@ -95,7 +95,7 @@ lazy_static! {
         },
         External {
             name: "check_nil",
-            arguments: vec![ArgumentType::Int, ArgumentType::Int],
+            arguments: vec![ArgumentType::Int],
             return_value: None,
             is_runtime: true
         },
