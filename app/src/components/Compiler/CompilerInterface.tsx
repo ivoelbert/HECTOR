@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { CodeEditor } from '../CodeEditor/CodeEditor';
 import { ASTViewer } from '../ASTViewer/ASTViewer';
 import { TREEViewer } from '../TREEViewer/TREEViewer';
@@ -11,6 +11,7 @@ import { Evaluator } from '../Evaluator/Evaluator';
 import { Tab } from '../Tabs/Tab';
 import { Tabs } from '../Tabs/Tabs';
 import { WASMViewer } from '../WASMViewer/WASMViewer';
+import { useCompileResult } from '../../hooks/useCompileResult';
 
 // Bad type. You can get either Ok or Err. Improve this.
 export type RustOption<T> = {
@@ -25,7 +26,7 @@ export type TranslateResult = RustOption<any> | null;
 export type CanonResult = Frag[];
 export type WasmResult = any; // Not implemented
 
-interface CompileResult {
+export interface CompileResult {
     parse: ParseResult;
     typecheck: ParseResult;
     escape: any;
@@ -35,39 +36,22 @@ interface CompileResult {
     bin: any;
 }
 
+export type CompileFunction = (source: string) => CompileResult;
+
 interface CompilerProps {
-    compile(source: string): CompileResult;
+    compile: CompileFunction;
 }
 
 export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
-    const [compiledCode, setCompiledCode] = useLocalStorageState<string>('hector-code', baseCode);
+    const [code, setCode] = useLocalStorageState<string>('hector-code', baseCode);
 
-    const compileResult: CompileResult = useMemo(() => {
-        try {
-            const result = compile(compiledCode);
-            console.log(result);
-
-            return result;
-        } catch (err) {
-            console.log('Something went wrong compiling your code!');
-            console.error(err);
-            return {
-                parse: null,
-                typecheck: null,
-                escape: null,
-                translate: null,
-                canon: null,
-                wasm: null,
-                bin: null,
-            };
-        }
-    }, [compile, compiledCode]);
+    const compileResult = useCompileResult(code, compile);
 
     return (
         <div className="compiler-interface">
             <Tabs>
                 <Tab name="Editor">
-                    <CodeEditor compileCode={setCompiledCode} />
+                    <CodeEditor compileCode={setCode} />
                 </Tab>
                 <Tab name="AST">
                     <ASTViewer ast={compileResult.escape} />
