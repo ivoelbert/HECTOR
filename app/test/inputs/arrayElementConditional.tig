@@ -1,14 +1,14 @@
 /*
-    @result: 2
+    @result: 1
 */
 
 let
-    // type any = {field : int}
-    // var rec := any{field=0}
-    type arr = array of int
-    var a := arr[5] of 0
+    type any = {field : int}
+    var rec := any{field=42}
+    // type arr = array of int
+    // var a := arr[5] of 0
 in
-    if 0
+    if rec.field
         then 1
         else 2
 end

@@ -5,6 +5,7 @@ export const useCompileResult = (code: string, compile: CompileFunction): Compil
     const compileResult: CompileResult = useMemo(() => {
         try {
             const result = compile(code);
+            console.log(result);
             return result;
         } catch (err) {
             console.log('Something went wrong compiling your code!');
