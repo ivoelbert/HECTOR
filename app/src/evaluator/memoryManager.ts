@@ -27,6 +27,7 @@ export class MemoryManager {
     }
 
     alloc = (bytes: number): number => {
+        assertCondition(bytes > 0, 'Cannot alloc 0 bytes');
         const pointer = this.nextFreeIndex;
         this.nextFreeIndex += bytes;
         assertCondition(this.nextFreeIndex < HEAP_END, 'Out of memory!');
