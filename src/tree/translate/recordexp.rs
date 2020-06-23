@@ -29,9 +29,6 @@ pub fn trans_exp(
             let alloc_record_label = if let
                 EnvEntry::Func {label, ..} = value_env.get("+alloc_record").expect("should be in initial value env")
                 { label } else {panic!("typechecking should handle this")};
-            let debug_memory_label = if let
-                EnvEntry::Func {label, ..} = value_env.get("+debug_memory").expect("should be in initial value env")
-                { label } else {panic!("typechecking should handle this")};
             let formals = if let
                 TigerType::TRecord(formals, ..) = &**typ
                 { formals } else {panic!("typechecking should handle this")};
