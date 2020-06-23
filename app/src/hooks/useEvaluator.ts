@@ -30,7 +30,9 @@ export const useEvaluator = (customConsole: UserConsole, bin: any): [RunFunction
                 );
             } else {
                 console.error(err);
-                customConsole.printLine('Program failed! Check the console for further details');
+                customConsole.printLine(
+                    `Program failed with message:\n${err.message}\n\nCheck the console for a stack trace`
+                );
             }
         }
         setIsRunning(false);

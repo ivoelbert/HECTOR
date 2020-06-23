@@ -166,7 +166,7 @@ export class Runtime {
         assertExists(size);
         assertExists(init);
 
-        const arrayLocation = this.memMap.alloc(size);
+        const arrayLocation = this.memMap.alloc(size * WORD_SZ);
         this.arraySizes.set(arrayLocation, size);
 
         for (let i = 0; i < size; i++) {
@@ -204,17 +204,10 @@ export class Runtime {
     };
 
     private allocRecord: RuntimeFunction = (args) => {
-        const [size, ...values] = args;
+        const [size] = args;
         assertExists(size);
 
-        const recordLocation = this.memMap.alloc(size);
-
-        for (let i = 0; i < size; i++) {
-            const itemLocation = recordLocation + i * WORD_SZ;
-            const item = assertExists(values[i]);
-
-            this.memMap.set(itemLocation, item);
-        }
+        const recordLocation = this.memMap.alloc(size * WORD_SZ);
 
         return recordLocation;
     };

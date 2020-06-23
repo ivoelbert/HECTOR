@@ -126,22 +126,6 @@ test('allocArray correctly stores an array', async () => {
     }
 });
 
-test('allocRecord correctly stores a record', async () => {
-    const { memMap, runtime } = runtimeDependenciesFactory();
-
-    const values = [10, 20, 30, 40, 50];
-    const size = values.length;
-
-    const allocRecordFunction = runtime.getFunction('+alloc_record');
-    const arrayPointer = await allocRecordFunction([size, ...values]);
-
-    for (let i = 0; i < size; i++) {
-        const expectedElement = values[i];
-        const memElement = memMap.get(arrayPointer + i * WORD_SZ);
-        expect(memElement).toBe(expectedElement);
-    }
-});
-
 test('+str_equals returns 0 or 1 for corresponding inputs', async () => {
     const { stringStorage, runtime } = runtimeDependenciesFactory();
 

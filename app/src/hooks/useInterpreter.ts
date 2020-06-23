@@ -34,7 +34,9 @@ export const useInterpreter = (
                 );
             } else {
                 console.error(err);
-                customConsole.printLine('Program failed! Check the console for further details');
+                customConsole.print(
+                    `Program failed with message:\n${err.message}\n\nCheck the console for a stack trace`
+                );
             }
         }
         setIsRunning(false);
