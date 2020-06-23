@@ -16,6 +16,7 @@ interface RuntimeFunctionsByName {
     substring: RuntimeFunction | AsyncRuntimeFunction;
     concat: RuntimeFunction | AsyncRuntimeFunction;
     not: RuntimeFunction | AsyncRuntimeFunction;
+    debug_memory: RuntimeFunction | AsyncRuntimeFunction;
     '+alloc_array': RuntimeFunction | AsyncRuntimeFunction;
     '+alloc_record': RuntimeFunction | AsyncRuntimeFunction;
     '+str_equals': RuntimeFunction | AsyncRuntimeFunction;
@@ -40,7 +41,7 @@ export class Runtime {
     constructor(
         private memMap: MemMap,
         private stringStorage: StringStorage,
-        private console: CustomConsole
+        private customConsole: CustomConsole
     ) {
         this.arraySizes = new Map();
         this.nameMap = {
@@ -54,6 +55,7 @@ export class Runtime {
             substring: this.substring,
             concat: this.concat,
             not: this.not,
+            debug_memory: this.debugMemory,
             '+alloc_array': this.allocArray,
             '+alloc_record': this.allocRecord,
             '+str_equals': this.strEquals,
@@ -84,7 +86,7 @@ export class Runtime {
         assertExists(strPointer);
 
         const str = this.stringStorage.loadString(strPointer);
-        this.console.print(str);
+        this.customConsole.print(str);
 
         return 0;
     };
@@ -94,12 +96,12 @@ export class Runtime {
     };
 
     private getchar: AsyncRuntimeFunction = async (args) => {
-        const str = await this.console.readChar();
+        const str = await this.customConsole.readChar();
         return this.stringStorage.storeUnlabeledString(str[0]);
     };
 
     private getstring: AsyncRuntimeFunction = async (args) => {
-        const str = await this.console.read();
+        const str = await this.customConsole.read();
         return this.stringStorage.storeUnlabeledString(str);
     };
 
@@ -155,6 +157,20 @@ export class Runtime {
         assertExists(value);
 
         return Number(!value);
+    };
+
+    private debugMemory: RuntimeFunction = (args) => {
+        const [pointer, words] = args;
+        assertExists(pointer);
+        assertExists(words);
+
+        for (let i = 0; i < words; i++) {
+            const itemLocation = pointer + i * WORD_SZ;
+
+            console.log(this.memMap.get(itemLocation));
+        }
+
+        return 0;
     };
 
     /**

@@ -40,6 +40,7 @@ export class Runtime {
                 exit: this.exit,
                 alloc_array: this.alloc_array,
                 alloc_record: this.alloc_record,
+                debug_memory: this.debug_memory,
                 check_index_array: this.check_index_array,
                 check_nil: this.check_nil,
                 str_equals: this.str_equals,
@@ -131,7 +132,13 @@ export class Runtime {
     };
     private alloc_record = (size: number): number => {
         const pointer = this.memoryManager.alloc(size * WORD_SZ);
+        console.log(`Alloc'd record in ${pointer}`);
         return pointer;
+    };
+    private debug_memory = (pointer: number, words: number) => {
+        console.log(`Will print ${words} words from pointer ${pointer}`);
+        this.memoryManager.wordDebugSlice(pointer, words);
+        return 0;
     };
     private check_index_array = (pointer: number, index: number): number => {
         this.memoryManager.checkArrayIndex(pointer, index);
