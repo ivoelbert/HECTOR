@@ -12,19 +12,17 @@ import { WORD_SZ } from '../utils/utils';
 
 type TigerMain = () => Promise<number>;
 
-interface InstanceExports {
-    main: TigerMain;
-}
-
 export class Runtime {
-    private wasmInstance: WebAssembly.Instance;
     private memoryManager: MemoryManager;
     private stringStorage: StringStorage;
+    private instanceImports: Record<string, Record<string, WebAssembly.ImportValue>>;
 
-    constructor(module: WebAssembly.Module, private customConsole: CustomConsole) {
+    constructor(private binary: Uint8Array, private customConsole: CustomConsole) {
         const memory = new WebAssembly.Memory({ initial: MEMORY_PAGES, maximum: MEMORY_PAGES });
 
-        this.wasmInstance = new Asyncify.Instance(module, ASYNCIFY_DATA_START, ASYNCIFY_DATA_END, {
+        this.memoryManager = new MemoryManager(new Uint8Array(memory.buffer));
+        this.stringStorage = new StringStorage(this.memoryManager);
+        this.instanceImports = {
             mem: {
                 memory,
             },
@@ -51,15 +49,21 @@ export class Runtime {
                 str_greater: this.str_greater,
                 str_greater_or_equals: this.str_greater_or_equals,
             },
-        });
-
-        this.memoryManager = new MemoryManager(new Uint8Array(memory.buffer));
-        this.stringStorage = new StringStorage(this.memoryManager);
+        };
     }
 
     run = async (): Promise<number> => {
         try {
-            const execution = await this.exports.main();
+            const wasmInstance = await Asyncify.instantiate(
+                this.binary,
+                ASYNCIFY_DATA_START,
+                ASYNCIFY_DATA_END,
+                this.instanceImports
+            );
+
+            const main = wasmInstance.instance.exports.tigermain_wrapper as TigerMain;
+            const execution = await main();
+
             return execution;
         } catch (err) {
             if (err instanceof RuntimeExit) {
@@ -69,12 +73,6 @@ export class Runtime {
             }
         }
     };
-
-    private get exports(): InstanceExports {
-        return {
-            main: this.wasmInstance.exports.tigermain_wrapper as TigerMain,
-        };
-    }
 
     private print = (strPointer: number): number => {
         const string = this.stringStorage.readString(strPointer);

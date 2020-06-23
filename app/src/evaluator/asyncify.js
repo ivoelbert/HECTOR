@@ -148,3 +148,10 @@ export class Instance extends WebAssembly.Instance {
 }
 
 Object.defineProperty(Instance.prototype, 'exports', { enumerable: true });
+
+export async function instantiate(source, dataAddr, dataEnd, imports) {
+    let state = new Asyncify(dataAddr, dataEnd);
+    let result = await WebAssembly.instantiate(source, state.wrapImports(imports));
+    state.init(result instanceof WebAssembly.Instance ? result : result.instance, imports);
+    return result;
+}

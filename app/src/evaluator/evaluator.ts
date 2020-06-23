@@ -14,9 +14,8 @@ export class WasmEvaluator implements Evaluator {
         binaryen.setOptimizeLevel(1);
         wasmModule.runPasses(['asyncify']);
         const binary = wasmModule.emitBinary();
-        const compiledModule = new WebAssembly.Module(binary);
 
-        this.runtime = new Runtime(compiledModule, customConsole);
+        this.runtime = new Runtime(binary, customConsole);
     }
 
     run = async () => {
