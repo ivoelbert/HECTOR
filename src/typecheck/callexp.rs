@@ -28,7 +28,7 @@ pub fn typecheck(
                 })
                 .collect::<Result<Vec<AST>, TypeError>>()?;
             // If any argument is not of it's formal type, fail.
-            if formals.iter()
+            if function_symbol != "debug_memory" && formals.iter()
                 .zip(typed_args.iter())
                 .any(|(formal, typed_arg)|**formal != *typed_arg.typ) {
                 return Err(TypeError::InvalidCallArgument(pos));
