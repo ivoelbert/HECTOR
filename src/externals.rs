@@ -134,7 +134,7 @@ lazy_static! {
             arguments: vec![ArgumentType::Int, ArgumentType::Int],
             return_value: None,
             is_runtime: false,
-        }
+        },
         External {
             name: "debug_bytes",
             arguments: vec![ArgumentType::Int, ArgumentType::Int],
