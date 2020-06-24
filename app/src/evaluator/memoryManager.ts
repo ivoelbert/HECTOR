@@ -97,6 +97,7 @@ export class MemoryManager {
         }
 
         console.log(values);
+        console.log(values.map((value) => String.fromCharCode(value)));
     };
 }
 
