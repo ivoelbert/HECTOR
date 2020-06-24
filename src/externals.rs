@@ -130,7 +130,13 @@ lazy_static! {
             is_runtime: true
         },
         External {
-            name: "debug_memory",
+            name: "debug_words",
+            arguments: vec![ArgumentType::Int, ArgumentType::Int],
+            return_value: None,
+            is_runtime: false,
+        }
+        External {
+            name: "debug_bytes",
             arguments: vec![ArgumentType::Int, ArgumentType::Int],
             return_value: None,
             is_runtime: false,
