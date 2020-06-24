@@ -4,6 +4,7 @@ import { StringStorage } from './utils/stringStorage';
 import { CustomConsole } from '../utils/console';
 import { WORD_SZ } from '../utils/utils';
 import { OutOfBoundsException, NilPointerException } from '../utils/runtimeUtils';
+import { BYTE_SIZE } from '../evaluator/memoryManager';
 
 interface RuntimeFunctionsByName {
     print: RuntimeFunction | AsyncRuntimeFunction;
@@ -16,7 +17,8 @@ interface RuntimeFunctionsByName {
     substring: RuntimeFunction | AsyncRuntimeFunction;
     concat: RuntimeFunction | AsyncRuntimeFunction;
     not: RuntimeFunction | AsyncRuntimeFunction;
-    debug_memory: RuntimeFunction | AsyncRuntimeFunction;
+    debug_words: RuntimeFunction | AsyncRuntimeFunction;
+    debug_bytes: RuntimeFunction | AsyncRuntimeFunction;
     '+alloc_array': RuntimeFunction | AsyncRuntimeFunction;
     '+alloc_record': RuntimeFunction | AsyncRuntimeFunction;
     '+str_equals': RuntimeFunction | AsyncRuntimeFunction;
@@ -55,7 +57,8 @@ export class Runtime {
             substring: this.substring,
             concat: this.concat,
             not: this.not,
-            debug_memory: this.debugMemory,
+            debug_words: this.debugWords,
+            debug_bytes: this.debugBytes,
             '+alloc_array': this.allocArray,
             '+alloc_record': this.allocRecord,
             '+str_equals': this.strEquals,
@@ -159,13 +162,27 @@ export class Runtime {
         return Number(!value);
     };
 
-    private debugMemory: RuntimeFunction = (args) => {
+    private debugWords: RuntimeFunction = (args) => {
         const [pointer, words] = args;
         assertExists(pointer);
         assertExists(words);
 
         for (let i = 0; i < words; i++) {
             const itemLocation = pointer + i * WORD_SZ;
+
+            console.log(this.memMap.get(itemLocation));
+        }
+
+        return 0;
+    };
+
+    private debugBytes: RuntimeFunction = (args) => {
+        const [pointer, bytes] = args;
+        assertExists(pointer);
+        assertExists(bytes);
+
+        for (let i = 0; i < bytes; i++) {
+            const itemLocation = pointer + i * BYTE_SIZE;
 
             console.log(this.memMap.get(itemLocation));
         }
