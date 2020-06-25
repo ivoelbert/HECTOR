@@ -1,0 +1,7 @@
+let
+    var mila := "mila"
+    var nesa := "nesa"
+    var milanesa := concat(mila, nesa)
+in
+    print(milanesa); 0
+end

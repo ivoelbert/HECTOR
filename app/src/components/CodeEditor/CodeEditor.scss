@@ -1,0 +1,40 @@
+.code-editor-container {
+    display: flex;
+    width: 100%;
+}
+
+.examples-list-container {
+    flex: 1;
+    background-color: #33352c;
+    color: #dadada;
+    font-size: 13px;
+
+    h3 {
+        background-color: #35382e;
+        margin: 0;
+        padding: 8px;
+        border-bottom: solid 1px #fafafa20;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0.5em;
+        margin: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    li > button {
+        width: 100%;
+        background-color: transparent;
+        color: #dadada;
+        border: none;
+        text-align: start;
+        padding: 2px;
+        cursor: pointer;
+
+        &:hover {
+            background-color: #fafafa20;
+        }
+    }
+}
