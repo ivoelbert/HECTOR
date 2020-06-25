@@ -73,7 +73,6 @@ pub fn typecheck_var(
             let field_type = if let Some(ty) = find_field_type(&record_fields, &field_symbol, type_env) {
                 ty
             } else {
-                console_log!("typed_field_var: <{:?}>, record_fields: <{:?}>,field_type :<{:?}>, type_env: <{:?}>", &typed_field_var, &record_fields, find_field_type(&record_fields, &field_symbol, type_env), &type_env);
                 return Err(TypeError::UndeclaredField(pos))
             };
             Ok(Var{

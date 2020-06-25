@@ -73,8 +73,9 @@ impl PartialEq for RecordFieldType {
         use RecordFieldType::*;
         match (self, other) {
             (Record(id1), Record(id2)) => id1 == id2,
+            (Record(..), Type(t2)) => if let TigerType::TNil = **t2 { true } else { false },
+            (Type(t1), Record(..)) => if let TigerType::TNil = **t1 { true } else { false },
             (Type(t1), Type(t2)) => t1 == t2,
-            _ => false
         }
     }
 }

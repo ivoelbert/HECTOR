@@ -30,7 +30,6 @@ fn typecheck_vardec(
         if let TigerType::TNil = *init_ast.typ {
             return Err(TypeError::UnconstrainedNilInitialization(pos))
         };
-        console_log!("init_ast.typ: <{:?}>", &init_ast.typ);
         Arc::clone(&init_ast.typ)
     };
     value_env.insert(name.clone(), EnvEntry::Var { ty: dec_type });
@@ -340,7 +339,13 @@ fn typecheck_typedec_batch(
                     for (i, Field {name,typ: field_ty, ..}) in fields_vector.iter().enumerate() {
                         record.push((
                             name.clone(),
-                            RecordFieldType::Type(ty_to_tigertype(field_ty, &type_env, *pos)?),
+                            {
+                                let real_field_type = ty_to_tigertype(field_ty, &type_env, *pos)?;
+                                match &*real_field_type {
+                                    TigerType::TRecord(_, type_id) => RecordFieldType::Record(*type_id),
+                                    _ => RecordFieldType::Type(real_field_type)
+                                }
+                            },
                             i.try_into().expect("too many fields!"),
                         ));
                     }

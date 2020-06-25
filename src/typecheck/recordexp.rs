@@ -40,17 +40,21 @@ pub fn typecheck(
                         node: Exp::Record{
                             fields: formals
                                 .iter()
-                                .map(|(name, typ, ..)| -> Result<(Symbol, Box<AST>), TypeError> {
-                                    match typed_field_inits.remove(name) {
-                                        Some(ast) => {
-                                            if RecordFieldType::Type(Arc::clone(&ast.typ)) == *typ {
-                                                Ok((name.clone(), Box::new(ast)))
-                                            } else {
-                                                console_log!("record mismatch");
-                                                Err(TypeError::TypeMismatch(pos))
-                                            }
-                                        }
-                                        None => Err(TypeError::MissingRecordField(pos))
+                                .map(|(name, formal_typ, ..)| -> Result<(Symbol, Box<AST>), TypeError> {
+                                    let field_ast = if let Some(field_ast) = typed_field_inits.remove(name) {
+                                        field_ast
+                                    }  else {
+                                        return Err(TypeError::MissingRecordField(pos))
+                                    };
+                                    let init_ft = if let TigerType::TRecord(_, type_id) = &*field_ast.typ {
+                                        RecordFieldType::Record(*type_id)
+                                    } else {
+                                        RecordFieldType::Type(Arc::clone(&field_ast.typ))
+                                    };
+                                    if init_ft == *formal_typ {
+                                        Ok((name.clone(), Box::new(field_ast)))
+                                    } else {
+                                        Err(TypeError::TypeMismatch(pos))
                                     }
                                 })
                                 .collect::<Result<Vec<(Symbol, Box<AST>)>, TypeError>>()?,
