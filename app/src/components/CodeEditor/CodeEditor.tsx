@@ -1,22 +1,19 @@
 import React, { CSSProperties } from 'react';
 import AceEditor, { IEditorProps } from 'react-ace';
-import { useLocalStorageState } from '../../hooks/useLocalStorageState';
 import { useCtrlKeys } from '../../hooks/useCtrlKeys';
-import { baseCode } from '../../utils/baseCode';
 import { Examples } from './Examples';
+import { CompileCodeAction } from '../../hooks/useCompileResult';
 import 'ace-builds/src-noconflict/theme-monokai';
 import 'ace-builds/src-noconflict/mode-golang';
 import './CodeEditor.scss';
 
 interface CodeEditorProps {
-    compileCode: (code: string) => void;
+    code: string;
+    setCode: React.Dispatch<React.SetStateAction<string>>;
+    compileCode: CompileCodeAction;
 }
 
-export const CodeEditor: React.FC<CodeEditorProps> = (props) => {
-    const { compileCode } = props;
-
-    const [code, setCode] = useLocalStorageState<string>('hector-code', baseCode);
-
+export const CodeEditor: React.FC<CodeEditorProps> = ({ compileCode, code, setCode }) => {
     useCtrlKeys([13, 83], () => compileCode(code));
 
     const editorStyles: CSSProperties = {
@@ -27,7 +24,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = (props) => {
 
     return (
         <div className="code-editor-container">
-            <Examples setCode={setCode} />
+            <Examples setCode={setCode} compileCode={compileCode} />
             <AceEditor
                 mode="golang"
                 theme="monokai"

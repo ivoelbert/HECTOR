@@ -1,0 +1,37 @@
+.footer-container {
+    padding: 1em;
+    border-top: solid 1px #d4d4d4;
+    font-size: 12px;
+    text-align: center;
+
+    .link {
+        color: #33352c;
+    }
+
+    .emoji {
+        position: relative;
+
+        &::after {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, -110%);
+            color: #fafafa;
+            background-color: #2b2b2b80;
+            padding: 0.5em;
+            border-radius: 3px;
+        }
+    }
+
+    .rage:hover {
+        &::after {
+            content: 'rage';
+        }
+    }
+
+    .blood:hover {
+        &::after {
+            content: 'blood';
+        }
+    }
+}

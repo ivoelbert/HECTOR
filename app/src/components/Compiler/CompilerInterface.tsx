@@ -5,8 +5,6 @@ import { TREEViewer } from '../TREEViewer/TREEViewer';
 import { CanonViewer } from '../CanonViewer/CanonViewer';
 import { Interpreter } from '../Interpreter/Interpreter';
 import { Frag } from '../../interpreter/treeTypes';
-import { useLocalStorageState } from '../../hooks/useLocalStorageState';
-import { baseCode } from '../../utils/baseCode';
 import { Evaluator } from '../Evaluator/Evaluator';
 import { Tab } from '../Tabs/Tab';
 import { Tabs } from '../Tabs/Tabs';
@@ -43,15 +41,13 @@ interface CompilerProps {
 }
 
 export const CompilerInterface: React.FC<CompilerProps> = ({ compile }) => {
-    const [code, setCode] = useLocalStorageState<string>('hector-code', baseCode);
-
-    const compileResult = useCompileResult(code, compile);
+    const [code, setCode, compileResult, compileCode] = useCompileResult(compile);
 
     return (
         <div className="compiler-interface">
             <Tabs>
                 <Tab name="Editor">
-                    <CodeEditor compileCode={setCode} />
+                    <CodeEditor code={code} setCode={setCode} compileCode={compileCode} />
                 </Tab>
                 <Tab name="AST">
                     <ASTViewer ast={compileResult.escape} />
