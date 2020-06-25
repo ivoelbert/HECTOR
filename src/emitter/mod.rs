@@ -76,7 +76,7 @@ pub fn emit_module(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 		// Frame Pointer
 		.global()
 			.value_type().i32()
-			.init_expr(I32Const({console_log!("FP inicial: {:?}", string_env.offset as i32); string_env.offset as i32}))
+			.init_expr(I32Const({string_env.offset as i32}))
 			.mutable()
 			.build()
 		// Return Value

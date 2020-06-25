@@ -255,6 +255,7 @@ pub fn munch_body(blocks: Vec<Block>, locals : LocalEnv, functions: &FunctionEnv
     vec![
         GetGlobal(get_global_index(RETURN_VALUE)),
         End, // Loop
+        End, // Body
     ]]
     .concat(), locals)
 }
