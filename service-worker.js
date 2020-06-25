@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/HECTOR/precache-manifest.4988471ad332047e449c49783e22c3b2.js"
+  "/HECTOR/precache-manifest.4b86d6c118c8919a2f2b674c5d86781c.js"
 );
 
 self.addEventListener('message', (event) => {

@@ -1,25 +1,25 @@
 {
   "files": {
-    "main.css": "/HECTOR/static/css/main.eb60e175.chunk.css",
-    "main.js": "/HECTOR/static/js/main.cff87c0e.chunk.js",
-    "main.js.map": "/HECTOR/static/js/main.cff87c0e.chunk.js.map",
-    "runtime-main.js": "/HECTOR/static/js/runtime-main.afab600c.js",
-    "runtime-main.js.map": "/HECTOR/static/js/runtime-main.afab600c.js.map",
-    "static/js/2.47923f4e.chunk.js": "/HECTOR/static/js/2.47923f4e.chunk.js",
-    "static/js/2.47923f4e.chunk.js.map": "/HECTOR/static/js/2.47923f4e.chunk.js.map",
-    "static/js/3.e682ac89.chunk.js": "/HECTOR/static/js/3.e682ac89.chunk.js",
-    "e8c3d4fde6598124e93d.module.wasm": "/HECTOR/e8c3d4fde6598124e93d.module.wasm",
-    "static/js/3.e682ac89.chunk.js.map": "/HECTOR/static/js/3.e682ac89.chunk.js.map",
+    "main.css": "/HECTOR/static/css/main.76c8ca3f.chunk.css",
+    "main.js": "/HECTOR/static/js/main.04348ddf.chunk.js",
+    "main.js.map": "/HECTOR/static/js/main.04348ddf.chunk.js.map",
+    "runtime-main.js": "/HECTOR/static/js/runtime-main.527e2f1b.js",
+    "runtime-main.js.map": "/HECTOR/static/js/runtime-main.527e2f1b.js.map",
+    "static/js/2.9c971baa.chunk.js": "/HECTOR/static/js/2.9c971baa.chunk.js",
+    "static/js/2.9c971baa.chunk.js.map": "/HECTOR/static/js/2.9c971baa.chunk.js.map",
+    "static/js/3.809ab2f9.chunk.js": "/HECTOR/static/js/3.809ab2f9.chunk.js",
+    "e6a7f87f936e2d19a4b3.module.wasm": "/HECTOR/e6a7f87f936e2d19a4b3.module.wasm",
+    "static/js/3.809ab2f9.chunk.js.map": "/HECTOR/static/js/3.809ab2f9.chunk.js.map",
     "index.html": "/HECTOR/index.html",
-    "precache-manifest.4988471ad332047e449c49783e22c3b2.js": "/HECTOR/precache-manifest.4988471ad332047e449c49783e22c3b2.js",
+    "precache-manifest.4b86d6c118c8919a2f2b674c5d86781c.js": "/HECTOR/precache-manifest.4b86d6c118c8919a2f2b674c5d86781c.js",
     "service-worker.js": "/HECTOR/service-worker.js",
-    "static/css/main.eb60e175.chunk.css.map": "/HECTOR/static/css/main.eb60e175.chunk.css.map",
-    "static/js/2.47923f4e.chunk.js.LICENSE.txt": "/HECTOR/static/js/2.47923f4e.chunk.js.LICENSE.txt"
+    "static/css/main.76c8ca3f.chunk.css.map": "/HECTOR/static/css/main.76c8ca3f.chunk.css.map",
+    "static/js/2.9c971baa.chunk.js.LICENSE.txt": "/HECTOR/static/js/2.9c971baa.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime-main.afab600c.js",
-    "static/js/2.47923f4e.chunk.js",
-    "static/css/main.eb60e175.chunk.css",
-    "static/js/main.cff87c0e.chunk.js"
+    "static/js/runtime-main.527e2f1b.js",
+    "static/js/2.9c971baa.chunk.js",
+    "static/css/main.76c8ca3f.chunk.css",
+    "static/js/main.04348ddf.chunk.js"
   ]
 }
