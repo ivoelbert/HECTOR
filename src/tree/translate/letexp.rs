@@ -120,6 +120,42 @@ pub fn trans_exp(
     }
 }
 
+pub fn trans_stm(
+    AST { node, .. }: &AST,
+    mut level: Level,
+    value_env: &ValueEnviroment,
+    breaks_stack: &[Option<Label>],
+    mut frags: Vec<Fragment>,
+) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
+    match node {
+        Exp::Let { decs, body } => {
+            // REFACTOR: this should be a fold
+            let mut vardec_stms = vec![];
+            let mut new_value_env = value_env.clone();
+            for dec in decs {
+                match dec {
+                    Dec::Var(vd, pos) => {
+                        let (exp, l, ve, f) = vardec((vd, pos), level, new_value_env, breaks_stack, frags)?;
+                        vardec_stms.push(exp);
+                        new_value_env = ve;
+                        level = l;
+                        frags = f;
+                    },
+                    Dec::Function(fd) => {
+                        let (ve, f) = fundecs(fd, level.nesting_depth + 1, &new_value_env, breaks_stack, frags)?;
+                        new_value_env = ve;
+                        frags = f;
+                    },
+                    Dec::Type(_) => (),
+                }
+            }
+            let (body_stm, body_level, body_frags) = super::trans_stm(body, level, &new_value_env, breaks_stack, frags)?;
+            let let_stm = SEQ(Box::new(seq(vardec_stms)), Box::new(body_stm));
+            Ok((let_stm, body_level, body_frags))
+        },
+        _ => panic!("delegation error"),
+    }
+}
 
 
 // TODO: test let

@@ -2,7 +2,7 @@ use std::convert::{TryFrom, TryInto};
 
 mod munch;
 mod enviroment;
-use munch::{munch_body, function_prologue, function_epilogue};
+use munch::{munch_body, };
 use enviroment::{LocalEnv, FunctionEnv, StringEnv, LabelEnv, initial_function_env};
 extern crate parity_wasm;
 extern crate wasmprinter;
@@ -41,7 +41,7 @@ pub fn emit_module(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 	);
 	let string_env = strings
 		.iter()
-		.fold(StringEnv::new(), |string_env, (label, string)| string_env.insert(label.clone(), &string));
+		.fold(StringEnv::new(), |mut string_env, (label, string)| {string_env.insert(label.clone(), &string); string_env});
 	let module = builder::module();
 	let module = emit_imports(module);
 	let module = strings
@@ -76,7 +76,7 @@ pub fn emit_module(frags: Vec<CanonFrag>) -> (String, Vec<u8>) {
 		// Frame Pointer
 		.global()
 			.value_type().i32()
-			.init_expr(I32Const(0))
+			.init_expr(I32Const({console_log!("FP inicial: {:?}", string_env.offset as i32); string_env.offset as i32}))
 			.mutable()
 			.build()
 		// Return Value
@@ -156,9 +156,9 @@ fn emit_imports(module: ModuleBuilder) -> ModuleBuilder {
 fn emit_string(label: Label, mut string: String, string_env: &StringEnv, module: ModuleBuilder) -> ModuleBuilder {
 	let offset = string_env.get(&label).unwrap();
 	string.push('\0');
+	// console_log!("Meto a la data la string <{:?}>  de bytes <{:?}> con label <{:?}> en el offset <{:?}>", &string, string.bytes(), label, (offset + string.len() as u32));
 	module
 		.data()
-			// Aca hay que ponerle el offset que vamos sumando
 			.offset(I32Const(offset as i32))
 			.value(string.into_bytes())
 		.build()
@@ -167,9 +167,9 @@ fn emit_string(label: Label, mut string: String, string_env: &StringEnv, module:
 fn emit_function(tree_body: Vec<Block>, frame: Frame, functions: &FunctionEnv, strings: &StringEnv, module: builder::ModuleBuilder) -> builder::ModuleBuilder {
 	let (mut locals, params) = LocalEnv::from_frame(&frame);
 	locals.insert("fp_back".to_string());
-	let (instructions, locals) : (Vec<Instruction>, LocalEnv) = munch_body(tree_body, locals, &functions, strings);
-	let prologue = function_prologue(&frame);
-	let epilogue = function_epilogue();
+	let (instructions, locals) : (Vec<Instruction>, LocalEnv) = munch_body(tree_body, locals, &functions, strings, &frame);
+	// let prologue = function_prologue(&frame);
+	// let epilogue = function_epilogue();
 	module.function()
 		.signature()
 			.with_params(params)
@@ -179,9 +179,9 @@ fn emit_function(tree_body: Vec<Block>, frame: Frame, functions: &FunctionEnv, s
 			.with_locals(locals.finish())
 			.with_instructions(Instructions::new(
 				vec![
-					prologue,
+					// prologue,
 					instructions,
-					epilogue,
+					// epilogue,
 				].concat()
 			))
 			.build()

@@ -52,11 +52,12 @@ impl StringEnv {
         }
     }
 
-    pub fn insert(mut self, label: Label, string: &str) -> Self{
+    pub fn insert(&mut self, label: Label, string: &str) {
         let len : u32 = string.len().try_into().unwrap();
+        // console_log!("Meto en el env una string de label <{:?}> y len <{:?}> con offset <{:?}>", label, len, self.offset);
         self.table.insert(label, self.offset);
         self.offset += len + 1;
-        self
+        // console_log!("Ahora el offset es <{:?}>", self.offset);
     }
 
     pub fn get(& self, name: &str) -> Option<u32> {

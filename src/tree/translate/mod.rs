@@ -50,22 +50,23 @@ fn trans_exp(
 
 fn trans_stm(
     stm: &AST,
-    levels: Level,
+    level: Level,
     value_env: &ValueEnviroment,
     breaks_stack: &[Option<Label>],
     prev_frags: Vec<Fragment>,
 ) -> Result<(Tree::Stm, Level, Vec<Fragment>), TransError> {
     let AST { node, .. } = stm;
     match node {
-        Exp::Break => breakexp::trans_stm(stm, levels, value_env, breaks_stack, prev_frags),
-        Exp::Call { .. } => callexp::trans_stm(stm, levels, value_env, breaks_stack, prev_frags),
-        Exp::Assign { .. } => assignexp::trans_stm(stm, levels, value_env, breaks_stack, prev_frags),
-        Exp::Seq(_) => seqexp::trans_stm(stm, levels, value_env, breaks_stack, prev_frags),
-        Exp::If { .. } => ifexp::trans_stm(stm, levels, value_env, breaks_stack, prev_frags),
-        Exp::While { .. } => whileexp::trans_stm(stm, levels, value_env, breaks_stack, prev_frags),
-        Exp::For { .. } => forexp::trans_stm(stm, levels, value_env, breaks_stack, prev_frags),
+        Exp::Break => breakexp::trans_stm(stm, level, value_env, breaks_stack, prev_frags),
+        Exp::Call { .. } => callexp::trans_stm(stm, level, value_env, breaks_stack, prev_frags),
+        Exp::Assign { .. } => assignexp::trans_stm(stm, level, value_env, breaks_stack, prev_frags),
+        Exp::Seq(_) => seqexp::trans_stm(stm, level, value_env, breaks_stack, prev_frags),
+        Exp::If { .. } => ifexp::trans_stm(stm, level, value_env, breaks_stack, prev_frags),
+        Exp::While { .. } => whileexp::trans_stm(stm, level, value_env, breaks_stack, prev_frags),
+        Exp::For { .. } => forexp::trans_stm(stm, level, value_env, breaks_stack, prev_frags),
+        Exp::Let { .. } => letexp::trans_stm(stm, level, value_env, breaks_stack, prev_frags),
         _ => {
-            let (exp, level, frags) = trans_exp(stm, levels, value_env, breaks_stack, prev_frags)?;
+            let (exp, level, frags) = trans_exp(stm, level, value_env, breaks_stack, prev_frags)?;
             Ok((Tree::Stm::EXP(Box::new(exp)), level, frags))
         }
     }

@@ -16,33 +16,29 @@ fn get_global_index(name: &str) -> u32 {
     }
 }
 
-pub fn function_prologue(frame: &Frame) -> Vec<Instruction> {
-	vec![
-        // frame pointer <- stack pointer
-        GetGlobal(get_global_index(STACK_POINTER)),
-        SetGlobal(get_global_index(FRAME_POINTER)),
-        // stack pointer <- frame pointer + static_size
-        GetGlobal(get_global_index(FRAME_POINTER)),
-        I32Const(frame.static_size()),
-        I32Add,
-        SetGlobal(get_global_index(STACK_POINTER))
-    ]
-}
+// pub fn function_prologue(_frame: &Frame) -> Vec<Instruction> {
+// 	vec![
+//         // frame pointer <- stack pointer
+//         // GetGlobal(get_global_index(STACK_POINTER)),
+//         // SetGlobal(get_global_index(FRAME_POINTER)),
+//         // stack pointer <- frame pointer + static_size
+//     ]
+// }
 
-pub fn function_epilogue() -> Vec<Instruction> {
-    vec![
-        // stack pointer <- frame pointer
-        GetGlobal(get_global_index(FRAME_POINTER)),
-        SetGlobal(get_global_index(STACK_POINTER)),
-        // frame pointer <- static link
-        // GetGlobal(get_global_index(FRAME_POINTER)),
-        // I32Const(STATIC_LINK_OFFSET),
-        // I32Add,
-        // I32Load(0, strings.offset),
-        // SetGlobal(get_global_index(FRAME_POINTER)),
-        End
-    ]
-}
+// pub fn function_epilogue() -> Vec<Instruction> {
+//     vec![
+//         // stack pointer <- frame pointer
+//         // GetGlobal(get_global_index(FRAME_POINTER)),
+//         // SetGlobal(get_global_index(STACK_POINTER)),
+//         // frame pointer <- static link
+//         // GetGlobal(get_global_index(FRAME_POINTER)),
+//         // I32Const(STATIC_LINK_OFFSET),
+//         // I32Add,
+//         // I32Load(0, 0),
+//         // SetGlobal(get_global_index(FRAME_POINTER)),
+//         End
+//     ]
+// }
 
 fn wasm_binop(oper: &Tree::BinOp) -> Instruction {
     use Tree::BinOp::*;
@@ -71,17 +67,17 @@ fn wasm_binop(oper: &Tree::BinOp) -> Instruction {
 
 
 
-fn munch_stm(stm: Tree::Stm, locals : LocalEnv, labels: &LabelEnv, functions: &FunctionEnv, strings: &StringEnv, block_index: u32) -> (Vec<Instruction>, LocalEnv) {
+fn munch_stm(stm: Tree::Stm, locals : LocalEnv, labels: &LabelEnv, functions: &FunctionEnv, strings: &StringEnv, block_index: u32, frame: &Frame) -> (Vec<Instruction>, LocalEnv) {
 	match stm {
 		MOVE(to_exp, from_exp) => {
-            let (value_code, mut locals) = munch_exp(*from_exp, locals, functions, strings);
+            let (value_code, mut locals) = munch_exp(*from_exp, locals, functions, strings, frame);
             match *to_exp {
                 MEM(addr) => {
-                    let (addr_code, locals) = munch_exp(*addr, locals, functions, strings);
+                    let (addr_code, locals) = munch_exp(*addr, locals, functions, strings, frame);
                     (vec![
                         addr_code,
                         value_code,
-                        vec![I32Store(0, strings.offset)],
+                        vec![I32Store(0, 0)],
                     ].concat(), locals)
 
                 },
@@ -123,8 +119,8 @@ fn munch_stm(stm: Tree::Stm, locals : LocalEnv, labels: &LabelEnv, functions: &F
         },
         JUMP(_, _) => panic!("why?"),
 		CJUMP(oper, left, right, t, f) => {
-            let (left, locals) = munch_exp(*left, locals, functions, strings);
-            let (right, locals) = munch_exp(*right, locals, functions, strings);
+            let (left, locals) = munch_exp(*left, locals, functions, strings, frame);
+            let (right, locals) = munch_exp(*right, locals, functions, strings, frame);
             let t_index = *labels.get(&t).unwrap();
             let f_index = *labels.get(&f).unwrap();
             (vec![
@@ -146,16 +142,16 @@ fn munch_stm(stm: Tree::Stm, locals : LocalEnv, labels: &LabelEnv, functions: &F
             ].concat(),
             locals)
         },
-		EXP(exp) => munch_exp(*exp, locals, functions, strings),
+		EXP(exp) => munch_exp(*exp, locals, functions, strings, frame),
 		SEQ(_, _) => panic!("canonization should delete this"),
 	}
 }
 
-pub fn munch_exp(exp: Tree::Exp, locals : LocalEnv, functions: &FunctionEnv, strings: &StringEnv) -> (Vec<Instruction>, LocalEnv) {
+pub fn munch_exp(exp: Tree::Exp, locals : LocalEnv, functions: &FunctionEnv, strings: &StringEnv, frame: &Frame) -> (Vec<Instruction>, LocalEnv) {
 	match exp {
 		BINOP(oper, left, right) => {
-            let (left_code, locals) = munch_exp(*left, locals, functions, strings);
-            let (right_code, locals) = munch_exp(*right, locals, functions, strings);
+            let (left_code, locals) = munch_exp(*left, locals, functions, strings, frame);
+            let (right_code, locals) = munch_exp(*right, locals, functions, strings, frame);
             (vec![
                 left_code,
                 right_code,
@@ -168,13 +164,17 @@ pub fn munch_exp(exp: Tree::Exp, locals : LocalEnv, functions: &FunctionEnv, str
                 let args_code = args
                     .into_iter()
                     .map(|arg| -> Vec<Instruction> {
-                        munch_exp(arg, locals.clone(), functions, strings).0
+                        munch_exp(arg, locals.clone(), functions, strings, frame).0
                     }).collect::<Vec<Vec<Instruction>>>().concat();
                 (vec![
                     args_code,
                     vec![
                         GetGlobal(get_global_index(FRAME_POINTER)),
                         SetLocal(locals.get("fp_back").unwrap()),
+                        GetGlobal(get_global_index(FRAME_POINTER)),
+                        I32Const(frame.static_size()),
+                        I32Add,
+                        SetGlobal(get_global_index(FRAME_POINTER)),
                         Call(*index),
                         GetLocal(locals.get("fp_back").unwrap()),
                         SetGlobal(get_global_index(FRAME_POINTER)),
@@ -195,11 +195,11 @@ pub fn munch_exp(exp: Tree::Exp, locals : LocalEnv, functions: &FunctionEnv, str
             (vec![I32Const((index).try_into().unwrap())], locals)
         },
         MEM(offset_exp) => {
-            let (offset, locals) = munch_exp(*offset_exp, locals, functions, strings);
+            let (offset, locals) = munch_exp(*offset_exp, locals, functions, strings, frame);
             (vec![
                 offset,
             vec![
-                I32Load(0, strings.offset)]
+                I32Load(0, 0)]
             ].concat(),
             locals)
         },
@@ -208,16 +208,16 @@ pub fn munch_exp(exp: Tree::Exp, locals : LocalEnv, functions: &FunctionEnv, str
 
 }
 
-pub fn munch_block(block: Block, locals : LocalEnv, labels: &LabelEnv, functions: &FunctionEnv, strings: &StringEnv, block_index: u32) -> (Vec<Instruction>, LocalEnv) {
+pub fn munch_block(block: Block, locals : LocalEnv, labels: &LabelEnv, functions: &FunctionEnv, strings: &StringEnv, block_index: u32, frame: &Frame) -> (Vec<Instruction>, LocalEnv) {
     block.stms.into_iter()
     .fold((vec![], locals), |(mut instructions, locals): (Vec<Instruction>, LocalEnv), stm: Tree::Stm| -> (Vec<Instruction>, LocalEnv) {
-        let (mut ins, locals) = munch_stm(stm, locals, labels, functions, strings, block_index);
+        let (mut ins, locals) = munch_stm(stm, locals, labels, functions, strings, block_index, frame);
         instructions.append(&mut ins);
         (instructions, locals)
     })
 }
 
-pub fn munch_body(blocks: Vec<Block>, locals : LocalEnv, functions: &FunctionEnv, strings: &StringEnv) -> (Vec<Instruction>, LocalEnv) {
+pub fn munch_body(blocks: Vec<Block>, locals : LocalEnv, functions: &FunctionEnv, strings: &StringEnv, frame: &Frame) -> (Vec<Instruction>, LocalEnv) {
     let block_instructions : Vec<Instruction>= blocks.iter().map(|_| Block(BlockType::NoResult)).collect();
     let first_block_index : i32 = (blocks.len() + 1).try_into().unwrap();
     let labels : LabelEnv = blocks
@@ -228,7 +228,7 @@ pub fn munch_body(blocks: Vec<Block>, locals : LocalEnv, functions: &FunctionEnv
     let (body, locals) = blocks.into_iter()
         .fold((vec![], locals), |(mut instructions, locals): (Vec<Instruction>, LocalEnv), block: Block| -> (Vec<Instruction>, LocalEnv) {
             let block_index = *labels.get(&block.label).unwrap();
-            let (mut ins, locals) = munch_block(block, locals, &labels, functions, strings, block_index);
+            let (mut ins, locals) = munch_block(block, locals, &labels, functions, strings, block_index, frame);
             instructions.append(&mut ins);
             (instructions, locals)
         });
