@@ -1,0 +1,25 @@
+{
+  "files": {
+    "main.css": "/HECTOR/static/css/main.eb60e175.chunk.css",
+    "main.js": "/HECTOR/static/js/main.cff87c0e.chunk.js",
+    "main.js.map": "/HECTOR/static/js/main.cff87c0e.chunk.js.map",
+    "runtime-main.js": "/HECTOR/static/js/runtime-main.afab600c.js",
+    "runtime-main.js.map": "/HECTOR/static/js/runtime-main.afab600c.js.map",
+    "static/js/2.47923f4e.chunk.js": "/HECTOR/static/js/2.47923f4e.chunk.js",
+    "static/js/2.47923f4e.chunk.js.map": "/HECTOR/static/js/2.47923f4e.chunk.js.map",
+    "static/js/3.e682ac89.chunk.js": "/HECTOR/static/js/3.e682ac89.chunk.js",
+    "e8c3d4fde6598124e93d.module.wasm": "/HECTOR/e8c3d4fde6598124e93d.module.wasm",
+    "static/js/3.e682ac89.chunk.js.map": "/HECTOR/static/js/3.e682ac89.chunk.js.map",
+    "index.html": "/HECTOR/index.html",
+    "precache-manifest.4988471ad332047e449c49783e22c3b2.js": "/HECTOR/precache-manifest.4988471ad332047e449c49783e22c3b2.js",
+    "service-worker.js": "/HECTOR/service-worker.js",
+    "static/css/main.eb60e175.chunk.css.map": "/HECTOR/static/css/main.eb60e175.chunk.css.map",
+    "static/js/2.47923f4e.chunk.js.LICENSE.txt": "/HECTOR/static/js/2.47923f4e.chunk.js.LICENSE.txt"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.afab600c.js",
+    "static/js/2.47923f4e.chunk.js",
+    "static/css/main.eb60e175.chunk.css",
+    "static/js/main.cff87c0e.chunk.js"
+  ]
+}
