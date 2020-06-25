@@ -7,7 +7,7 @@ pub fn typecheck(
     type_env: &TypeEnviroment,
     value_env: &ValueEnviroment
 ) -> Result<AST, TypeError> {
-    let type_fields = |args: Vec<(Symbol, Box<AST>)>| -> Result<HashMap<Symbol, AST>, TypeError> {
+    let type_field_inits = |args: Vec<(Symbol, Box<AST>)>| -> Result<HashMap<Symbol, AST>, TypeError> {
         args
             .into_iter()
             .map(|(symbol, ast)| -> Result<(Symbol, AST), TypeError> {
@@ -20,8 +20,8 @@ pub fn typecheck(
             // Type the fields
             // If the record type is not a record type, error.
             // If some field doesn't match the formal type, error.
-            // if field <-> formals is a 1:1, error.
-            let mut typed_fields = type_fields(fields)?;
+            // if field <-> formals is not a 1:1, error.
+            let mut typed_field_inits = type_field_inits(fields)?;
             let record_type = if let Some(tipo) = type_env.get(&record_type_symbol) {
                 tipo_real(Arc::clone(&tipo), type_env)
             } else {
@@ -30,10 +30,10 @@ pub fn typecheck(
             };
             match &*record_type {
                 TigerType::TRecord(formals, type_id) => {
-                    if typed_fields.len() > formals.len() {
+                    if typed_field_inits.len() > formals.len() {
                         return Err(TypeError::TooManyArguments(pos))
                     };
-                    if typed_fields.len() < formals.len() {
+                    if typed_field_inits.len() < formals.len() {
                         return Err(TypeError::MissingRecordField(pos))
                     };
                     Ok(AST {
@@ -41,9 +41,9 @@ pub fn typecheck(
                             fields: formals
                                 .iter()
                                 .map(|(name, typ, ..)| -> Result<(Symbol, Box<AST>), TypeError> {
-                                    match typed_fields.remove(name) {
+                                    match typed_field_inits.remove(name) {
                                         Some(ast) => {
-                                            if *ast.typ == **typ {
+                                            if RecordFieldType::Type(Arc::clone(&ast.typ)) == *typ {
                                                 Ok((name.clone(), Box::new(ast)))
                                             } else {
                                                 console_log!("record mismatch");
@@ -84,7 +84,7 @@ mod test {
         let field_type = Arc::new(TigerType::TInt(R::RW));
         let foo_type = Arc::new(TigerType::TRecord(
                 vec![(String::from("baz"),
-                    field_type,
+                    RecordFieldType::Type(field_type),
                     0)], TypeId::new()));
         type_env.insert(Symbol::from("FooType"), Arc::clone(&foo_type));
         let res = type_exp(ast, &type_env, &value_env);

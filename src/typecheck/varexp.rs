@@ -3,10 +3,22 @@ use super::*;
 /// Inefficient lookup of field types.
 ///
 /// fiels should actually be a HashMap
-fn find_field_type(fields: &[(String, Arc<TigerType>, i32)], symbol: &str) -> Option<Arc<TigerType>> {
+fn find_field_type(fields: &[(String, RecordFieldType, i32)], symbol: &str, type_env: &TypeEnviroment) -> Option<Arc<TigerType>> {
     for field in fields {
         if field.0 == symbol {
-            return Some(Arc::clone(&field.1));
+            match &field.1 {
+                RecordFieldType::Type(t) => return Some(Arc::clone(&t)),
+                RecordFieldType::Record(field_type_id) => return Some(type_env
+                    .iter()
+                    .find(|(_, typ)| -> bool {
+                        if let TigerType::TRecord(_, table_type_id) = ***typ {
+                            table_type_id == *field_type_id
+                        } else { false }
+                    })?
+                    .1
+                    .clone()
+                )
+            }
         }
     }
     None
@@ -58,9 +70,10 @@ pub fn typecheck_var(
             } else {
                 return Err(TypeError::NotRecordType(pos))
             };
-            let field_type = if let Some(ty) = find_field_type(&record_fields, &field_symbol) {
+            let field_type = if let Some(ty) = find_field_type(&record_fields, &field_symbol, type_env) {
                 ty
             } else {
+                console_log!("typed_field_var: <{:?}>, record_fields: <{:?}>,field_type :<{:?}>, type_env: <{:?}>", &typed_field_var, &record_fields, find_field_type(&record_fields, &field_symbol, type_env), &type_env);
                 return Err(TypeError::UndeclaredField(pos))
             };
             Ok(Var{
@@ -162,7 +175,7 @@ mod test {
         let field_type = Arc::new(TigerType::TInt(R::RW));
         let foo_type = Arc::new(TigerType::TRecord(
                 vec![(String::from("bar"),
-                    field_type,
+                    RecordFieldType::Type(field_type),
                     0)], TypeId::new()));
         type_env.insert(Symbol::from("FooType"), Arc::clone(&foo_type));
         value_env.insert(Symbol::from("foo"), EnvEntry::Var{
@@ -188,7 +201,7 @@ mod test {
         let mut value_env = initial_value_env();
         let foo_type = Arc::new(TigerType::TRecord(
                 vec![(String::from("bar"),
-                    Arc::new(TigerType::TInt(R::RW)),
+                    RecordFieldType::Type(Arc::new(TigerType::TInt(R::RW))),
                     0)], TypeId::new()));
         type_env.insert(Symbol::from("FooType"), Arc::clone(&foo_type));
         value_env.insert(Symbol::from("foo"), EnvEntry::Var{

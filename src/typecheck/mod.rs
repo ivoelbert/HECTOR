@@ -55,11 +55,28 @@ pub enum TigerType {
     /// as in `arrtype1 [10] of 0`
     TArray(Arc<TigerType>, TypeId),
     /// as in `{name : string, address : string, id : int, age : int}`
-    TRecord(Vec<(String, Arc<TigerType>, i32)>, TypeId),
+    TRecord(Vec<(Symbol, RecordFieldType, i32)>, TypeId),
     /// Type synonym
     Internal(String),
     /// This struct still has not been typed yet. The parser gives this type to all nodes in the AST
     Untyped,
+}
+
+#[derive(Debug, Clone)]
+pub enum RecordFieldType {
+    Record(TypeId),
+    Type(Arc::<TigerType>)
+}
+
+impl PartialEq for RecordFieldType {
+    fn eq(&self, other: &Self) -> bool {
+        use RecordFieldType::*;
+        match (self, other) {
+            (Record(id1), Record(id2)) => id1 == id2,
+            (Type(t1), Type(t2)) => t1 == t2,
+            _ => false
+        }
+    }
 }
 
 impl Serialize for TigerType {

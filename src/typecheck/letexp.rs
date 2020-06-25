@@ -4,7 +4,7 @@ use pathfinding::directed::topological_sort;
 use std::convert::TryInto;
 
 
-/// Rebuild an `_VarDec` with the correct types given the context in the enviroments or return a `TypeError`
+/// Rebuild a `_VarDec` with the correct types given the context in the enviroments or return a `TypeError`
 fn typecheck_vardec(
     _VarDec {
         name, typ, init, escape
@@ -30,6 +30,7 @@ fn typecheck_vardec(
         if let TigerType::TNil = *init_ast.typ {
             return Err(TypeError::UnconstrainedNilInitialization(pos))
         };
+        console_log!("init_ast.typ: <{:?}>", &init_ast.typ);
         Arc::clone(&init_ast.typ)
     };
     value_env.insert(name.clone(), EnvEntry::Var { ty: dec_type });
@@ -62,11 +63,11 @@ fn ty_to_tigertype(ty: &Ty, type_env: &TypeEnviroment, pos: Pos) -> Result<Arc<T
             },
         },
         Ty::Record(fields_vector) => {
-            let mut record: Vec<(String, Arc<TigerType>, i32)> = vec![];
+            let mut record: Vec<(String, RecordFieldType, i32)> = vec![];
             for (i, Field {name,typ: field_ty, ..}) in fields_vector.iter().enumerate() {
                 record.push((
                     name.clone(),
-                    ty_to_tigertype(field_ty, type_env, pos)?,
+                    RecordFieldType::Type(ty_to_tigertype(field_ty, type_env, pos)?),
                     i.try_into().expect("too many fields!"),
                 ));
             }
@@ -335,11 +336,11 @@ fn typecheck_typedec_batch(
     for (_TypeDec { name, ty }, pos) in records {
             match ty {
                 Ty::Record(fields_vector) => {
-                    let mut record: Vec<(String, Arc<TigerType>, i32)> = vec![];
+                    let mut record: Vec<(String, RecordFieldType, i32)> = vec![];
                     for (i, Field {name,typ: field_ty, ..}) in fields_vector.iter().enumerate() {
                         record.push((
                             name.clone(),
-                            ty_to_tigertype(field_ty, &type_env, *pos)?,
+                            RecordFieldType::Type(ty_to_tigertype(field_ty, &type_env, *pos)?),
                             i.try_into().expect("too many fields!"),
                         ));
                     }
