@@ -1,0 +1,96 @@
+let
+    function writedigit(i : int): string = (
+        chr(ord("0") + i)
+    )
+
+    function writeint(i : int): string = (
+        if i < 10 then (
+            writedigit(i)
+        ) else (
+            concat(
+                writeint(i / 10),
+                writedigit(i - (i / 10) * 10)
+            )
+        )
+    )
+
+    function printint(i: int) = (
+        print(writeint(i))
+    )
+
+    function readdigit(s: string): int = (
+        ord(s) - ord("0")
+    )
+
+    function readint(s: string): int = (
+        let
+            var strSize := size(s)
+        in
+            if strSize = 1 then (
+                readdigit(s)
+            ) else (
+                readint(substring(s, 0, strSize - 1)) * 10 +
+                readdigit(substring(s, strSize - 1, strSize))
+            )
+        end
+    )
+
+    var arrSize := (
+        print("Enter array size:");
+        readint(getstring())
+    )
+
+    type intarray = array of int
+    var arr: intarray := intarray [arrSize] of 0
+
+    function readArray() = (
+        (for r := 0 to (arrSize - 1) do (
+            print(concat("enter element ", writeint(r)));
+            arr[r] := readint(getstring())
+        ))
+    )
+
+    function printArray() = (
+        print("[");
+        (for i := 0 to (arrSize - 1) do (
+            printint(arr[i]);
+            if i <> (arrSize - 1) then print(", ")
+        ));
+        print("]")
+    )
+
+    function swap(pos1: int, pos2: int) = (
+        let
+            var temp := arr[pos1]
+        in
+            arr[pos1] := arr[pos2];
+            arr[pos2] := temp
+        end
+    )
+
+    function sortArray() = (
+        (for i := 0 to (arrSize - 1) do (
+            (for j := 0 to (arrSize - 2 - i) do (
+                if arr[j] > arr[j + 1] then (
+                    swap(j, j + 1)
+                )
+            ))
+        ))
+    )
+in
+    readArray();
+
+    print("\n");
+    print("Original array:\n");
+    printArray();
+    print("\n");
+
+
+    print("\n");
+    print("Sorted array:\n");
+    sortArray();
+    printArray();
+    print("\n");
+
+    0
+end

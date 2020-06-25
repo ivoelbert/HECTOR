@@ -1,0 +1,32 @@
+let
+    function mod(i: int, c: int) : int =
+        i - (i / c) * c = 0
+
+    function printdigit (i : int) = (
+        print(chr(ord("0") + i))
+    )
+
+    function printint (i : int) = (
+        if i < 10 then (
+            printdigit(i)
+        ) else (
+            printint(i / 10);
+            printdigit(i - (i / 10) * 10)
+        )
+    )
+
+    function FizzBuzz() = (
+        for i := 1 to 100 do (
+            if mod(i, 3) & mod(i, 5) then
+                print("FizzBuzz\n")
+            else if mod(i, 3) then
+                print("Fizz\n")
+            else if mod(i, 5) then
+                print("Buzz\n")
+            else
+                (printint(i); print("\n"))
+        )
+    )
+in
+    (FizzBuzz(); 0)
+end
