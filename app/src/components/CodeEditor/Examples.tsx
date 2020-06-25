@@ -13,7 +13,14 @@ export const Examples: React.FC<ExamplesProps> = ({ setCode }) => {
             <h3>Examples</h3>
             <ul className="examples-list">
                 {Object.entries(examples).map(([fileName, content]) => {
-                    return <ExampleItem fileName={fileName} content={content} setCode={setCode} />;
+                    return (
+                        <ExampleItem
+                            key={fileName}
+                            fileName={fileName}
+                            content={content}
+                            setCode={setCode}
+                        />
+                    );
                 })}
             </ul>
         </div>
