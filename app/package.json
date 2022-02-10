@@ -13,7 +13,7 @@
         "@types/react-dom": "^16.9.0",
         "@types/react-json-tree": "^0.6.11",
         "binaryen": "^93.0.0",
-        "node-sass": "^4.13.0",
+        "node-sass": "^7.0.0",
         "prismjs": "^1.18.0",
         "react": "^16.12.0",
         "react-ace": "^8.0.0",
