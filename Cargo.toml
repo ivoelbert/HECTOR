@@ -18,7 +18,7 @@ default = ["console_error_panic_hook"]
 
 [dependencies]
 lalrpop-util = "0.17.1"
-regex = "1.2.0"
+regex = "1.5.5"
 nanoid = "0.2.0"
 snowflake = { version = "1.2", features = ["serde_support"] }
 uuid = { version = "0.8", features = ["serde", "v4", "wasm-bindgen"] }
